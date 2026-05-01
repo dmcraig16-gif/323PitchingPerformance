@@ -12,6 +12,7 @@ import { VelocityChart, SpinRateChart, VeloSpinScatter } from './components/Velo
 import StatsTable from './components/StatsTable';
 import PitchLegend from './components/PitchLegend';
 import FilterBar from './components/FilterBar';
+import ElevationAdjustment from './components/ElevationAdjustment';
 import { getUnique, computeStats } from './utils/parseTrackman';
 import { PITCH_TYPE_ORDER, getNormalizedPitchColor } from './utils/pitchTypes';
 import './index.css';
@@ -21,6 +22,7 @@ const TABS = [
   { id: 'movement', label: 'Movement' },
   { id: 'velocity', label: 'Velocity & Spin' },
   { id: 'release', label: 'Release Point' },
+  { id: 'elevation', label: 'Elevation' },
 ];
 
 function UsageChart({ pitches, selectedPitchTypes }) {
@@ -304,6 +306,10 @@ export default function App() {
             <ReleasePointChart pitches={pitches} selectedPitchTypes={selectedPitchTypes} />
             <ExtensionChart pitches={pitches} selectedPitchTypes={selectedPitchTypes} />
           </div>
+        )}
+
+        {activeTab === 'elevation' && (
+          <ElevationAdjustment pitches={pitches} selectedPitchTypes={selectedPitchTypes} />
         )}
       </main>
     </div>
