@@ -185,12 +185,25 @@ export default function ElevationAdjustment({ pitches, selectedPitchTypes }) {
         <div className="chart-card">
           <h3 className="chart-title">Movement Profile</h3>
           <p className="chart-subtitle">
-            <span style={{ color: '#6B7280' }}>◌ Original</span>
+            <span style={{ color: '#6B7280' }}>◌ Original centroid / dots</span>
             &nbsp;·&nbsp;
             <span style={{ color: '#D1D5DB' }}>● Adjusted</span>
-            &nbsp;— {visible.length} pitches
+            &nbsp;· arrow = Δ per pitch type &nbsp;— {visible.length} pitches
           </p>
           <svg width={W} height={H} style={{ display: 'block', margin: '0 auto', maxWidth: '100%' }}>
+            <defs>
+              {/* One arrowhead marker per pitch type, in that type's color */}
+              {typeStats.map(s => {
+                const id = `arrow-${s.pitchType.replace(/[\s/]/g, '-')}`;
+                return (
+                  <marker key={id} id={id}
+                    markerWidth="7" markerHeight="7" refX="5" refY="3.5" orient="auto">
+                    <path d="M0,0 L0,7 L7,3.5 z" fill={s.color} />
+                  </marker>
+                );
+              })}
+            </defs>
+
             {/* Grid */}
             {GRID_VALS.map(v => (
               <g key={v}>
@@ -214,33 +227,106 @@ export default function ElevationAdjustment({ pitches, selectedPitchTypes }) {
             <text x={6} y={H / 2} textAnchor="middle" fontSize={11} fill="#4B5563"
               transform={`rotate(-90, 6, ${H / 2})`}>iVB (in)</text>
 
-            {/* Ghost layer — original positions */}
+            {/* Ghost layer — original individual pitches */}
             {visible.map((p, i) => (
-              <circle
-                key={`orig-${i}`}
-                cx={toSvgX(p.horzBreak)}
-                cy={toSvgY(p.vertBreak)}
-                r={5}
-                fill="none"
+              <circle key={`orig-${i}`}
+                cx={toSvgX(p.horzBreak)} cy={toSvgY(p.vertBreak)}
+                r={4} fill="none"
                 stroke={getNormalizedPitchColor(p.pitchType)}
-                strokeWidth={1}
-                strokeOpacity={0.35}
+                strokeWidth={0.8} strokeOpacity={0.25}
               />
             ))}
 
-            {/* Adjusted layer */}
+            {/* Adjusted individual pitches */}
             {visible.map((p, i) => (
-              <circle
-                key={`adj-${i}`}
-                cx={toSvgX(p.horzBreak * scale)}
-                cy={toSvgY(p.vertBreak * scale)}
-                r={5}
+              <circle key={`adj-${i}`}
+                cx={toSvgX(p.horzBreak * scale)} cy={toSvgY(p.vertBreak * scale)}
+                r={4}
                 fill={getNormalizedPitchColor(p.pitchType)}
-                fillOpacity={0.75}
-                stroke="#111827"
-                strokeWidth={0.4}
+                fillOpacity={0.55}
+                stroke="#111827" strokeWidth={0.3}
               />
             ))}
+
+            {/* Per-pitch-type centroid arrows + Δ callout badges */}
+            {typeStats.map(s => {
+              if (s.origIVB === null || s.origHB === null) return null;
+              const x1 = toSvgX(s.origHB);
+              const y1 = toSvgY(s.origIVB);
+              const x2 = toSvgX(s.adjHB);
+              const y2 = toSvgY(s.adjIVB);
+              const dx = x2 - x1;
+              const dy = y2 - y1;
+              const dist = Math.sqrt(dx * dx + dy * dy);
+
+              // Shorten line so it ends before the arrowhead marker
+              const shrink = dist > 14 ? 10 / dist : 0;
+              const lx2 = x2 - dx * shrink;
+              const ly2 = y2 - dy * shrink;
+
+              // Badge offset: perpendicular-right of the arrow direction, then forward
+              const nx = dist > 0 ? -dy / dist : 0;   // perpendicular
+              const ny = dist > 0 ?  dx / dist : 0;
+              const ux = dist > 0 ?  dx / dist : 1;   // forward unit
+              const uy = dist > 0 ?  dy / dist : 0;
+              const bx = x2 + ux * 14 + nx * 12;
+              const by = y2 + uy * 14 + ny * 12;
+
+              const sign = v => (v >= 0 ? '+' : '') + v.toFixed(1);
+              const dIVB = s.deltaIVB;
+              const dHB  = s.deltaHB;
+              const markerId = `arrow-${s.pitchType.replace(/[\s/]/g, '-')}`;
+
+              return (
+                <g key={s.pitchType}>
+                  {/* Original centroid — larger ring */}
+                  <circle cx={x1} cy={y1} r={9}
+                    fill="none" stroke={s.color} strokeWidth={1.5} strokeOpacity={0.5}
+                    strokeDasharray="3,2"
+                  />
+
+                  {/* Arrow from original to adjusted centroid */}
+                  {dist > 3 && (
+                    <line x1={x1} y1={y1} x2={lx2} y2={ly2}
+                      stroke={s.color} strokeWidth={2}
+                      markerEnd={`url(#${markerId})`}
+                    />
+                  )}
+
+                  {/* Adjusted centroid — solid filled circle */}
+                  <circle cx={x2} cy={y2} r={9}
+                    fill={s.color} fillOpacity={0.9}
+                    stroke="#111827" strokeWidth={1}
+                  />
+
+                  {/* Δ callout badge */}
+                  {dIVB !== null && (
+                    <g>
+                      <rect
+                        x={bx - 28} y={by - 18}
+                        width={56} height={dHB !== null ? 28 : 16}
+                        rx={4} ry={4}
+                        fill="#0D1117" stroke={s.color}
+                        strokeWidth={1} strokeOpacity={0.7}
+                        fillOpacity={0.92}
+                      />
+                      <text x={bx} y={by - 6}
+                        textAnchor="middle" fontSize={10} fontWeight={700}
+                        fill={dIVB < -0.05 ? '#F87171' : dIVB > 0.05 ? '#34D399' : '#9CA3AF'}>
+                        iVB {sign(dIVB)}&quot;
+                      </text>
+                      {dHB !== null && (
+                        <text x={bx} y={by + 7}
+                          textAnchor="middle" fontSize={10} fontWeight={700}
+                          fill={dHB < -0.05 ? '#F87171' : dHB > 0.05 ? '#34D399' : '#9CA3AF'}>
+                          HB {sign(dHB)}&quot;
+                        </text>
+                      )}
+                    </g>
+                  )}
+                </g>
+              );
+            })}
           </svg>
         </div>
 
