@@ -51,18 +51,18 @@ export function getPitchDisplayName(pitchType) {
 export function normalizePitchType(pitchType) {
   if (!pitchType) return 'Other';
   const trimmed = pitchType.trim();
-  // Map common abbreviations/alternates to canonical names
   const map = {
+    // ── Trackman abbreviations & full names ──────────────────────────────
     'FF': 'Four-Seam',
+    'FA': 'Four-Seam',
     'FourSeamFastBall': 'Four-Seam',
     'Four-Seam': 'Four-Seam',
     'Fastball': 'Four-Seam',
-    'FA': 'Four-Seam',
     'SI': 'Sinker',
+    'FT': 'Sinker',
     'Sinker': 'Sinker',
     'TwoSeamFastBall': 'Sinker',
     'Two-Seam': 'Sinker',
-    'FT': 'Sinker',
     'FC': 'Cutter',
     'Cutter': 'Cutter',
     'SL': 'Slider',
@@ -70,10 +70,10 @@ export function normalizePitchType(pitchType) {
     'ST': 'Sweeper',
     'Sweeper': 'Sweeper',
     'CB': 'Curveball',
-    'CurveBall': 'Curveball',
-    'Curveball': 'Curveball',
     'CU': 'Curveball',
     'KC': 'Curveball',
+    'CurveBall': 'Curveball',
+    'Curveball': 'Curveball',
     'CH': 'Changeup',
     'ChangeUp': 'Changeup',
     'Changeup': 'Changeup',
@@ -81,6 +81,14 @@ export function normalizePitchType(pitchType) {
     'Splitter': 'Splitter',
     'KN': 'Knuckleball',
     'Knuckleball': 'Knuckleball',
+    // ── Baseball Savant pitch_name full names ────────────────────────────
+    '4-Seam Fastball': 'Four-Seam',
+    '2-Seam Fastball': 'Sinker',
+    'Split-Finger': 'Splitter',
+    'Knuckle Curve': 'Curveball',
+    'Slow Curve': 'Curveball',
+    'Eephus': 'Other',
+    'Pitch Out': 'Other',
   };
   return map[trimmed] || trimmed;
 }

@@ -1,40 +1,59 @@
 import Papa from 'papaparse';
 import { normalizePitchType } from './pitchTypes';
 
-// Trackman CSV column name mappings (handles different export formats)
+// Column candidates — Trackman names first, then Baseball Savant equivalents.
+// pitch_name (full Savant name e.g. "4-Seam Fastball") is preferred over
+// pitch_type (abbreviation e.g. "FF") because it normalizes more reliably.
 const FIELD_MAP = {
-  pitchType: ['TaggedPitchType', 'AutoPitchType', 'PitchType'],
-  velocity: ['RelSpeed', 'PitchSpeed', 'Velocity', 'Speed'],
-  spinRate: ['SpinRate', 'Spin Rate', 'SpinRateAxis'],
-  spinAxis: ['SpinAxis', 'Spin Axis'],
-  horzBreak: ['HorzBreak', 'HorizontalBreak', 'pfx_x', 'HBreak'],
-  vertBreak: ['InducedVertBreak', 'VertBreak', 'pfx_z', 'VBreak'],
-  totalVertBreak: ['VertBreak', 'TotalVertBreak'],
-  plateLocHeight: ['PlateLocHeight', 'pz', 'PlateHeight'],
-  plateLocSide: ['PlateLocSide', 'px', 'PlateSide'],
-  relHeight: ['RelHeight', 'RelativeHeight', 'ReleaseHeight'],
-  relSide: ['RelSide', 'RelativeSide', 'ReleaseSide'],
-  extension: ['Extension', 'ReleaseExtension'],
-  vertApprAngle: ['VertApprAngle', 'VerticalApproachAngle', 'VAA'],
-  horzApprAngle: ['HorzApprAngle', 'HorizontalApproachAngle', 'HAA'],
-  pitcher: ['Pitcher', 'PitcherName', 'pitcher_name'],
-  pitcherId: ['PitcherId', 'pitcher_id', 'PitcherID'],
-  pitcherTeam: ['PitcherTeam', 'pitcher_team'],
-  batter: ['Batter', 'BatterName', 'batter_name'],
-  date: ['Date', 'GameDate', 'game_date'],
-  inning: ['Inning', 'inning'],
-  pitchCall: ['PitchCall', 'pitch_call', 'CallOfPitch'],
-  taggedHitType: ['TaggedHitType', 'hit_type'],
-  exitSpeed: ['ExitSpeed', 'ExitVelocity', 'launch_speed'],
-  launchAngle: ['Angle', 'LaunchAngle', 'launch_angle'],
+  pitchType:      ['TaggedPitchType', 'AutoPitchType', 'PitchType', 'pitch_name', 'pitch_type'],
+  velocity:       ['RelSpeed', 'PitchSpeed', 'Velocity', 'Speed', 'release_speed', 'effective_speed'],
+  spinRate:       ['SpinRate', 'Spin Rate', 'SpinRateAxis', 'release_spin_rate'],
+  spinAxis:       ['SpinAxis', 'Spin Axis', 'spin_axis'],
+  // pfx_x / pfx_z are in feet in Savant; HorzBreak / InducedVertBreak are in
+  // inches in Trackman. Format detection below applies ×12 when needed.
+  horzBreak:      ['HorzBreak', 'HorizontalBreak', 'HBreak', 'pfx_x'],
+  vertBreak:      ['InducedVertBreak', 'VertBreak', 'VBreak', 'pfx_z'],
+  plateLocHeight: ['PlateLocHeight', 'pz', 'PlateHeight', 'plate_z'],
+  plateLocSide:   ['PlateLocSide', 'px', 'PlateSide', 'plate_x'],
+  relHeight:      ['RelHeight', 'RelativeHeight', 'ReleaseHeight', 'release_pos_z'],
+  relSide:        ['RelSide', 'RelativeSide', 'ReleaseSide', 'release_pos_x'],
+  extension:      ['Extension', 'ReleaseExtension', 'release_extension'],
+  vertApprAngle:  ['VertApprAngle', 'VerticalApproachAngle', 'VAA'],
+  horzApprAngle:  ['HorzApprAngle', 'HorizontalApproachAngle', 'HAA'],
+  // Savant: player_name is "Last, First"; pitcher is the numeric MLBAM ID.
+  // Put player_name after Trackman names so Trackman files prefer 'Pitcher'.
+  pitcher:        ['Pitcher', 'PitcherName', 'pitcher_name', 'player_name'],
+  pitcherId:      ['PitcherId', 'PitcherID', 'pitcher_id', 'pitcher'],
+  pitcherTeam:    ['PitcherTeam', 'pitcher_team', 'p_throws'],
+  batter:         ['Batter', 'BatterName', 'batter_name', 'batter'],
+  date:           ['Date', 'GameDate', 'game_date'],
+  inning:         ['Inning', 'inning'],
+  // Savant: description has values like "called_strike", "ball", "swinging_strike"
+  pitchCall:      ['PitchCall', 'pitch_call', 'CallOfPitch', 'description'],
+  taggedHitType:  ['TaggedHitType', 'hit_type', 'bb_type'],
+  exitSpeed:      ['ExitSpeed', 'ExitVelocity', 'launch_speed'],
+  launchAngle:    ['Angle', 'LaunchAngle', 'launch_angle'],
 };
 
+// ── Format detection ─────────────────────────────────────────────────────────
+// Savant exports contain pfx_x/pfx_z (feet) and release_speed.
+// Trackman exports contain RelSpeed, TaggedPitchType, HorzBreak, etc.
+const SAVANT_MARKERS  = ['pfx_x', 'pfx_z', 'release_speed', 'plate_x', 'plate_z'];
+const TRACKMAN_MARKERS = ['RelSpeed', 'TaggedPitchType', 'HorzBreak', 'InducedVertBreak'];
+
+function detectFormat(headers) {
+  const lower = new Set(headers.map(h => h.trim().toLowerCase()));
+  const savantHits   = SAVANT_MARKERS.filter(m => lower.has(m.toLowerCase())).length;
+  const trackmanHits = TRACKMAN_MARKERS.filter(m => lower.has(m.toLowerCase())).length;
+  return savantHits > trackmanHits ? 'savant' : 'trackman';
+}
+
+// ── Column mapping ───────────────────────────────────────────────────────────
 function findColumn(headers, candidates) {
   for (const candidate of candidates) {
     const found = headers.find(h => h.trim() === candidate);
     if (found) return found;
   }
-  // Case-insensitive fallback
   const lower = candidates.map(c => c.toLowerCase());
   return headers.find(h => lower.includes(h.trim().toLowerCase())) || null;
 }
@@ -47,45 +66,60 @@ function buildColumnMapping(headers) {
   return mapping;
 }
 
+// ── Row parsing ──────────────────────────────────────────────────────────────
 function parseNum(val) {
   if (val === null || val === undefined || val === '') return null;
   const n = parseFloat(val);
   return isNaN(n) ? null : n;
 }
 
-function parseRow(row, colMap) {
-  const get = (field) => colMap[field] ? row[colMap[field]] : null;
+// Savant player_name is "Last, First" — keep as-is for display;
+// strip numeric-only values (i.e. the pitcher ID column accidentally matched).
+function parsePitcherName(raw) {
+  if (!raw) return '';
+  const str = String(raw).trim();
+  // If the matched column is purely numeric it's the MLBAM ID, not a name
+  if (/^\d+$/.test(str)) return '';
+  return str;
+}
+
+function parseRow(row, colMap, isSavant) {
+  const get = field => (colMap[field] ? row[colMap[field]] : null);
 
   const rawPitchType = get('pitchType') || '';
   const pitchType = normalizePitchType(rawPitchType);
 
+  // pfx_x / pfx_z come in feet from Savant; multiply by 12 to get inches.
+  const breakScale = isSavant ? 12 : 1;
+
   return {
     pitchType,
     rawPitchType: rawPitchType.trim(),
-    velocity: parseNum(get('velocity')),
-    spinRate: parseNum(get('spinRate')),
-    spinAxis: parseNum(get('spinAxis')),
-    horzBreak: parseNum(get('horzBreak')),
-    vertBreak: parseNum(get('vertBreak')),
+    velocity:       parseNum(get('velocity')),
+    spinRate:       parseNum(get('spinRate')),
+    spinAxis:       parseNum(get('spinAxis')),
+    horzBreak:      parseNum(get('horzBreak')) !== null ? parseNum(get('horzBreak')) * breakScale : null,
+    vertBreak:      parseNum(get('vertBreak')) !== null ? parseNum(get('vertBreak')) * breakScale : null,
     plateLocHeight: parseNum(get('plateLocHeight')),
-    plateLocSide: parseNum(get('plateLocSide')),
-    relHeight: parseNum(get('relHeight')),
-    relSide: parseNum(get('relSide')),
-    extension: parseNum(get('extension')),
-    vertApprAngle: parseNum(get('vertApprAngle')),
-    horzApprAngle: parseNum(get('horzApprAngle')),
-    pitcher: get('pitcher') || '',
-    pitcherId: get('pitcherId') || '',
-    pitcherTeam: get('pitcherTeam') || '',
-    batter: get('batter') || '',
-    date: get('date') || '',
-    inning: get('inning') || '',
-    pitchCall: get('pitchCall') || '',
-    exitSpeed: parseNum(get('exitSpeed')),
-    launchAngle: parseNum(get('launchAngle')),
+    plateLocSide:   parseNum(get('plateLocSide')),
+    relHeight:      parseNum(get('relHeight')),
+    relSide:        parseNum(get('relSide')),
+    extension:      parseNum(get('extension')),
+    vertApprAngle:  parseNum(get('vertApprAngle')),
+    horzApprAngle:  parseNum(get('horzApprAngle')),
+    pitcher:        parsePitcherName(get('pitcher')),
+    pitcherId:      get('pitcherId') || '',
+    pitcherTeam:    get('pitcherTeam') || '',
+    batter:         get('batter') || '',
+    date:           get('date') || '',
+    inning:         get('inning') || '',
+    pitchCall:      get('pitchCall') || '',
+    exitSpeed:      parseNum(get('exitSpeed')),
+    launchAngle:    parseNum(get('launchAngle')),
   };
 }
 
+// ── Public API ───────────────────────────────────────────────────────────────
 export function parseTrackmanCSV(file) {
   return new Promise((resolve, reject) => {
     Papa.parse(file, {
@@ -97,18 +131,20 @@ export function parseTrackmanCSV(file) {
           return;
         }
         const headers = results.meta.fields || [];
+        const format = detectFormat(headers);
+        const isSavant = format === 'savant';
         const colMap = buildColumnMapping(headers);
         const pitches = results.data
-          .map(row => parseRow(row, colMap))
+          .map(row => parseRow(row, colMap, isSavant))
           .filter(p => p.pitchType && p.pitchType !== '');
-        resolve({ pitches, headers, colMap });
+        resolve({ pitches, headers, colMap, format });
       },
       error: (err) => reject(err),
     });
   });
 }
 
-export function filterPitches(pitches, { pitchTypes, pitchers, dateRange }) {
+export function filterPitches(pitches, { pitchTypes, pitchers }) {
   return pitches.filter(p => {
     if (pitchTypes && pitchTypes.length > 0 && !pitchTypes.includes(p.pitchType)) return false;
     if (pitchers && pitchers.length > 0 && !pitchers.includes(p.pitcher)) return false;
@@ -130,22 +166,18 @@ export function computeStats(pitches) {
 
   const stats = [];
   for (const [type, group] of Object.entries(byType)) {
-    const count = group.length;
-    const avg = (field) => {
+    const avg = field => {
       const vals = group.map(p => p[field]).filter(v => v !== null);
       return vals.length ? vals.reduce((a, b) => a + b, 0) / vals.length : null;
     };
-    const fmt = (v, d = 1) => v !== null ? v.toFixed(d) : '-';
-
     stats.push({
       pitchType: type,
-      count,
-      pct: count,
-      avgVelo: avg('velocity'),
-      avgSpin: avg('spinRate'),
+      count: group.length,
+      avgVelo:      avg('velocity'),
+      avgSpin:      avg('spinRate'),
       avgHorzBreak: avg('horzBreak'),
       avgVertBreak: avg('vertBreak'),
-      avgVAA: avg('vertApprAngle'),
+      avgVAA:       avg('vertApprAngle'),
       avgExtension: avg('extension'),
     });
   }

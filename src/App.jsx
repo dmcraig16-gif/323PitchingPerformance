@@ -199,8 +199,18 @@ export default function App() {
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
           <span style={{ fontSize: 22 }}>⚾</span>
-          <h1 style={{ margin: 0, fontSize: 18, fontWeight: 700 }}>Trackman Pitch Visualizer</h1>
-          <span style={{ color: '#6B7280', fontSize: 13, marginLeft: 8 }}>
+          <h1 style={{ margin: 0, fontSize: 18, fontWeight: 700 }}>Pitch Visualizer</h1>
+          {data?.format && (
+            <span style={{
+              fontSize: 11, fontWeight: 600, padding: '2px 8px', borderRadius: 999,
+              background: data.format === 'savant' ? '#052e16' : '#1e3a5f',
+              color: data.format === 'savant' ? '#34D399' : '#60A5FA',
+              border: `1px solid ${data.format === 'savant' ? '#14532d' : '#1d4ed8'}`,
+            }}>
+              {data.format === 'savant' ? 'Baseball Savant' : 'Trackman'}
+            </span>
+          )}
+          <span style={{ color: '#6B7280', fontSize: 13 }}>
             {pitches.length} pitches
             {selectedPitcher && ` · ${selectedPitcher}`}
           </span>
