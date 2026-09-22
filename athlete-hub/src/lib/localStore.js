@@ -60,7 +60,7 @@ export function remove(table, id) {
 // Bump this when the seed shape changes (new tables/fields) so a browser
 // that already seeded an older demo dataset regenerates instead of running
 // against stale data the new UI doesn't know how to read.
-const SEED_VERSION = '6'
+const SEED_VERSION = '7'
 const SEED_FLAG = `${PREFIX}seeded`
 
 export function ensureSeedData() {
@@ -142,6 +142,12 @@ export function ensureSeedData() {
     name: '4-Seam to Glove Side Corners',
     type: 'throwing',
     description: '15 pitches, target both glove-side corners at 90% intent.',
+  })
+  const longToss = insert('exercise_library', {
+    coach_id: coach.id,
+    name: 'Long Toss',
+    type: 'throwing',
+    description: 'Build out on a crow-hop, work to max distance with good arc.',
   })
   insert('exercise_library', {
     coach_id: coach.id,
@@ -276,6 +282,19 @@ export function ensureSeedData() {
       target_unit: 'mph',
       order_index: 0,
     }),
+    insert('template_drills', {
+      session_id: throwDay1.id,
+      library_exercise_id: longToss.id,
+      name: longToss.name,
+      type: longToss.type,
+      description: longToss.description,
+      intent: 'Crow-hop, work the arc out to max distance',
+      sets: 1,
+      reps: 12,
+      target_value: 180,
+      target_unit: 'ft',
+      order_index: 1,
+    }),
   ]
 
   // ---------- assignments (where dates enter) ----------
@@ -350,6 +369,7 @@ export function ensureSeedData() {
 
   const jakeDeadliftDrill = jakeLiftWeek1.athleteDrills[0]
   const jakeFastballDrill = jakeThrowWeek1.athleteDrills[0]
+  const jakeLongTossDrill = jakeThrowWeek1.athleteDrills[1]
 
   // A few weeks of logged results so My Program's weight/velocity trends
   // have something to show right away.
@@ -375,6 +395,17 @@ export function ensureSeedData() {
       athlete_id: jake.id,
       date: d.toISOString().slice(0, 10),
       velocity,
+    })
+  })
+  const distanceProgression = [165, 172, 175, 180]
+  distanceProgression.forEach((distance_ft, i) => {
+    const d = new Date(today)
+    d.setDate(d.getDate() - (distanceProgression.length - i) * 5)
+    insert('exercise_logs', {
+      drill_id: jakeLongTossDrill.id,
+      athlete_id: jake.id,
+      date: d.toISOString().slice(0, 10),
+      distance_ft,
     })
   })
 

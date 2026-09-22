@@ -148,6 +148,7 @@ create table exercise_logs (
   reps_completed int,
   weight numeric,
   velocity numeric,
+  distance_ft numeric,
   notes text,
   created_at timestamptz not null default now()
 );

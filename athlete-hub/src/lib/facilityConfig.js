@@ -47,10 +47,19 @@ export function exerciseTypeMeta(value) {
   return EXERCISE_TYPES.find((t) => t.value === value) ?? { label: value, badgeClass: 'bg-neutral-100 text-neutral-700' }
 }
 
-// Exercise type whose workout logging captures velocity instead of
-// weight/reps (Command Tracker's per-pitch velo is separate — this is for
-// logging a throwing drill's result inside a program, e.g. "long toss").
+// Exercise type whose workout logging captures velocity or distance
+// instead of weight/reps (Command Tracker's per-pitch velo is separate —
+// this is for logging a throwing drill's result inside a program).
 export const THROWING_EXERCISE_TYPE = 'throwing'
+
+// A throwing drill targets either velocity (radar-gun mph — a bullpen,
+// a plyo throw) or distance (long toss). The coach picks per drill via
+// its target_unit in Program Builder; My Program's logger then shows
+// whichever input matches.
+export const THROW_METRICS = [
+  { value: 'mph', label: 'Velocity', unit: 'mph' },
+  { value: 'ft', label: 'Distance', unit: 'ft' },
+]
 
 // Daily check-in sliders (1-5). `key` matches the field name in CheckIn's
 // form state. `low`/`high` anchor the slider ends; `weight` is this
@@ -83,10 +92,11 @@ export const WHOOP_FIELDS = [
 ]
 
 // WHOOP's Recovery % is the one WHOOP metric on the same 0-100 "how ready
-// am I" scale as our own score, so when an athlete logs it, it's blended
-// into the final readiness score at this weight (the slider-based score
-// keeps the rest). Set to 0 to track WHOOP data without it ever touching
-// the score.
+// am I" scale as our own self-reported sleep. When an athlete logs it, it
+// blends into the Sleep & Recovery factor (below) at this weight — the
+// self-reported sleep hours/quality keep the rest of that factor's share,
+// they're never fully replaced. Set to 0 to track WHOOP data without it
+// ever touching the score.
 export const WHOOP_RECOVERY_WEIGHT = 0.35
 
 function clamp(value, min, max) {
@@ -94,19 +104,27 @@ function clamp(value, min, max) {
 }
 
 // Readiness scoring factors — how ready an athlete is to handle a
-// high-intensity day. Sleep blends hours slept with the sleepQuality
-// slider into one factor; every other factor reads straight from its
-// slider. Weights are pulled from CHECKIN_SLIDERS above so there's one
-// place to retune the formula.
+// high-intensity day. Sleep & Recovery blends hours slept and the
+// sleepQuality slider into a self-reported score, then — if WHOOP
+// Recovery is logged — blends that in too at WHOOP_RECOVERY_WEIGHT, all
+// within this one factor's normal 0.2 share of the total score (rather
+// than WHOOP Recovery diluting every other factor, including things it
+// has no bearing on like nutrition or mood). Every other factor reads
+// straight from its slider. Weights are pulled from CHECKIN_SLIDERS above
+// so there's one place to retune the formula.
 export const READINESS_FACTORS = [
   {
     key: 'sleep',
-    label: 'Sleep',
+    label: 'Sleep & Recovery',
     weight: 0.2,
     invert: false,
-    deriveScore: ({ sleepHours, sleepQuality }) => {
+    deriveScore: ({ sleepHours, sleepQuality, whoopRecovery }) => {
       const hoursScore = clamp((sleepHours / HOURS_FOR_FULL_SLEEP_SCORE) * 5, 0, 5)
-      return (hoursScore + sleepQuality) / 2
+      const selfReportedScore = (hoursScore + sleepQuality) / 2
+      const hasWhoop = whoopRecovery !== '' && whoopRecovery !== null && whoopRecovery !== undefined
+      if (!hasWhoop) return selfReportedScore
+      const recoveryScore = clamp((Number(whoopRecovery) / 100) * 5, 0, 5)
+      return selfReportedScore * (1 - WHOOP_RECOVERY_WEIGHT) + recoveryScore * WHOOP_RECOVERY_WEIGHT
     },
   },
   ...CHECKIN_SLIDERS.filter((f) => f.key !== 'sleepQuality').map((f) => ({

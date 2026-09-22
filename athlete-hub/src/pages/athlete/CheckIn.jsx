@@ -192,8 +192,9 @@ export default function CheckIn() {
             {showWhoop && (
               <div className="p-4">
                 <p className="text-xs text-neutral-500 mb-3">
-                  Enter these from your WHOOP app. Recovery blends into your score below (
-                  {Math.round(WHOOP_RECOVERY_WEIGHT * 100)}% weight); the rest are tracked for trends only.
+                  Enter these from your WHOOP app. Recovery blends into your Sleep & Recovery factor
+                  below ({Math.round(WHOOP_RECOVERY_WEIGHT * 100)}% weight, alongside sleep hours and
+                  quality); the rest are tracked for trends only.
                 </p>
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                   {WHOOP_FIELDS.map((f) => (
@@ -259,8 +260,7 @@ export default function CheckIn() {
             />
             {readiness.whoopBlended && (
               <p className="text-[11px] text-neutral-400 mt-3 text-center">
-                Blended {Math.round((1 - WHOOP_RECOVERY_WEIGHT) * 100)}% sliders (
-                {readiness.sliderScore}) · {Math.round(WHOOP_RECOVERY_WEIGHT * 100)}% WHOOP Recovery
+                WHOOP Recovery blended into Sleep & Recovery below ({Math.round(WHOOP_RECOVERY_WEIGHT * 100)}%)
               </p>
             )}
           </div>

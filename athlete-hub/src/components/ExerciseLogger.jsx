@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { LineChart, Line, ResponsiveContainer } from 'recharts'
 import * as db from '../lib/db.js'
 import { trendSummary } from '../lib/exerciseTrends.js'
-import { THROWING_EXERCISE_TYPE } from '../lib/facilityConfig.js'
+import { THROWING_EXERCISE_TYPE, THROW_METRICS } from '../lib/facilityConfig.js'
 
 const today = () => new Date().toISOString().slice(0, 10)
 
@@ -17,22 +17,25 @@ function DeltaBadge({ delta, unit }) {
 }
 
 // Inline result-logging control for one exercise inside My Program.
-// Throwing-type exercises log velocity; everything else logs weight +
-// reps. `trendLogs` is the athlete's full log history for this *library*
-// exercise (across every workout that reused it), oldest first, so the
-// trend/sparkline reflects real progress on the movement — not just this
-// one workout instance.
+// Throwing-type exercises log velocity or distance — whichever the drill
+// is targeting (its target_unit, set in Program Builder); everything
+// else logs weight + reps. `trendLogs` is the athlete's full log history
+// for this *library* exercise (across every workout that reused it),
+// oldest first, so the trend/sparkline reflects real progress on the
+// movement — not just this one workout instance.
 export default function ExerciseLogger({ exercise, athleteId, trendLogs, onLogged }) {
   const [open, setOpen] = useState(false)
   const [weight, setWeight] = useState('')
   const [reps, setReps] = useState('')
-  const [velocity, setVelocity] = useState('')
+  const [throwValue, setThrowValue] = useState('')
   const [notes, setNotes] = useState('')
   const [saving, setSaving] = useState(false)
 
   const isThrowing = exercise.type === THROWING_EXERCISE_TYPE
-  const metric = isThrowing ? 'velocity' : 'weight'
-  const unit = isThrowing ? 'mph' : 'lb'
+  const isDistance = isThrowing && exercise.target_unit === 'ft'
+  const metric = isThrowing ? (isDistance ? 'distance' : 'velocity') : 'weight'
+  const unit = isThrowing ? (isDistance ? 'ft' : 'mph') : 'lb'
+  const throwLabel = THROW_METRICS.find((m) => m.value === unit)?.label ?? 'Velocity'
   const summary = trendSummary(trendLogs, metric)
 
   async function handleSubmit(e) {
@@ -44,13 +47,15 @@ export default function ExerciseLogger({ exercise, athleteId, trendLogs, onLogge
       date: today(),
       notes: notes || null,
       ...(isThrowing
-        ? { velocity: velocity ? Number(velocity) : null }
+        ? isDistance
+          ? { distance_ft: throwValue ? Number(throwValue) : null }
+          : { velocity: throwValue ? Number(throwValue) : null }
         : { weight: weight ? Number(weight) : null, reps_completed: reps ? Number(reps) : null }),
     }
     const saved = await db.logExerciseResult(row)
     setWeight('')
     setReps('')
-    setVelocity('')
+    setThrowValue('')
     setNotes('')
     setOpen(false)
     setSaving(false)
@@ -91,12 +96,14 @@ export default function ExerciseLogger({ exercise, athleteId, trendLogs, onLogge
         <form onSubmit={handleSubmit} className="bg-neutral-50 border border-neutral-200 rounded-xl p-3 text-left w-56">
           {isThrowing ? (
             <div className="mb-2">
-              <label className="block text-[11px] font-medium text-neutral-500 mb-1">Velocity (mph)</label>
+              <label className="block text-[11px] font-medium text-neutral-500 mb-1">
+                {throwLabel} ({unit})
+              </label>
               <input
                 type="number"
-                step="0.1"
-                value={velocity}
-                onChange={(e) => setVelocity(e.target.value)}
+                step={isDistance ? 1 : 0.1}
+                value={throwValue}
+                onChange={(e) => setThrowValue(e.target.value)}
                 className="w-full border border-neutral-200 rounded-lg px-2 py-1 text-sm"
                 autoFocus
               />

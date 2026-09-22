@@ -2,10 +2,13 @@
 // what the UI needs to show progress: the most recent value, the delta
 // vs. the entry before it, and a compact series for a sparkline.
 //
-// `metric` is 'weight' or 'velocity' — whichever the exercise's type logs.
+// `metric` is 'weight', 'velocity', or 'distance' — whichever the
+// exercise's type/target logs.
 
 export function primaryValue(log, metric) {
-  return metric === 'velocity' ? log.velocity : log.weight
+  if (metric === 'velocity') return log.velocity
+  if (metric === 'distance') return log.distance_ft
+  return log.weight
 }
 
 export function trendSummary(logs, metric) {

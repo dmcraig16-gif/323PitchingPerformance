@@ -3,14 +3,17 @@
 // defined in facilityConfig.js (READINESS_FACTORS, sourced from
 // CHECKIN_SLIDERS) so a facility can retune its own formula in one place —
 // this file just applies whatever's configured there to a check-in's raw
-// slider input and produces a 0-100 score + band.
+// slider input and produces a 0-100 score + band. WHOOP Recovery, when
+// logged, is blended in by the Sleep & Recovery factor itself (see
+// facilityConfig.js) rather than here — it only ever displaces that one
+// factor's own share of the score, never anything else.
 //
 // input shape (from the Readiness page's sliders, each 1-5):
 //   sleepHours     numeric, hours slept
 //   sleepQuality, strain, armSoreness, lowerSoreness, energy, mood,
 //   nutrition, hydration
 
-import { READINESS_FACTORS, WHOOP_RECOVERY_WEIGHT } from './facilityConfig'
+import { READINESS_FACTORS } from './facilityConfig'
 
 function clamp(value, min, max) {
   return Math.min(max, Math.max(min, value))
@@ -34,21 +37,11 @@ export function computeReadiness(input) {
   }
 
   // weightedSum is a 1-5 scale (weights sum to 1). Map 1 -> 0, 5 -> 100.
-  const sliderScore = Math.round(clamp(((weightedSum - 1) / 4) * 100, 0, 100))
-
-  // WHOOP's Recovery % is already 0-100 on the same "how ready" scale, so
-  // when it's logged it blends into the final score at WHOOP_RECOVERY_WEIGHT
-  // — the sliders still carry the rest, this never fully replaces them.
-  const whoopBlended = hasValue(input.whoopRecovery)
-  const whoopRecovery = whoopBlended ? clamp(Number(input.whoopRecovery), 0, 100) : null
-  const score = whoopBlended
-    ? Math.round(sliderScore * (1 - WHOOP_RECOVERY_WEIGHT) + whoopRecovery * WHOOP_RECOVERY_WEIGHT)
-    : sliderScore
+  const score = Math.round(clamp(((weightedSum - 1) / 4) * 100, 0, 100))
 
   return {
     score,
-    sliderScore,
-    whoopBlended,
+    whoopBlended: hasValue(input.whoopRecovery),
     band: bandFor(score),
     factors,
   }

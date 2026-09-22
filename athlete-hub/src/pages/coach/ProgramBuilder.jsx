@@ -8,6 +8,7 @@ import {
   EXERCISE_TYPES,
   exerciseTypeMeta,
   THROWING_EXERCISE_TYPE,
+  THROW_METRICS,
 } from '../../lib/facilityConfig.js'
 
 const today = () => new Date().toISOString().slice(0, 10)
@@ -195,7 +196,8 @@ function DrillRow({ drill, canMoveUp, canMoveDown, onMove, onRemove, onChange })
   const [reps, setReps] = useState(drill.reps ?? '')
   const [intent, setIntent] = useState(drill.intent ?? '')
   const [target, setTarget] = useState(drill.target_value ?? '')
-  const targetUnit = drill.type === THROWING_EXERCISE_TYPE ? 'mph' : 'lb'
+  const isThrowing = drill.type === THROWING_EXERCISE_TYPE
+  const targetUnit = isThrowing ? (drill.target_unit ?? 'mph') : 'lb'
 
   async function saveField(field, value, numeric = true) {
     const patch = { [field]: value === '' ? null : numeric ? Number(value) : value }
@@ -262,7 +264,21 @@ function DrillRow({ drill, canMoveUp, canMoveDown, onMove, onRemove, onChange })
           type="number"
           className="w-16 border border-neutral-200 rounded-lg px-1.5 py-1 text-xs text-center"
         />
-        <span className="text-[10px] text-neutral-400 w-8">{targetUnit}</span>
+        {isThrowing ? (
+          <select
+            value={targetUnit}
+            onChange={(e) => saveField('target_unit', e.target.value, false)}
+            className="text-[10px] text-neutral-500 border border-neutral-200 rounded-lg px-1 py-1 bg-white"
+          >
+            {THROW_METRICS.map((m) => (
+              <option key={m.value} value={m.value}>
+                {m.unit}
+              </option>
+            ))}
+          </select>
+        ) : (
+          <span className="text-[10px] text-neutral-400 w-8">{targetUnit}</span>
+        )}
       </div>
 
       <button
@@ -293,6 +309,7 @@ function SessionBlock({ session, coachId, sessionCount, onDuplicated, onDeleted 
       youtube_url: libraryExercise.video_url,
       sets: 3,
       reps: 10,
+      target_unit: libraryExercise.type === THROWING_EXERCISE_TYPE ? THROW_METRICS[0].value : 'lb',
       order_index: drills.length,
     })
     setDrills((prev) => [...prev, drill])
