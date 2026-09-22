@@ -6,7 +6,22 @@
 // PlateLocSide/PlateLocHeight so the same strike-zone geometry used by the
 // pitch visualizer applies here.
 
-export const ZONE = { left: -0.7083, right: 0.7083, bottom: 1.5, top: 3.5 }
+// Width is fixed — home plate is 17" wide regardless of batter. Height
+// follows MLB's Automated Ball-Strike System definition (in effect since
+// 2026): 53.5% of the batter's height at the top of the zone, 27% at the
+// bottom. This app doesn't track individual batter heights, so ZONE uses
+// the 2025 MLB-average player height (6'1.58" / 73.6") to produce a
+// single average-batter zone for the target picker and visualizer.
+const AVG_BATTER_HEIGHT_IN = 73.6
+const ZONE_TOP_PCT = 0.535
+const ZONE_BOTTOM_PCT = 0.27
+
+export const ZONE = {
+  left: -8.5 / 12,
+  right: 8.5 / 12,
+  bottom: (AVG_BATTER_HEIGHT_IN * ZONE_BOTTOM_PCT) / 12,
+  top: (AVG_BATTER_HEIGHT_IN * ZONE_TOP_PCT) / 12,
+}
 
 export function missDistanceInches(intended, actual) {
   const dx = actual.x - intended.x
