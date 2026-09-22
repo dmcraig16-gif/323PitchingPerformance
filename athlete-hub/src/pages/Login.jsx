@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase, isSupabaseConfigured } from '../lib/supabaseClient'
-import { FACILITY_NAME } from '../lib/facilityConfig.js'
+import { FACILITY_NAME, LOGO_SQUARE } from '../lib/facilityConfig.js'
 
 const ROLES = [
   { value: 'athlete', label: 'Athlete', blurb: 'Daily check-in, programming, command tracking' },
@@ -64,6 +64,7 @@ export default function Login() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-canvas px-4">
         <div className="bg-white p-8 rounded-2xl shadow-card w-full max-w-sm text-center">
+          <img src={LOGO_SQUARE} alt={FACILITY_NAME} className="w-16 h-16 mx-auto mb-4" />
           <p className="font-semibold text-lg mb-2">Check your email</p>
           <p className="text-sm text-neutral-500 mb-6">
             Confirm your address, then sign in below to get started.
@@ -85,8 +86,8 @@ export default function Login() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-canvas px-4">
       <form onSubmit={handleSubmit} className="bg-white p-8 rounded-2xl shadow-card w-full max-w-sm">
-        <p className="text-2xl font-semibold tracking-tight tabular-nums mb-1">{FACILITY_NAME}</p>
-        <p className="text-sm text-neutral-500 mb-6">
+        <img src={LOGO_SQUARE} alt={FACILITY_NAME} className="w-20 h-20 mx-auto mb-4" />
+        <p className="text-sm text-neutral-500 mb-6 text-center">
           {mode === 'sign-in' ? 'Sign in to your account' : 'Create your account'}
         </p>
 

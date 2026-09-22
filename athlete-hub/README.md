@@ -27,10 +27,13 @@ See `../ATHLETE_HUB_PLAN.md` for the full architecture and data model.
 ## Making it your own facility's programming
 
 `src/lib/facilityConfig.js` is the one file to edit to retune the app —
-facility name, what a "program"/exercise category can be, the pitch-type
-list Command Tracker offers, the daily check-in's sliders, and the
-readiness score's weights. Every page reads from this file instead of
-hardcoding those values.
+facility name, logo (`LOGO_CIRCLE`/`LOGO_SQUARE`, pointing at `public/`),
+what a "program"/exercise category can be, the pitch-type list Command
+Tracker offers, the daily check-in's sliders, and the readiness score's
+weights. Every page reads from this file instead of hardcoding those
+values. To swap the logo: drop new art in `public/`, point those two
+constants at it, and update the `<link rel="icon">`/`apple-touch-icon`
+tags in `index.html` to match.
 
 ## What's built
 

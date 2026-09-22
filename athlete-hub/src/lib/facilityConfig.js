@@ -7,6 +7,13 @@
 
 export const FACILITY_NAME = '3:23'
 
+// Logo assets (in public/, generated from the source badge — see
+// public/logo-square.png for the full-detail master). Use LOGO_CIRCLE on
+// dark backgrounds (transparent outside the badge's circle) and
+// LOGO_SQUARE on light ones.
+export const LOGO_CIRCLE = '/logo-circle.png'
+export const LOGO_SQUARE = '/logo-square.png'
+
 // Program "categories" coaches can build programming under. Add another
 // entry (e.g. arm care, mobility, recovery) and it shows up automatically
 // in the Program Builder's type selector and every athlete-facing program

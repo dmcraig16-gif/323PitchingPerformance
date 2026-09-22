@@ -14,7 +14,7 @@ import {
   LogOut,
 } from 'lucide-react'
 import { useAuth } from '../lib/useAuth.js'
-import { FACILITY_NAME } from '../lib/facilityConfig.js'
+import { FACILITY_NAME, LOGO_CIRCLE } from '../lib/facilityConfig.js'
 
 const athleteGroups = [
   {
@@ -72,7 +72,10 @@ export default function AppShell() {
   return (
     <div className="min-h-screen bg-canvas">
       <header className="sticky top-0 z-20 h-14 px-6 flex items-center justify-between bg-neutral-900/90 backdrop-blur-xl text-white border-b border-white/10">
-        <span className="font-semibold text-[15px] tracking-tight tabular-nums opacity-95">{FACILITY_NAME}</span>
+        <div className="flex items-center gap-2">
+          <img src={LOGO_CIRCLE} alt={FACILITY_NAME} className="w-8 h-8" />
+          <span className="font-semibold text-[15px] tracking-tight tabular-nums opacity-95">{FACILITY_NAME}</span>
+        </div>
         <div className="flex items-center gap-3 text-sm">
           {isDemoMode && (
             <select
