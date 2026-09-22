@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
 import * as db from '../lib/db.js'
 import StrikeZoneTargetPicker from './StrikeZoneTargetPicker.jsx'
+import MissDirectionSummary from './MissDirectionSummary.jsx'
 import { summarizeByPitchType, round1, ZONE_LEVELS } from '../lib/commandMetrics.js'
 import { PITCH_TYPES } from '../lib/facilityConfig.js'
 
@@ -22,6 +23,7 @@ function Card({ title, children }) {
 export default function CommandSessionDetail({ sessionId, athleteId, basePath, backLabel }) {
   const [session, setSession] = useState(null)
   const [pitches, setPitches] = useState(null)
+  const [athleteThrows, setAthleteThrows] = useState('R')
   const [pitchType, setPitchType] = useState(PITCH_TYPES[0])
   const [velocity, setVelocity] = useState('')
   const [zoneLevel, setZoneLevel] = useState(ZONE_LEVELS[0].value)
@@ -32,7 +34,8 @@ export default function CommandSessionDetail({ sessionId, athleteId, basePath, b
   useEffect(() => {
     db.getCommandSession(sessionId).then(setSession)
     db.listPitchesForSession(sessionId).then(setPitches)
-  }, [sessionId])
+    db.getProfileById(athleteId).then((a) => setAthleteThrows(a?.throws ?? 'R'))
+  }, [sessionId, athleteId])
 
   const phase = !intended ? 'intended' : !actual ? 'actual' : 'done'
 
@@ -225,6 +228,10 @@ export default function CommandSessionDetail({ sessionId, athleteId, basePath, b
           )}
         </Card>
       </div>
+
+      <Card title="Miss direction (this pen)">
+        <MissDirectionSummary pitches={pitches} throws={athleteThrows} avgMissIn={summary.overall.avgMissIn} />
+      </Card>
     </div>
   )
 }

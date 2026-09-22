@@ -8,10 +8,16 @@ const ROLES = [
   { value: 'coach', label: 'Coach', blurb: 'Build programs, review athletes, assign workouts' },
 ]
 
+const THROWS_OPTIONS = [
+  { value: 'R', label: 'Right' },
+  { value: 'L', label: 'Left' },
+]
+
 export default function Login() {
   const [mode, setMode] = useState('sign-in')
   const [name, setName] = useState('')
   const [role, setRole] = useState('athlete')
+  const [throwsHand, setThrowsHand] = useState('R')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState(null)
@@ -44,7 +50,7 @@ export default function Login() {
     const { data, error: authError } = await supabase.auth.signUp({
       email,
       password,
-      options: { data: { name, role } },
+      options: { data: { name, role, throws: role === 'athlete' ? throwsHand : undefined } },
     })
     setSubmitting(false)
     if (authError) {
@@ -128,6 +134,28 @@ export default function Login() {
                 </button>
               ))}
             </div>
+
+            {role === 'athlete' && (
+              <>
+                <label className="block text-sm font-medium mb-2">Throws</label>
+                <div className="grid grid-cols-2 gap-2 mb-4">
+                  {THROWS_OPTIONS.map((t) => (
+                    <button
+                      key={t.value}
+                      type="button"
+                      onClick={() => setThrowsHand(t.value)}
+                      className={`rounded-xl border py-2 text-sm font-medium transition-colors ${
+                        throwsHand === t.value
+                          ? 'border-accent bg-accent-50 text-accent'
+                          : 'border-neutral-200 text-neutral-600 hover:border-neutral-400'
+                      }`}
+                    >
+                      {t.label}
+                    </button>
+                  ))}
+                </div>
+              </>
+            )}
           </>
         )}
 

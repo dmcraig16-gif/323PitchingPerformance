@@ -1,10 +1,11 @@
 // Command training math: intended target vs. actual pitch location.
 //
 // Coordinates are feet from the center of the plate at the front edge of
-// home plate — x = horizontal (negative = glove side for a catcher facing
-// the pitcher), y = height off the ground. This matches Trackman-style
-// PlateLocSide/PlateLocHeight so the same strike-zone geometry used by the
-// pitch visualizer applies here.
+// home plate — x = horizontal (negative = glove side for a right-handed
+// pitcher; see summarizeMissDirection for the left-handed mirror), y =
+// height off the ground. This matches Trackman-style PlateLocSide/
+// PlateLocHeight so the same strike-zone geometry used by the pitch
+// visualizer applies here.
 
 // Both zones below get a uniform 1" buffer on every side — a pitch only
 // has to touch part of the zone to be a strike, and umpires/catchers
@@ -54,6 +55,64 @@ export function missDistanceInches(intended, actual) {
   const dx = actual.x - intended.x
   const dy = actual.y - intended.y
   return Math.hypot(dx, dy) * 12
+}
+
+// A miss smaller than half a baseball's width on a given axis reads as
+// "on target" for that axis rather than a real directional tendency —
+// otherwise near-perfect pitches would get sorted into a direction on the
+// strength of a fraction of an inch.
+const BASEBALL_DIAMETER_IN = 2.9
+const CENTERED_THRESHOLD_IN = BASEBALL_DIAMETER_IN / 2
+
+// Classifies one pitch's miss into a pitching-specific direction —
+// High/Low crossed with Arm-side/Glove-side, mirrored for a left-handed
+// pitcher (`throws: 'L'`) since arm side is the opposite side of the
+// plate from a righty's. Returns null on either axis when the miss is
+// too small on that axis to call a direction (see CENTERED_THRESHOLD_IN).
+function missDirection(intended, actual, throws) {
+  const dxIn = (actual.x - intended.x) * 12
+  const dyIn = (actual.y - intended.y) * 12
+
+  let horizontal = null
+  if (Math.abs(dxIn) >= CENTERED_THRESHOLD_IN) {
+    const missedPositiveX = dxIn > 0
+    const isArmSide = throws === 'L' ? !missedPositiveX : missedPositiveX
+    horizontal = isArmSide ? 'Arm-side' : 'Glove-side'
+  }
+
+  let vertical = null
+  if (Math.abs(dyIn) >= CENTERED_THRESHOLD_IN) {
+    vertical = dyIn > 0 ? 'High' : 'Low'
+  }
+
+  return { horizontal, vertical }
+}
+
+// Finds the most common miss direction across a set of pitches — not an
+// average (opposite misses would just cancel out), but which direction
+// bucket (e.g. "Arm-side & High") the pitcher actually misses toward most
+// often, plus what share of pitches landed in it. `throws` is the
+// pitcher's throwing hand ('R'/'L'); defaults to 'R' when unknown.
+export function summarizeMissDirection(pitches, throws = 'R') {
+  if (pitches.length === 0) return null
+
+  const counts = new Map()
+  for (const p of pitches) {
+    const { horizontal, vertical } = missDirection(
+      { x: p.intended_x, y: p.intended_y },
+      { x: p.actual_x, y: p.actual_y },
+      throws,
+    )
+    const label = [vertical, horizontal].filter(Boolean).join(' & ') || 'Centered'
+    counts.set(label, (counts.get(label) ?? 0) + 1)
+  }
+
+  const breakdown = [...counts.entries()]
+    .map(([label, count]) => ({ label, count, pct: Math.round((count / pitches.length) * 100) }))
+    .sort((a, b) => b.count - a.count)
+
+  const top = breakdown[0]
+  return { ...top, total: pitches.length, breakdown }
 }
 
 // Groups pitches by pitch_type and returns count / avg miss distance /

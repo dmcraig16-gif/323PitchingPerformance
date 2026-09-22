@@ -8,6 +8,10 @@ create table profiles (
   name text not null,
   email text not null,
   coach_id uuid references profiles(id),
+  -- Throwing hand — used to translate a Command Tracker miss's raw x/y
+  -- into pitching-specific arm-side/glove-side language. Nullable; code
+  -- treats an unset value as 'R'.
+  throws text check (throws in ('R', 'L')),
   created_at timestamptz not null default now()
 );
 

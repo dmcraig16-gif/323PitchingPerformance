@@ -8,6 +8,7 @@ import { summarizeByPitchType, trendBySession, round1 } from '../../lib/commandM
 import { programTypeMeta } from '../../lib/facilityConfig.js'
 import CommandSessionList from '../../components/CommandSessionList.jsx'
 import ReadinessGauge from '../../components/ReadinessGauge.jsx'
+import MissDirectionSummary from '../../components/MissDirectionSummary.jsx'
 
 const TONE_HEX = { green: '#34c759', yellow: '#ff9f0a', red: '#ff3b30' }
 const today = () => new Date().toISOString().slice(0, 10)
@@ -187,7 +188,7 @@ function CheckinsTab({ checkins }) {
   )
 }
 
-function CommandTab({ athleteId, coachProfileId, pitches }) {
+function CommandTab({ athleteId, coachProfileId, throws, pitches }) {
   const commandSummary = useMemo(() => summarizeByPitchType(pitches), [pitches])
   const commandTrend = useMemo(() => trendBySession(pitches), [pitches])
 
@@ -226,6 +227,10 @@ function CommandTab({ athleteId, coachProfileId, pitches }) {
           )}
         </Card>
       </div>
+
+      <Card title="Miss direction (all-time)">
+        <MissDirectionSummary pitches={pitches} throws={throws} avgMissIn={commandSummary.overall.avgMissIn} />
+      </Card>
 
       <div>
         <h3 className="text-sm font-semibold text-neutral-600 mb-2">Bullpen sessions</h3>
@@ -371,7 +376,7 @@ export default function AthleteDetail() {
       )}
       {tab === 'checkins' && <CheckinsTab checkins={checkins} />}
       {tab === 'command' && (
-        <CommandTab athleteId={id} coachProfileId={profile?.id} pitches={pitches} />
+        <CommandTab athleteId={id} coachProfileId={profile?.id} throws={athlete.throws} pitches={pitches} />
       )}
       {tab === 'programs' && (
         <ProgramsTab

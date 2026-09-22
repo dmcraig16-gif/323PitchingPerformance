@@ -60,7 +60,7 @@ export function remove(table, id) {
 // Bump this when the seed shape changes (new tables/fields) so a browser
 // that already seeded an older demo dataset regenerates instead of running
 // against stale data the new UI doesn't know how to read.
-const SEED_VERSION = '7'
+const SEED_VERSION = '8'
 const SEED_FLAG = `${PREFIX}seeded`
 
 export function ensureSeedData() {
@@ -96,6 +96,7 @@ export function ensureSeedData() {
     name: 'Jake Martinez',
     email: 'jake@example.com',
     coach_id: coach.id,
+    throws: 'R',
   })
 
   const maria = insert('profiles', {
@@ -103,6 +104,7 @@ export function ensureSeedData() {
     name: 'Maria Chen',
     email: 'maria@example.com',
     coach_id: coach.id,
+    throws: 'L',
   })
 
   // Signed up but not yet claimed by a coach — demonstrates the roster's
@@ -478,6 +480,50 @@ export function ensureSeedData() {
       })
     }
   }
+
+  // A dedicated bullpen each for Jake and Maria with a consistent
+  // high/arm-side miss tendency, so Command Tracker's "most common miss
+  // direction" has a real pattern to surface (not just the noise from the
+  // random sessions above) — and, since Maria throws left-handed, her
+  // raw x misses run the opposite way from Jake's but land in the same
+  // "High & Arm-side" label, proving the mirroring is correct.
+  function seedBiasedSession(athlete, armSideDxSign, daysAgo) {
+    const d = new Date(today)
+    d.setDate(d.getDate() - daysAgo)
+    const session = insert('command_sessions', {
+      athlete_id: athlete.id,
+      logged_by: athlete.id,
+      date: d.toISOString().slice(0, 10),
+      label: 'Bullpen — Fastball Command',
+    })
+    const misses = [
+      { dx: 0.35, dy: 0.3 },
+      { dx: 0.4, dy: 0.15 },
+      { dx: 0.3, dy: 0.35 },
+      { dx: 0.25, dy: 0.2 },
+      { dx: 0.15, dy: -0.05 },
+      { dx: 0.38, dy: 0.28 },
+    ]
+    misses.forEach(({ dx, dy }, i) => {
+      const intended = { x: 0, y: 2.5 }
+      const actual = { x: intended.x + dx * armSideDxSign, y: intended.y + dy }
+      const missDistanceIn = Math.hypot(actual.x - intended.x, actual.y - intended.y) * 12
+      insert('command_pitches', {
+        athlete_id: athlete.id,
+        session_id: session.id,
+        session_date: session.date,
+        pitch_type: pitchTypes[i % pitchTypes.length],
+        velocity: 88 + Math.random() * 4,
+        intended_x: intended.x,
+        intended_y: intended.y,
+        actual_x: actual.x,
+        actual_y: actual.y,
+        miss_distance_in: missDistanceIn,
+      })
+    })
+  }
+  seedBiasedSession(jake, 1, 12)
+  seedBiasedSession(maria, -1, 12)
 
   localStorage.setItem(`${PREFIX}currentProfileId`, coach.id)
 }

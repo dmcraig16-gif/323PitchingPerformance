@@ -47,6 +47,7 @@ export function AuthProvider({ children }) {
         role: meta.role === 'coach' ? 'coach' : 'athlete',
         name: meta.name || session.user.email,
         email: session.user.email,
+        throws: meta.throws === 'L' ? 'L' : meta.role === 'coach' ? null : 'R',
       })
       if (!cancelled) setProfile(created)
     })
