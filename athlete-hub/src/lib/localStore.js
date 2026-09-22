@@ -57,11 +57,29 @@ export function remove(table, id) {
   )
 }
 
+// Bump this when the seed shape changes (new tables/fields) so a browser
+// that already seeded an older demo dataset regenerates instead of running
+// against stale data the new UI doesn't know how to read.
+const SEED_VERSION = '2'
 const SEED_FLAG = `${PREFIX}seeded`
 
 export function ensureSeedData() {
-  if (localStorage.getItem(SEED_FLAG)) return
-  localStorage.setItem(SEED_FLAG, 'true')
+  if (localStorage.getItem(SEED_FLAG) === SEED_VERSION) return
+  for (const table of [
+    'profiles',
+    'onboarding_forms',
+    'programs',
+    'program_assignments',
+    'workouts',
+    'exercises',
+    'exercise_logs',
+    'daily_checkins',
+    'command_sessions',
+    'command_pitches',
+  ]) {
+    localStorage.removeItem(key(table))
+  }
+  localStorage.setItem(SEED_FLAG, SEED_VERSION)
 
   const coach = insert('profiles', {
     role: 'coach',
@@ -159,28 +177,43 @@ export function ensureSeedData() {
   }
 
   const pitchTypes = ['Fastball', 'Slider', 'Changeup', 'Curveball']
-  for (let i = 0; i < 24; i++) {
+  const sessionLabels = [
+    'Bullpen — Fastball Command',
+    'Bullpen — Offspeed Mix',
+    'Flat Ground',
+    'Pre-Game Pen',
+  ]
+  for (let s = 0; s < 4; s++) {
     const d = new Date(today)
-    d.setDate(d.getDate() - Math.floor(i / 6))
-    const pitchType = pitchTypes[i % pitchTypes.length]
-    const intended = { x: (Math.random() - 0.5) * 1.2, y: 2 + Math.random() * 1.2 }
-    const missMag = Math.random() * 12
-    const angle = Math.random() * Math.PI * 2
-    const actual = {
-      x: intended.x + (Math.cos(angle) * missMag) / 12,
-      y: intended.y + (Math.sin(angle) * missMag) / 12,
-    }
-    insert('command_pitches', {
+    d.setDate(d.getDate() - s * 3)
+    const session = insert('command_sessions', {
       athlete_id: jake.id,
-      session_date: d.toISOString().slice(0, 10),
-      pitch_type: pitchType,
-      velocity: pitchType === 'Fastball' ? 90 + Math.random() * 4 : 78 + Math.random() * 8,
-      intended_x: intended.x,
-      intended_y: intended.y,
-      actual_x: actual.x,
-      actual_y: actual.y,
-      miss_distance_in: missMag,
+      logged_by: jake.id,
+      date: d.toISOString().slice(0, 10),
+      label: sessionLabels[s],
     })
+    for (let i = 0; i < 6; i++) {
+      const pitchType = pitchTypes[i % pitchTypes.length]
+      const intended = { x: (Math.random() - 0.5) * 1.2, y: 2 + Math.random() * 1.2 }
+      const missMag = Math.random() * 12
+      const angle = Math.random() * Math.PI * 2
+      const actual = {
+        x: intended.x + (Math.cos(angle) * missMag) / 12,
+        y: intended.y + (Math.sin(angle) * missMag) / 12,
+      }
+      insert('command_pitches', {
+        athlete_id: jake.id,
+        session_id: session.id,
+        session_date: session.date,
+        pitch_type: pitchType,
+        velocity: pitchType === 'Fastball' ? 90 + Math.random() * 4 : 78 + Math.random() * 8,
+        intended_x: intended.x,
+        intended_y: intended.y,
+        actual_x: actual.x,
+        actual_y: actual.y,
+        miss_distance_in: missMag,
+      })
+    }
   }
 
   localStorage.setItem(`${PREFIX}currentProfileId`, coach.id)

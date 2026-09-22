@@ -3,15 +3,7 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 import { useAuth } from '../../lib/useAuth.js'
 import * as db from '../../lib/db.js'
 import { computeReadiness, BAND_STYLES, FACTOR_LABELS } from '../../lib/readiness.js'
-
-const SCALE_FIELDS = [
-  { key: 'sleepQuality', label: 'Sleep quality', hint: '1 = poor, 5 = great' },
-  { key: 'soreness', label: 'Soreness', hint: '1 = very sore, 5 = none' },
-  { key: 'mood', label: 'Mood', hint: '1 = poor, 5 = great' },
-  { key: 'energy', label: 'Energy', hint: '1 = drained, 5 = energized' },
-  { key: 'nutrition', label: 'Nutrition / hydration', hint: '1 = poor, 5 = dialed in' },
-  { key: 'prevDayWorkload', label: "Yesterday's training load", hint: '1 = easy day, 5 = max effort' },
-]
+import { CHECKIN_INPUT_FIELDS } from '../../lib/facilityConfig.js'
 
 const today = () => new Date().toISOString().slice(0, 10)
 
@@ -134,7 +126,7 @@ export default function CheckIn() {
             />
           </div>
 
-          {SCALE_FIELDS.map((f) => (
+          {CHECKIN_INPUT_FIELDS.map((f) => (
             <ScaleInput
               key={f.key}
               label={f.label}

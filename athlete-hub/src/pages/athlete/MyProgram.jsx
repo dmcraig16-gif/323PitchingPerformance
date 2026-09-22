@@ -1,12 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useAuth } from '../../lib/useAuth.js'
 import * as db from '../../lib/db.js'
-
-const TYPE_LABEL = { lifting: 'Lifting', throwing: 'Throwing' }
-const TYPE_COLOR = {
-  lifting: 'bg-blue-100 text-blue-700',
-  throwing: 'bg-orange-100 text-orange-700',
-}
+import { programTypeMeta } from '../../lib/facilityConfig.js'
 
 function ProgramCard({ program, athleteId, completedToday }) {
   const [workouts, setWorkouts] = useState(null)
@@ -30,8 +25,8 @@ function ProgramCard({ program, athleteId, completedToday }) {
     <div className="bg-white rounded-lg shadow-sm p-5 mb-5">
       <div className="flex items-center gap-2 mb-1">
         <h2 className="font-semibold">{program.name}</h2>
-        <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${TYPE_COLOR[program.type]}`}>
-          {TYPE_LABEL[program.type] ?? program.type}
+        <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${programTypeMeta(program.type).badgeClass}`}>
+          {programTypeMeta(program.type).label}
         </span>
       </div>
       {program.description && <p className="text-sm text-slate-500 mb-4">{program.description}</p>}

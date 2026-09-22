@@ -147,12 +147,26 @@ create table daily_checkins (
   unique (athlete_id, date)
 );
 
--- Command training: one row per thrown pitch, comparing intended target to
+-- Command training: a bullpen (or flat ground / pre-game pen) session that
+-- pitches are logged against one at a time, live. logged_by records whether
+-- the athlete or their coach was charting the pen.
+create table command_sessions (
+  id uuid primary key default gen_random_uuid(),
+  athlete_id uuid not null references profiles(id) on delete cascade,
+  logged_by uuid not null references profiles(id),
+  date date not null default current_date,
+  label text,
+  notes text,
+  created_at timestamptz not null default now()
+);
+
+-- One row per thrown pitch within a session, comparing intended target to
 -- actual result. Coordinates are feet from the center of the plate
 -- (x = horizontal, y = height), matching Trackman-style plate location so
 -- the visualizer components can be reused. miss_distance_in is inches.
 create table command_pitches (
   id uuid primary key default gen_random_uuid(),
+  session_id uuid not null references command_sessions(id) on delete cascade,
   athlete_id uuid not null references profiles(id) on delete cascade,
   session_date date not null default current_date,
   pitch_type text not null,
@@ -194,6 +208,7 @@ alter table habit_assignments enable row level security;
 alter table habit_logs enable row level security;
 alter table mental_game_content enable row level security;
 alter table daily_checkins enable row level security;
+alter table command_sessions enable row level security;
 alter table command_pitches enable row level security;
 
 -- Helper: is the current user a coach, and what's their profile id?
@@ -335,10 +350,21 @@ create policy "checkins_coach_view" on daily_checkins for select using (
   athlete_id in (select id from profiles where coach_id = current_profile_id())
 );
 
--- command_pitches: athlete owns; coach can view pitches logged by their athletes
+-- command_sessions: athlete owns their own sessions; coach can view AND
+-- create/log sessions for their assigned athletes (charting live from the
+-- athlete's profile during a bullpen)
+create policy "command_sessions_athlete_own" on command_sessions for all using (
+  athlete_id = current_profile_id()
+);
+create policy "command_sessions_coach_manage" on command_sessions for all using (
+  athlete_id in (select id from profiles where coach_id = current_profile_id())
+);
+
+-- command_pitches: same pattern — athlete owns; coach can also log/view
+-- pitches for their assigned athletes
 create policy "command_pitches_athlete_own" on command_pitches for all using (
   athlete_id = current_profile_id()
 );
-create policy "command_pitches_coach_view" on command_pitches for select using (
+create policy "command_pitches_coach_manage" on command_pitches for all using (
   athlete_id in (select id from profiles where coach_id = current_profile_id())
 );

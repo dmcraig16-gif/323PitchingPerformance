@@ -1,11 +1,12 @@
 import { useEffect, useState } from 'react'
 import { useAuth } from '../../lib/useAuth.js'
 import * as db from '../../lib/db.js'
+import { PROGRAM_TYPES, programTypeMeta } from '../../lib/facilityConfig.js'
 
 function NewProgramForm({ coachId, onCreated }) {
   const [name, setName] = useState('')
   const [description, setDescription] = useState('')
-  const [type, setType] = useState('lifting')
+  const [type, setType] = useState(PROGRAM_TYPES[0].value)
 
   async function handleSubmit(e) {
     e.preventDefault()
@@ -32,8 +33,11 @@ function NewProgramForm({ coachId, onCreated }) {
           onChange={(e) => setType(e.target.value)}
           className="border rounded-md px-3 py-2 text-sm"
         >
-          <option value="lifting">Lifting</option>
-          <option value="throwing">Throwing</option>
+          {PROGRAM_TYPES.map((t) => (
+            <option key={t.value} value={t.value}>
+              {t.label}
+            </option>
+          ))}
         </select>
       </div>
       <textarea
@@ -228,11 +232,9 @@ function ProgramBlock({ program, coachId }) {
       <div className="flex items-center gap-2 mb-1">
         <h2 className="font-semibold">{program.name}</h2>
         <span
-          className={`text-xs px-2 py-0.5 rounded-full font-medium ${
-            program.type === 'throwing' ? 'bg-orange-100 text-orange-700' : 'bg-blue-100 text-blue-700'
-          }`}
+          className={`text-xs px-2 py-0.5 rounded-full font-medium ${programTypeMeta(program.type).badgeClass}`}
         >
-          {program.type}
+          {programTypeMeta(program.type).label}
         </span>
       </div>
       {program.description && <p className="text-sm text-slate-500 mb-3">{program.description}</p>}

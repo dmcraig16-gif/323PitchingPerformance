@@ -34,24 +34,33 @@ habit_logs           id, habit_assignment_id, date, completed, value, notes
 mental_game_content  id, coach_id, title, body, media_url, category, published_at
 daily_checkins       id, athlete_id, date, sleep_hours, sleep_quality, soreness, mood,
                      energy, nutrition, prev_day_workload, notes, readiness_score
-command_pitches      id, athlete_id, session_date, pitch_type, velocity,
-                     intended_x, intended_y, actual_x, actual_y, miss_distance_in, notes
+command_sessions     id, athlete_id, logged_by (fk->profiles), date, label, notes
+command_pitches      id, session_id (fk->command_sessions), athlete_id, session_date,
+                     pitch_type, velocity, intended_x, intended_y, actual_x, actual_y,
+                     miss_distance_in, notes
 ```
 
-`programs.type` is `lifting` or `throwing`, so one athlete's program list can
-carry both a strength program and a bullpen/throwing program at once.
+`programs.type` is `lifting` or `throwing` by default — the list of valid
+types lives in `src/lib/facilityConfig.js` (`PROGRAM_TYPES`), so adding a
+category (arm care, mobility, recovery, etc.) is a config change, not a
+schema migration.
 
 `daily_checkins.readiness_score` is computed client-side
-(`src/lib/readiness.js`) as a weighted 0-100 blend of sleep (hours +
-quality), soreness, mood, energy, nutrition, and inverted previous-day
-workload, then stored for fast history/trend queries.
+(`src/lib/readiness.js`) from the weighted factors defined in
+`facilityConfig.js` (`READINESS_FACTORS`) — sleep (hours + quality),
+soreness, mood, energy, nutrition, and inverted previous-day workload —
+then stored for fast history/trend queries. Retuning the formula for a
+facility's own philosophy means editing that one array.
 
-`command_pitches` coordinates are feet from the center of the plate
-(matching Trackman-style PlateLocSide/PlateLocHeight), so the same
-strike-zone geometry as the pitch visualizer applies. Miss distance is the
-Euclidean distance between intended and actual, in inches
-(`src/lib/commandMetrics.js`), aggregated by pitch type and by session for
-trend charts.
+A `command_session` is one bullpen/flat-ground/pre-game pen. `logged_by`
+records whether the athlete or a coach (charting live from the athlete's
+profile) ran the entry. `command_pitches` coordinates are feet from the
+center of the plate (matching Trackman-style PlateLocSide/PlateLocHeight),
+so the same strike-zone geometry as the pitch visualizer applies. Miss
+distance is the Euclidean distance between intended and actual, in inches
+(`src/lib/commandMetrics.js`), aggregated by pitch type within a session
+(the pen's breakdown) and across all of an athlete's sessions (profile-wide
+trend charts).
 
 All athlete-owned tables use Supabase Row Level Security: athletes can only
 read/write their own rows; coaches can read/write rows for athletes whose
@@ -67,9 +76,11 @@ read/write their own rows; coaches can read/write rows for athletes whose
   inputs, live readiness score + band, 14-day trend
 - **My Program** — list of lifting/throwing workouts → exercise detail
   (sets/reps/description/embedded YouTube), mark-complete per exercise
-- **Command Training** — click-to-place intended target vs. actual pitch
-  location on a strike-zone grid, pitch type + velocity, auto-computed
-  miss distance, average-miss/velo trends by pitch type and by session
+- **Command Tracker** — start a bullpen session, then log each pitch one at
+  a time: pitch type, velocity, click-to-place intended target vs. actual
+  result on a strike-zone grid, auto-computed miss distance. Produces a
+  pitch-by-pitch list for that pen plus a live pitch-type breakdown (avg
+  miss distance / avg velocity), and profile-wide trends across sessions
 - **Journal** — calendar of past entries + today's prompt + freeform entry
 - **Devotionals** — daily devotional archive
 - **Habits** — customizable routine view (morning/evening rhythm: sleep
@@ -87,9 +98,13 @@ read/write their own rows; coaches can read/write rows for athletes whose
   assign to one or more athletes individually
 - **Content library** — mental game talks, devotionals, journal prompts,
   habit templates (CRUD)
-- **Athlete detail** — readiness trend, miss-distance-by-pitch-type,
-  velocity trend, recent check-ins, assigned programs (with inline
-  assign), workout logs, journal (if shared), habit adherence
+- **Athlete detail** — each athlete's profile is split into category tabs
+  (Overview, Check-Ins, Command Tracker, Programs) rather than one long
+  scrolling page, so it's easy to add more categories (mobility screens,
+  strength testing, etc.) later without cluttering existing ones. Command
+  Tracker tab lets a coach start/log a bullpen session live from the
+  profile, same UI an athlete uses on their own; Programs tab assigns
+  inline; Check-Ins tab shows readiness trend + recent check-in detail
 
 ## 5. Tech stack
 
@@ -118,7 +133,27 @@ read/write their own rows; coaches can read/write rows for athletes whose
 9. Polish: notifications/reminders, exercise_logs progress rollups, CSV
    import for velo/command data from Trackman/Rapsodo
 
-## 7. Open decisions for later
+## 7. Facility customization
+
+Modeled loosely on Trevor Bauer's 4APP approach — many small, trackable
+categories (check-ins, calculators, session logs) hung off an athlete's
+profile — but built so the specific categories and their math are a config
+edit for this facility rather than baked into the UI:
+
+- `src/lib/facilityConfig.js` centralizes facility name, program
+  categories (`PROGRAM_TYPES`), Command Tracker's pitch-type list
+  (`PITCH_TYPES`), daily check-in fields (`CHECKIN_INPUT_FIELDS`), and the
+  readiness score's weighted factors (`READINESS_FACTORS`).
+- Every check-in and calculator lives as its own category on the athlete
+  profile (coach view: Overview / Check-Ins / Command Tracker / Programs
+  tabs) so a new one (e.g. a mobility screen, a strength-testing
+  calculator) can be added as an additional tab + table without touching
+  existing categories.
+- Current customization is structural (a developer edits the config file);
+  a coach-editable in-app settings screen for the same knobs is a
+  reasonable next step if that's needed.
+
+## 8. Open decisions for later
 
 - Auto-assignment of coach vs. manual (multiple coaches?)
 - Whether journals are private or visible to coach

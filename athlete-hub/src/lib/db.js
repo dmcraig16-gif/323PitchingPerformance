@@ -76,7 +76,60 @@ export async function upsertCheckin(row) {
 }
 
 // ---------- command training ----------
+//
+// A command session is one bullpen/flat-ground/pre-game pen. Pitches are
+// logged one at a time against a session (by the athlete or by a coach
+// charting live from the athlete's profile).
 
+export async function listCommandSessions(athleteId) {
+  if (isSupabaseConfigured) {
+    const { data } = await supabase
+      .from('command_sessions')
+      .select('*')
+      .eq('athlete_id', athleteId)
+      .order('date', { ascending: false })
+    return data ?? []
+  }
+  return local
+    .getAll('command_sessions')
+    .filter((s) => s.athlete_id === athleteId)
+    .sort((a, b) => b.date.localeCompare(a.date) || b.created_at.localeCompare(a.created_at))
+}
+
+export async function getCommandSession(id) {
+  if (isSupabaseConfigured) {
+    const { data } = await supabase.from('command_sessions').select('*').eq('id', id).single()
+    return data ?? null
+  }
+  return local.getAll('command_sessions').find((s) => s.id === id) ?? null
+}
+
+export async function createCommandSession(row) {
+  if (isSupabaseConfigured) {
+    const { data, error } = await supabase.from('command_sessions').insert(row).select().single()
+    if (error) throw error
+    return data
+  }
+  return local.insert('command_sessions', row)
+}
+
+export async function listPitchesForSession(sessionId) {
+  if (isSupabaseConfigured) {
+    const { data } = await supabase
+      .from('command_pitches')
+      .select('*')
+      .eq('session_id', sessionId)
+      .order('created_at', { ascending: true })
+    return data ?? []
+  }
+  return local
+    .getAll('command_pitches')
+    .filter((p) => p.session_id === sessionId)
+    .sort((a, b) => a.created_at.localeCompare(b.created_at))
+}
+
+// All-time pitches for an athlete, across every session — used for
+// dashboard snapshots and profile-wide trend charts.
 export async function listCommandPitches(athleteId) {
   if (isSupabaseConfigured) {
     const { data } = await supabase

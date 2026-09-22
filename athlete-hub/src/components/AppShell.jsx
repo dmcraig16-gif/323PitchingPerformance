@@ -1,5 +1,6 @@
 import { NavLink, Outlet } from 'react-router-dom'
 import { useAuth } from '../lib/useAuth.js'
+import { FACILITY_NAME } from '../lib/facilityConfig.js'
 
 const athleteLinks = [
   { to: '/dashboard', label: 'Dashboard' },
@@ -25,7 +26,7 @@ export default function AppShell() {
   return (
     <div className="min-h-screen bg-slate-50">
       <header className="bg-slate-900 text-white px-6 py-4 flex items-center justify-between">
-        <span className="font-semibold text-lg">323 Performance Hub</span>
+        <span className="font-semibold text-lg">{FACILITY_NAME}</span>
         <div className="flex items-center gap-4 text-sm">
           {isDemoMode && (
             <select
