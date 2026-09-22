@@ -41,33 +41,6 @@ function clamp(v, min, max) {
   return Math.min(max, Math.max(min, v))
 }
 
-// The intended target, drawn as an open catcher's mitt rather than a bare
-// circle — same margin-of-error sizing as before (r = INTENDED_RADIUS_PX,
-// 2.5 baseballs wide), just reskinned. Shapes are authored in a 100-unit
-// local design space and scaled to that radius via the transform.
-function CatchersGlove({ cx, cy, r }) {
-  const s = r / 45
-  return (
-    <g transform={`translate(${cx} ${cy}) scale(${s})`}>
-      <ellipse
-        cx={-30}
-        cy={18}
-        rx={15}
-        ry={22}
-        transform="rotate(-18 -30 18)"
-        fill="#c68a45"
-        stroke="#8b5a2b"
-        strokeWidth={3}
-      />
-      <ellipse cx={2} cy={2} rx={38} ry={42} fill="#c68a45" stroke="#8b5a2b" strokeWidth={3} />
-      <ellipse cx={4} cy={-4} rx={24} ry={28} fill="#8b5a2b" />
-      <ellipse cx={4} cy={-8} rx={18} ry={20} fill="#6b431f" />
-      <path d="M -10,-18 Q 4,-28 18,-16" fill="none" stroke="#4a2e14" strokeWidth={2.5} strokeLinecap="round" />
-      <path d="M -8,-6 Q 4,-14 16,-4" fill="none" stroke="#4a2e14" strokeWidth={2} strokeLinecap="round" />
-    </g>
-  )
-}
-
 export default function StrikeZoneTargetPicker({ intended, actual, phase, onPick, zone = MLB_ZONE }) {
   const zoneX1 = toSvgX(zone.left)
   const zoneX2 = toSvgX(zone.right)
@@ -183,7 +156,33 @@ export default function StrikeZoneTargetPicker({ intended, actual, phase, onPick
         )}
 
         {intended && (
-          <CatchersGlove cx={toSvgX(intended.x)} cy={toSvgY(intended.y)} r={INTENDED_RADIUS_PX} />
+          <g>
+            <circle
+              cx={toSvgX(intended.x)}
+              cy={toSvgY(intended.y)}
+              r={INTENDED_RADIUS_PX}
+              fill="#34c759"
+              fillOpacity={0.12}
+              stroke="#34c759"
+              strokeWidth={2}
+            />
+            <line
+              x1={toSvgX(intended.x) - INTENDED_RADIUS_PX * 0.5}
+              y1={toSvgY(intended.y)}
+              x2={toSvgX(intended.x) + INTENDED_RADIUS_PX * 0.5}
+              y2={toSvgY(intended.y)}
+              stroke="#34c759"
+              strokeWidth={2}
+            />
+            <line
+              x1={toSvgX(intended.x)}
+              y1={toSvgY(intended.y) - INTENDED_RADIUS_PX * 0.5}
+              x2={toSvgX(intended.x)}
+              y2={toSvgY(intended.y) + INTENDED_RADIUS_PX * 0.5}
+              stroke="#34c759"
+              strokeWidth={2}
+            />
+          </g>
         )}
 
         {actual && (
