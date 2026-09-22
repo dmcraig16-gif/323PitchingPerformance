@@ -1,13 +1,16 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
+import { BarChart, Bar, Cell, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
 import { useAuth } from '../../lib/useAuth.js'
 import * as db from '../../lib/db.js'
-import { computeReadiness, BAND_STYLES, FACTOR_LABELS } from '../../lib/readiness.js'
-import { CHECKIN_SLIDERS } from '../../lib/facilityConfig.js'
+import { computeReadiness, FACTOR_LABELS, bandFor } from '../../lib/readiness.js'
+import { CHECKIN_SLIDERS, WHOOP_FIELDS, WHOOP_RECOVERY_WEIGHT } from '../../lib/facilityConfig.js'
 import Slider from '../../components/Slider.jsx'
+import ReadinessGauge from '../../components/ReadinessGauge.jsx'
 
 const today = () => new Date().toISOString().slice(0, 10)
+
+const TONE_HEX = { green: '#34c759', yellow: '#ff9f0a', red: '#ff3b30' }
 
 const DEFAULT_FORM = {
   weight: '',
@@ -21,6 +24,18 @@ const DEFAULT_FORM = {
   nutrition: 3,
   hydration: 3,
   notes: '',
+  whoopRecovery: '',
+  whoopStrain: '',
+  whoopSleepPerformance: '',
+  whoopHrv: '',
+  whoopRestingHr: '',
+}
+
+// camelCase form key -> snake_case db column, for the WHOOP fields only
+// (the sliders/notes/weight are mapped individually below since there are
+// few enough to just write out).
+function whoopColumn(key) {
+  return key.replace(/([A-Z])/g, '_$1').toLowerCase()
 }
 
 export default function CheckIn() {
@@ -30,6 +45,7 @@ export default function CheckIn() {
   const [history, setHistory] = useState([])
   const [saved, setSaved] = useState(false)
   const [alreadyCheckedIn, setAlreadyCheckedIn] = useState(false)
+  const [showWhoop, setShowWhoop] = useState(false)
   const athleteId = profile?.id
 
   useEffect(() => {
@@ -39,6 +55,11 @@ export default function CheckIn() {
       const todayRow = rows.find((r) => r.date === today())
       if (todayRow) {
         setAlreadyCheckedIn(true)
+        const whoopValues = Object.fromEntries(
+          WHOOP_FIELDS.map((f) => [f.key, todayRow[whoopColumn(f.key)] ?? '']),
+        )
+        const hasWhoop = WHOOP_FIELDS.some((f) => whoopValues[f.key] !== '')
+        if (hasWhoop) setShowWhoop(true)
         setForm({
           weight: todayRow.weight_lb ?? '',
           sleepHours: todayRow.sleep_hours,
@@ -51,13 +72,13 @@ export default function CheckIn() {
           nutrition: todayRow.nutrition,
           hydration: todayRow.hydration,
           notes: todayRow.notes ?? '',
+          ...whoopValues,
         })
       }
     })
   }, [athleteId])
 
   const readiness = useMemo(() => computeReadiness(form), [form])
-  const styles = BAND_STYLES[readiness.band.tone]
 
   function setField(key, value) {
     setForm((f) => ({ ...f, [key]: value }))
@@ -66,6 +87,9 @@ export default function CheckIn() {
 
   async function handleSubmit(e) {
     e.preventDefault()
+    const whoopRow = Object.fromEntries(
+      WHOOP_FIELDS.map((f) => [whoopColumn(f.key), form[f.key] === '' ? null : Number(form[f.key])]),
+    )
     const row = {
       athlete_id: athleteId,
       date: today(),
@@ -81,6 +105,7 @@ export default function CheckIn() {
       hydration: form.hydration,
       notes: form.notes,
       readiness_score: readiness.score,
+      ...whoopRow,
     }
     const result = await db.upsertCheckin(row)
     setHistory((prev) => {
@@ -91,18 +116,32 @@ export default function CheckIn() {
     setAlreadyCheckedIn(true)
   }
 
-  const chartData = history.slice(-14).map((r) => ({ date: r.date.slice(5), score: r.readiness_score }))
+  const trendData = useMemo(
+    () =>
+      history.slice(-14).map((r) => ({
+        date: r.date.slice(5),
+        score: r.readiness_score,
+        tone: bandFor(r.readiness_score).tone,
+      })),
+    [history],
+  )
+
+  const sevenDayAvg = useMemo(() => {
+    const last7 = history.slice(-7)
+    if (last7.length === 0) return null
+    return Math.round(last7.reduce((sum, r) => sum + r.readiness_score, 0) / last7.length)
+  }, [history])
 
   return (
     <div>
-      <h1 className="text-[28px] font-semibold tracking-tight text-neutral-900 mb-1">Daily Check-In</h1>
+      <h1 className="text-[28px] font-semibold tracking-tight text-neutral-900 mb-1">Readiness</h1>
       <p className="text-sm text-neutral-500 mb-6">
-        30 seconds, every morning. These sliders — strain, soreness, sleep, energy, nutrition,
-        hydration — calculate how ready you are to handle a high-intensity day.
+        30 seconds, every morning. Strain, soreness, sleep, energy, nutrition, hydration — plus your
+        WHOOP data if you've got it — calculate how ready you are for a high-intensity day.
       </p>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
-        <form onSubmit={handleSubmit} className="lg:col-span-2 bg-white rounded-2xl shadow-card p-6">
+        <form onSubmit={handleSubmit} className="lg:col-span-2 bg-white rounded-2xl shadow-card p-6 order-2 lg:order-1">
           <div className="flex gap-6 mb-6">
             <div>
               <label className="block text-sm font-medium mb-1">Hours of sleep</label>
@@ -141,6 +180,44 @@ export default function CheckIn() {
             />
           ))}
 
+          <div className="mb-6 border border-neutral-200 rounded-xl overflow-hidden">
+            <button
+              type="button"
+              onClick={() => setShowWhoop((v) => !v)}
+              className="w-full flex items-center justify-between px-4 py-3 text-sm font-medium bg-neutral-50 hover:bg-neutral-100 transition-colors"
+            >
+              <span>WHOOP data <span className="text-neutral-400 font-normal">(optional)</span></span>
+              <span className="text-neutral-400 text-xs">{showWhoop ? 'Hide −' : 'Add +'}</span>
+            </button>
+            {showWhoop && (
+              <div className="p-4">
+                <p className="text-xs text-neutral-500 mb-3">
+                  Enter these from your WHOOP app. Recovery blends into your score below (
+                  {Math.round(WHOOP_RECOVERY_WEIGHT * 100)}% weight); the rest are tracked for trends only.
+                </p>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                  {WHOOP_FIELDS.map((f) => (
+                    <div key={f.key}>
+                      <label className="block text-[11px] font-medium text-neutral-500 mb-1">
+                        {f.label} {f.unit && <span className="text-neutral-400">({f.unit})</span>}
+                      </label>
+                      <input
+                        type="number"
+                        step={f.step}
+                        min={f.min}
+                        max={f.max}
+                        value={form[f.key]}
+                        onChange={(e) => setField(f.key, e.target.value)}
+                        placeholder={f.placeholder}
+                        className="w-full border border-neutral-200 rounded-lg px-2.5 py-1.5 text-sm"
+                      />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+
           <div className="mb-6">
             <label className="block text-sm font-medium mb-1">Notes (optional)</label>
             <textarea
@@ -172,17 +249,20 @@ export default function CheckIn() {
           )}
         </form>
 
-        <div className="space-y-5">
-          <div className="bg-white rounded-2xl shadow-card p-5 text-center">
-            <p className="text-xs font-medium text-neutral-400 uppercase tracking-wide mb-2">
-              Readiness score
-            </p>
-            <p className="text-5xl font-bold mb-2">{readiness.score}</p>
-            <span
-              className={`inline-block px-3 py-1 rounded-full text-xs font-semibold ${styles.bg} ${styles.text}`}
-            >
-              {readiness.band.label}
-            </span>
+        <div className="space-y-5 order-1 lg:order-2">
+          <div className="bg-white rounded-2xl shadow-card p-6 flex flex-col items-center">
+            <ReadinessGauge
+              score={readiness.score}
+              tone={readiness.band.tone}
+              label={readiness.band.label}
+              sublabel={sevenDayAvg != null ? `7-day avg ${sevenDayAvg}` : null}
+            />
+            {readiness.whoopBlended && (
+              <p className="text-[11px] text-neutral-400 mt-3 text-center">
+                Blended {Math.round((1 - WHOOP_RECOVERY_WEIGHT) * 100)}% sliders (
+                {readiness.sliderScore}) · {Math.round(WHOOP_RECOVERY_WEIGHT * 100)}% WHOOP Recovery
+              </p>
+            )}
           </div>
 
           <div className="bg-white rounded-2xl shadow-card p-5">
@@ -203,17 +283,21 @@ export default function CheckIn() {
             ))}
           </div>
 
-          {chartData.length > 1 && (
+          {trendData.length > 1 && (
             <div className="bg-white rounded-2xl shadow-card p-5">
               <p className="text-sm font-semibold mb-3">Last 14 days</p>
               <ResponsiveContainer width="100%" height={140}>
-                <LineChart data={chartData}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+                <BarChart data={trendData}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" vertical={false} />
                   <XAxis dataKey="date" tick={{ fontSize: 10 }} />
-                  <YAxis domain={[0, 100]} tick={{ fontSize: 10 }} />
+                  <YAxis domain={[0, 100]} tick={{ fontSize: 10 }} width={28} />
                   <Tooltip />
-                  <Line type="monotone" dataKey="score" stroke="#0071e3" strokeWidth={2} dot={false} />
-                </LineChart>
+                  <Bar dataKey="score" radius={[4, 4, 0, 0]}>
+                    {trendData.map((d, i) => (
+                      <Cell key={i} fill={TONE_HEX[d.tone]} />
+                    ))}
+                  </Bar>
+                </BarChart>
               </ResponsiveContainer>
             </div>
           )}

@@ -168,6 +168,13 @@ create table daily_checkins (
   energy int not null check (energy between 1 and 5),
   nutrition int not null check (nutrition between 1 and 5),
   hydration int not null check (hydration between 1 and 5),
+  -- Optional WHOOP metrics (see facilityConfig.js WHOOP_FIELDS). All
+  -- nullable — an athlete with no WHOOP just never fills these in.
+  whoop_recovery numeric,
+  whoop_strain numeric,
+  whoop_sleep_performance numeric,
+  whoop_hrv numeric,
+  whoop_resting_hr numeric,
   notes text,
   readiness_score numeric not null,
   created_at timestamptz not null default now(),

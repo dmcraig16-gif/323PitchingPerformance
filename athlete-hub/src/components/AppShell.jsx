@@ -21,7 +21,7 @@ const athleteGroups = [
     label: 'Today',
     links: [
       { to: '/dashboard', label: 'Dashboard', icon: Home },
-      { to: '/check-in', label: 'Daily Check-In', icon: ClipboardCheck },
+      { to: '/check-in', label: 'Readiness', icon: ClipboardCheck },
     ],
   },
   {

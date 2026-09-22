@@ -60,7 +60,7 @@ export function remove(table, id) {
 // Bump this when the seed shape changes (new tables/fields) so a browser
 // that already seeded an older demo dataset regenerates instead of running
 // against stale data the new UI doesn't know how to read.
-const SEED_VERSION = '4'
+const SEED_VERSION = '5'
 const SEED_FLAG = `${PREFIX}seeded`
 
 export function ensureSeedData() {
@@ -264,6 +264,10 @@ export function ensureSeedData() {
     const d = new Date(today)
     d.setDate(d.getDate() - i)
     const date = d.toISOString().slice(0, 10)
+    const readinessScore = 60 + Math.round(Math.random() * 35)
+    // Roughly half the days have WHOOP data logged, to show both states.
+    const hasWhoop = i % 2 === 0
+    const whoopRecovery = hasWhoop ? Math.max(0, Math.min(100, readinessScore + Math.round(Math.random() * 10 - 5))) : null
     insert('daily_checkins', {
       athlete_id: jake.id,
       date,
@@ -277,7 +281,12 @@ export function ensureSeedData() {
       energy: 3 + Math.round(Math.random() * 2),
       nutrition: 3 + Math.round(Math.random() * 2),
       hydration: 3 + Math.round(Math.random() * 2),
-      readiness_score: 60 + Math.round(Math.random() * 35),
+      whoop_recovery: whoopRecovery,
+      whoop_strain: hasWhoop ? Math.round((8 + Math.random() * 8) * 10) / 10 : null,
+      whoop_sleep_performance: hasWhoop ? 70 + Math.round(Math.random() * 25) : null,
+      whoop_hrv: hasWhoop ? 45 + Math.round(Math.random() * 30) : null,
+      whoop_resting_hr: hasWhoop ? 44 + Math.round(Math.random() * 12) : null,
+      readiness_score: readinessScore,
     })
   }
 

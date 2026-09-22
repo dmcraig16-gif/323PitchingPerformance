@@ -1,12 +1,13 @@
 # 3:23
 
-Coach/athlete performance hub for pitchers: daily mental + physical
-check-ins (slider-based) with a readiness calculator, lifting/throwing
-programming built Trainerize-style from a reusable exercise library,
-weight/velocity trend tracking on every logged result, a session-based
-command tracker, and a journal — all organized as individual categories
-within each athlete's profile, and tunable to a facility's own programming
-in one config file.
+Coach/athlete performance hub for pitchers, built around a WHOOP/4APP-style
+**Readiness** tracker as the centerpiece: slider-based daily check-ins,
+optional WHOOP metrics blended into the score, a circular gauge, and
+band-colored trend bars. Around that: lifting/throwing programming built
+Trainerize-style from a reusable exercise library, weight/velocity trend
+tracking on every logged result, a session-based command tracker, and a
+journal — all organized as individual categories within each athlete's
+profile, and tunable to a facility's own programming in one config file.
 
 See `../ATHLETE_HUB_PLAN.md` for the full architecture and data model.
 
@@ -29,22 +30,32 @@ See `../ATHLETE_HUB_PLAN.md` for the full architecture and data model.
 `src/lib/facilityConfig.js` is the one file to edit to retune the app —
 facility name, logo (`LOGO_CIRCLE`/`LOGO_SQUARE`, pointing at `public/`),
 what a "program"/exercise category can be, the pitch-type list Command
-Tracker offers, the daily check-in's sliders, and the readiness score's
+Tracker offers, the daily check-in's sliders and optional WHOOP fields
+(`WHOOP_FIELDS`, `WHOOP_RECOVERY_WEIGHT`), and the readiness score's
 weights. Every page reads from this file instead of hardcoding those
 values. To swap the logo: drop new art in `public/`, point those two
 constants at it, and update the `<link rel="icon">`/`apple-touch-icon`
-tags in `index.html` to match.
+tags in `index.html` to match. To stop WHOOP data from ever touching the
+score (track-only), set `WHOOP_RECOVERY_WEIGHT` to `0`.
 
 ## What's built
 
-- **Daily check-in + readiness calculator** (`/check-in`) — body weight,
-  sleep, strain (yesterday's training load), arm soreness, lower-body
-  soreness, energy, mood, nutrition, and hydration, all graded on sliders.
-  They roll up into a 0-100 readiness score — how ready the athlete is for
-  a high-intensity day — with a Full Intensity / Modify Intensity /
-  Recovery Day band (`src/lib/readiness.js`, weights in
-  `facilityConfig.js`). Weight is tracked alongside it but isn't part of
-  the score.
+- **Readiness** (`/check-in`) — the hub's centerpiece. Body weight, sleep,
+  strain (yesterday's training load), arm soreness, lower-body soreness,
+  energy, mood, nutrition, and hydration, all graded on sliders, roll up
+  into a 0-100 score shown on a WHOOP-style circular gauge with a Full
+  Intensity / Modify Intensity / Recovery Day band
+  (`src/components/ReadinessGauge.jsx`, `src/lib/readiness.js`, weights in
+  `facilityConfig.js`). An optional WHOOP section (Recovery, Strain, Sleep
+  Performance, HRV, Resting HR) blends WHOOP's own Recovery % into the
+  score at a configurable weight (`WHOOP_RECOVERY_WEIGHT`) when an athlete
+  logs it — the rest of the WHOOP fields are tracked for trends only. A
+  band-colored bar chart (green/amber/red per day, like WHOOP's weekly
+  view) shows the last 14 days, plus a rolling 7-day average. Body weight
+  is tracked alongside it but isn't part of the score. The same gauge and
+  colored trend bars appear on the athlete's Dashboard and the coach's
+  Readiness tab on each athlete's profile, so the visual language is
+  consistent everywhere the score shows up.
 - **Sign up / log in** (`/login`) — pick Athlete or Coach at signup; a
   coach lands on their roster, an athlete lands on today's check-in if
   they haven't done it yet, otherwise straight to their programming for
@@ -77,7 +88,7 @@ tags in `index.html` to match.
 - **Coach roster + athlete profiles** (`/coach/roster`,
   `/coach/athletes/:id`) — roster shows today's readiness and recent
   command metrics per athlete. Each profile is split into category tabs —
-  Overview, Check-Ins, Command Tracker, Programs.
+  Overview, Readiness, Command Tracker, Programs.
 
 ## Design
 

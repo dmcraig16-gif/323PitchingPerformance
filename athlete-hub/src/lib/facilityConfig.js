@@ -70,6 +70,25 @@ export const CHECKIN_SLIDERS = [
 
 export const HOURS_FOR_FULL_SLEEP_SCORE = 8
 
+// Optional WHOOP metrics an athlete can log alongside the sliders. `key`
+// matches the check-in form's state; the db column is the same key
+// snake_cased (see CheckIn.jsx). Purely optional — an athlete with no
+// WHOOP just never opens this section.
+export const WHOOP_FIELDS = [
+  { key: 'whoopRecovery', label: 'Recovery', unit: '%', min: 0, max: 100, step: 1, placeholder: '78' },
+  { key: 'whoopStrain', label: 'Strain', unit: '', min: 0, max: 21, step: 0.1, placeholder: '12.4' },
+  { key: 'whoopSleepPerformance', label: 'Sleep Performance', unit: '%', min: 0, max: 100, step: 1, placeholder: '91' },
+  { key: 'whoopHrv', label: 'HRV', unit: 'ms', min: 0, max: 300, step: 1, placeholder: '62' },
+  { key: 'whoopRestingHr', label: 'Resting HR', unit: 'bpm', min: 0, max: 220, step: 1, placeholder: '48' },
+]
+
+// WHOOP's Recovery % is the one WHOOP metric on the same 0-100 "how ready
+// am I" scale as our own score, so when an athlete logs it, it's blended
+// into the final readiness score at this weight (the slider-based score
+// keeps the rest). Set to 0 to track WHOOP data without it ever touching
+// the score.
+export const WHOOP_RECOVERY_WEIGHT = 0.35
+
 function clamp(value, min, max) {
   return Math.min(max, Math.max(min, value))
 }

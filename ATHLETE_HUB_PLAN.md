@@ -41,7 +41,8 @@ habit_logs           id, habit_assignment_id, date, completed, value, notes
 mental_game_content  id, coach_id, title, body, media_url, category, published_at
 daily_checkins       id, athlete_id, date, weight_lb, sleep_hours, sleep_quality, strain,
                      arm_soreness, lower_soreness, mood, energy, nutrition, hydration,
-                     notes, readiness_score
+                     whoop_recovery, whoop_strain, whoop_sleep_performance, whoop_hrv,
+                     whoop_resting_hr, notes, readiness_score
 command_sessions     id, athlete_id, logged_by (fk->profiles), date, label, notes
 command_pitches      id, session_id (fk->command_sessions), athlete_id, session_date,
                      pitch_type, velocity, intended_x, intended_y, actual_x, actual_y,
@@ -85,7 +86,13 @@ not just one program instance.
 (`src/lib/readiness.js`) from the weighted slider factors defined in
 `facilityConfig.js` (`CHECKIN_SLIDERS` → `READINESS_FACTORS`) — sleep
 (hours + quality), strain, arm soreness, lower-body soreness, energy,
-mood, nutrition, and hydration — then stored for fast history/trend
+mood, nutrition, and hydration. If the athlete also logs WHOOP data,
+`whoop_recovery` (0-100, the same scale WHOOP uses for its own readiness
+metric) blends into the final score at `WHOOP_RECOVERY_WEIGHT` — the
+other four WHOOP fields (strain, sleep performance, HRV, resting HR) are
+stored for trend display only and never touch the score. `computeReadiness`
+returns both the blended `score` and the pre-blend `sliderScore` so the UI
+can show its work. The result is stored for fast history/trend
 queries. Retuning the formula for a facility's own philosophy means
 editing that one array; weights must sum to 1.
 
@@ -110,10 +117,13 @@ read/write their own rows; coaches can read/write rows for athletes whose
 - **Dashboard** — today's readiness score, assigned programs, command
   tracker snapshot, today's journal prompt, today's devotional, habit
   checklist, streaks
-- **Daily Check-In** — body weight, sleep hours, and sliders for sleep
-  quality, strain (yesterday's load), arm soreness, lower-body soreness,
-  energy, mood, nutrition, hydration; live readiness score + band
-  (Full Intensity / Modify Intensity / Recovery Day), 14-day trend
+- **Readiness** — the hub's centerpiece. Body weight, sleep hours, and
+  sliders for sleep quality, strain (yesterday's load), arm soreness,
+  lower-body soreness, energy, mood, nutrition, hydration; an optional
+  WHOOP section (Recovery, Strain, Sleep Performance, HRV, Resting HR —
+  Recovery blends into the score); live score on a circular gauge with
+  band (Full Intensity / Modify Intensity / Recovery Day), 7-day average,
+  and a 14-day band-colored trend chart
 - **My Program** — list of lifting/throwing workouts → exercise detail
   (type badge, sets/reps/target, description, embedded YouTube demo) →
   log a result per exercise (weight+reps or velocity depending on type),
@@ -146,12 +156,13 @@ read/write their own rows; coaches can read/write rows for athletes whose
 - **Content library** — mental game talks, devotionals, journal prompts,
   habit templates (CRUD)
 - **Athlete detail** — each athlete's profile is split into category tabs
-  (Overview, Check-Ins, Command Tracker, Programs) rather than one long
+  (Overview, Readiness, Command Tracker, Programs) rather than one long
   scrolling page, so it's easy to add more categories (mobility screens,
   strength testing, etc.) later without cluttering existing ones. Command
   Tracker tab lets a coach start/log a bullpen session live from the
   profile, same UI an athlete uses on their own; Programs tab assigns
-  inline; Check-Ins tab shows readiness trend + recent check-in detail
+  inline; Readiness tab mirrors the athlete's own gauge/trend/WHOOP view
+  plus a recent-check-ins table
 
 ## 5. Tech stack
 
@@ -187,11 +198,17 @@ read/write their own rows; coaches can read/write rows for athletes whose
    trend deltas + sparklines; functional journal; Trainerize-style
    click-to-add/reorder/duplicate Workout Builder; smart post-login
    redirect; coach-only nav
-7. Devotionals (coach posts, athlete views)
-8. Habit templates + assignments + daily check-off + streaks
-9. Mental game content library
-10. Polish: notifications/reminders, coach-visible journal entries, CSV
-    import for velo/command data from Trackman/Rapsodo
+7. ✅ Readiness elevated to the hub's centerpiece: optional WHOOP section
+   (Recovery blends into the score, Strain/Sleep Performance/HRV/Resting
+   HR tracked for trends), circular gauge (`ReadinessGauge.jsx`), 7-day
+   average, band-colored 14/21-day trend bars — consistent across
+   Dashboard, the Readiness page, and the coach's Readiness tab
+8. Devotionals (coach posts, athlete views)
+9. Habit templates + assignments + daily check-off + streaks
+10. Mental game content library
+11. Polish: notifications/reminders, coach-visible journal entries, CSV
+    import for velo/command data from Trackman/Rapsodo, real WHOOP OAuth
+    sync (today's WHOOP fields are manual entry only)
 
 ## 7. Facility customization
 
@@ -201,13 +218,14 @@ profile — but built so the specific categories and their math are a config
 edit for this facility rather than baked into the UI:
 
 - `src/lib/facilityConfig.js` centralizes facility name (`FACILITY_NAME`,
-  currently "3:23"), program/exercise categories (`PROGRAM_TYPES`,
-  `EXERCISE_TYPES`), Command Tracker's pitch-type list (`PITCH_TYPES`),
-  the daily check-in's sliders (`CHECKIN_SLIDERS`), and the readiness
-  score's weighted factors (`READINESS_FACTORS`, derived from
-  `CHECKIN_SLIDERS`'s weights).
+  currently "3:23"), logo assets (`LOGO_CIRCLE`/`LOGO_SQUARE`),
+  program/exercise categories (`PROGRAM_TYPES`, `EXERCISE_TYPES`),
+  Command Tracker's pitch-type list (`PITCH_TYPES`), the daily check-in's
+  sliders (`CHECKIN_SLIDERS`) and optional WHOOP fields (`WHOOP_FIELDS`,
+  `WHOOP_RECOVERY_WEIGHT`), and the readiness score's weighted factors
+  (`READINESS_FACTORS`, derived from `CHECKIN_SLIDERS`'s weights).
 - Every check-in and calculator lives as its own category on the athlete
-  profile (coach view: Overview / Check-Ins / Command Tracker / Programs
+  profile (coach view: Overview / Readiness / Command Tracker / Programs
   tabs) so a new one (e.g. a mobility screen, a strength-testing
   calculator) can be added as an additional tab + table without touching
   existing categories.
@@ -226,3 +244,7 @@ edit for this facility rather than baked into the UI:
 - Mobile: responsive web first, native app later if needed
 - Reordering exercises is up/down buttons, not drag-and-drop; fine at
   typical workout lengths but worth revisiting if workouts get long
+- WHOOP is manual entry only (no OAuth sync) — the app has no backend
+  server to hold WHOOP API credentials/tokens, so real auto-sync would
+  need a small serverless function (e.g. a Supabase Edge Function) to
+  handle the OAuth flow and webhook

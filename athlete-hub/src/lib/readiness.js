@@ -5,15 +5,19 @@
 // this file just applies whatever's configured there to a check-in's raw
 // slider input and produces a 0-100 score + band.
 //
-// input shape (from the Daily Check-In form's sliders, each 1-5):
+// input shape (from the Readiness page's sliders, each 1-5):
 //   sleepHours     numeric, hours slept
 //   sleepQuality, strain, armSoreness, lowerSoreness, energy, mood,
 //   nutrition, hydration
 
-import { READINESS_FACTORS } from './facilityConfig'
+import { READINESS_FACTORS, WHOOP_RECOVERY_WEIGHT } from './facilityConfig'
 
 function clamp(value, min, max) {
   return Math.min(max, Math.max(min, value))
+}
+
+function hasValue(v) {
+  return v !== '' && v !== null && v !== undefined
 }
 
 export function computeReadiness(input) {
@@ -30,10 +34,21 @@ export function computeReadiness(input) {
   }
 
   // weightedSum is a 1-5 scale (weights sum to 1). Map 1 -> 0, 5 -> 100.
-  const score = Math.round(clamp(((weightedSum - 1) / 4) * 100, 0, 100))
+  const sliderScore = Math.round(clamp(((weightedSum - 1) / 4) * 100, 0, 100))
+
+  // WHOOP's Recovery % is already 0-100 on the same "how ready" scale, so
+  // when it's logged it blends into the final score at WHOOP_RECOVERY_WEIGHT
+  // — the sliders still carry the rest, this never fully replaces them.
+  const whoopBlended = hasValue(input.whoopRecovery)
+  const whoopRecovery = whoopBlended ? clamp(Number(input.whoopRecovery), 0, 100) : null
+  const score = whoopBlended
+    ? Math.round(sliderScore * (1 - WHOOP_RECOVERY_WEIGHT) + whoopRecovery * WHOOP_RECOVERY_WEIGHT)
+    : sliderScore
 
   return {
     score,
+    sliderScore,
+    whoopBlended,
     band: bandFor(score),
     factors,
   }

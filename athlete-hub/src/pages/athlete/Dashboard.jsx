@@ -2,8 +2,9 @@ import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useAuth } from '../../lib/useAuth.js'
 import * as db from '../../lib/db.js'
-import { BAND_STYLES, bandFor } from '../../lib/readiness.js'
+import { bandFor } from '../../lib/readiness.js'
 import { summarizeByPitchType, round1 } from '../../lib/commandMetrics.js'
+import ReadinessGauge from '../../components/ReadinessGauge.jsx'
 
 function Card({ title, children, action }) {
   return (
@@ -35,7 +36,6 @@ export default function Dashboard() {
 
   const commandSummary = useMemo(() => summarizeByPitchType(pitches.slice(-20)), [pitches])
   const band = checkin ? bandFor(checkin.readiness_score) : null
-  const styles = band ? BAND_STYLES[band.tone] : null
 
   return (
     <div>
@@ -51,12 +51,8 @@ export default function Dashboard() {
         >
           {checkin ? (
             <div className="flex items-center gap-3">
-              <span className="text-3xl font-bold">{checkin.readiness_score}</span>
-              <span
-                className={`text-xs font-semibold px-2 py-1 rounded-full ${styles.bg} ${styles.text}`}
-              >
-                {band.label}
-              </span>
+              <ReadinessGauge score={checkin.readiness_score} tone={band.tone} size={64} strokeWidth={7} />
+              <p className="text-sm font-semibold">{band.label}</p>
             </div>
           ) : (
             <p className="text-sm text-neutral-500">You haven't checked in today yet.</p>

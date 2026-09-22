@@ -1,12 +1,15 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
-import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
+import { LineChart, Line, BarChart, Bar, Cell, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
 import { useAuth } from '../../lib/useAuth.js'
 import * as db from '../../lib/db.js'
-import { BAND_STYLES, bandFor } from '../../lib/readiness.js'
+import { bandFor } from '../../lib/readiness.js'
 import { summarizeByPitchType, trendBySession, round1 } from '../../lib/commandMetrics.js'
 import { programTypeMeta } from '../../lib/facilityConfig.js'
 import CommandSessionList from '../../components/CommandSessionList.jsx'
+import ReadinessGauge from '../../components/ReadinessGauge.jsx'
+
+const TONE_HEX = { green: '#34c759', yellow: '#ff9f0a', red: '#ff3b30' }
 
 function Card({ title, children, action }) {
   return (
@@ -25,25 +28,23 @@ function Card({ title, children, action }) {
 // assigned programming) rather than one long scrolling page.
 const TABS = [
   { key: 'overview', label: 'Overview' },
-  { key: 'checkins', label: 'Check-Ins' },
+  { key: 'checkins', label: 'Readiness' },
   { key: 'command', label: 'Command Tracker' },
   { key: 'programs', label: 'Programs' },
 ]
 
-function OverviewTab({ latestCheckin, band, styles, commandSummary, assignedPrograms, onGoTo }) {
+function OverviewTab({ latestCheckin, band, commandSummary, assignedPrograms, onGoTo }) {
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
       <Card title="Latest readiness" action={<button onClick={() => onGoTo('checkins')} className="text-xs text-accent hover:text-accent-700 font-medium">Details →</button>}>
         {latestCheckin ? (
-          <>
-            <div className="flex items-center gap-3 mb-1">
-              <span className="text-3xl font-bold">{latestCheckin.readiness_score}</span>
-              <span className={`text-xs font-semibold px-2 py-1 rounded-full ${styles.bg} ${styles.text}`}>
-                {band.label}
-              </span>
+          <div className="flex items-center gap-3">
+            <ReadinessGauge score={latestCheckin.readiness_score} tone={band.tone} size={64} strokeWidth={7} />
+            <div>
+              <p className="text-sm font-semibold">{band.label}</p>
+              <p className="text-xs text-neutral-400">as of {latestCheckin.date}</p>
             </div>
-            <p className="text-xs text-neutral-400">as of {latestCheckin.date}</p>
-          </>
+          </div>
         ) : (
           <p className="text-sm text-neutral-500">No check-ins yet.</p>
         )}
@@ -82,60 +83,103 @@ function OverviewTab({ latestCheckin, band, styles, commandSummary, assignedProg
 
 function CheckinsTab({ checkins }) {
   const readinessTrend = useMemo(
-    () => checkins.slice(-21).map((c) => ({ date: c.date.slice(5), score: c.readiness_score })),
+    () =>
+      checkins.slice(-21).map((c) => ({
+        date: c.date.slice(5),
+        score: c.readiness_score,
+        tone: bandFor(c.readiness_score).tone,
+      })),
     [checkins],
   )
 
+  const latest = checkins[checkins.length - 1] ?? null
+  const latestBand = latest ? bandFor(latest.readiness_score) : null
+  const sevenDayAvg = useMemo(() => {
+    const last7 = checkins.slice(-7)
+    if (last7.length === 0) return null
+    return Math.round(last7.reduce((sum, c) => sum + c.readiness_score, 0) / last7.length)
+  }, [checkins])
+
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-      <Card title="Readiness — last 21 days">
-        {readinessTrend.length < 2 ? (
-          <p className="text-sm text-neutral-500">Not enough data yet.</p>
-        ) : (
-          <ResponsiveContainer width="100%" height={240}>
-            <LineChart data={readinessTrend}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-              <XAxis dataKey="date" tick={{ fontSize: 10 }} />
-              <YAxis domain={[0, 100]} tick={{ fontSize: 10 }} />
-              <Tooltip />
-              <Line type="monotone" dataKey="score" stroke="#0071e3" strokeWidth={2} dot={false} />
-            </LineChart>
-          </ResponsiveContainer>
-        )}
-      </Card>
+    <div className="space-y-5">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+        <Card title="Today">
+          {latest ? (
+            <div className="flex items-center gap-4">
+              <ReadinessGauge score={latest.readiness_score} tone={latestBand.tone} size={88} strokeWidth={9} />
+              <div>
+                <p className="text-sm font-semibold">{latestBand.label}</p>
+                <p className="text-xs text-neutral-400">as of {latest.date}</p>
+                {sevenDayAvg != null && (
+                  <p className="text-xs text-neutral-400 mt-1">7-day avg: {sevenDayAvg}</p>
+                )}
+                {latest.whoop_recovery != null && (
+                  <p className="text-xs text-neutral-400">WHOOP Recovery: {latest.whoop_recovery}%</p>
+                )}
+              </div>
+            </div>
+          ) : (
+            <p className="text-sm text-neutral-500">No check-ins yet.</p>
+          )}
+        </Card>
+
+        <Card title="Readiness — last 21 days" action={null}>
+          {readinessTrend.length < 2 ? (
+            <p className="text-sm text-neutral-500">Not enough data yet.</p>
+          ) : (
+            <ResponsiveContainer width="100%" height={140}>
+              <BarChart data={readinessTrend}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" vertical={false} />
+                <XAxis dataKey="date" tick={{ fontSize: 9 }} interval={2} />
+                <YAxis domain={[0, 100]} tick={{ fontSize: 10 }} width={28} />
+                <Tooltip />
+                <Bar dataKey="score" radius={[3, 3, 0, 0]}>
+                  {readinessTrend.map((d, i) => (
+                    <Cell key={i} fill={TONE_HEX[d.tone]} />
+                  ))}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          )}
+        </Card>
+      </div>
 
       <Card title="Recent check-ins">
         {checkins.length === 0 ? (
           <p className="text-sm text-neutral-500">None yet.</p>
         ) : (
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="text-left text-xs text-neutral-400">
-                <th className="pb-1">Date</th>
-                <th className="pb-1">Score</th>
-                <th className="pb-1">Weight</th>
-                <th className="pb-1">Sleep</th>
-                <th className="pb-1">Strain</th>
-                <th className="pb-1">Arm</th>
-                <th className="pb-1">Lower</th>
-                <th className="pb-1">Notes</th>
-              </tr>
-            </thead>
-            <tbody>
-              {[...checkins].reverse().slice(0, 10).map((c) => (
-                <tr key={c.id} className="border-t border-neutral-100">
-                  <td className="py-1">{c.date}</td>
-                  <td className="py-1">{c.readiness_score}</td>
-                  <td className="py-1">{c.weight_lb ? `${round1(c.weight_lb)} lb` : '—'}</td>
-                  <td className="py-1">{round1(c.sleep_hours)}h</td>
-                  <td className="py-1">{c.strain}/5</td>
-                  <td className="py-1">{c.arm_soreness}/5</td>
-                  <td className="py-1">{c.lower_soreness}/5</td>
-                  <td className="py-1 text-neutral-500">{c.notes || '—'}</td>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="text-left text-xs text-neutral-400">
+                  <th className="pb-1 pr-3">Date</th>
+                  <th className="pb-1 pr-3">Score</th>
+                  <th className="pb-1 pr-3">WHOOP</th>
+                  <th className="pb-1 pr-3">Weight</th>
+                  <th className="pb-1 pr-3">Sleep</th>
+                  <th className="pb-1 pr-3">Strain</th>
+                  <th className="pb-1 pr-3">Arm</th>
+                  <th className="pb-1 pr-3">Lower</th>
+                  <th className="pb-1">Notes</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {[...checkins].reverse().slice(0, 10).map((c) => (
+                  <tr key={c.id} className="border-t border-neutral-100">
+                    <td className="py-1 pr-3 whitespace-nowrap">{c.date}</td>
+                    <td className="py-1 pr-3">{c.readiness_score}</td>
+                    <td className="py-1 pr-3">{c.whoop_recovery != null ? `${c.whoop_recovery}%` : '—'}</td>
+                    <td className="py-1 pr-3 whitespace-nowrap">{c.weight_lb ? `${round1(c.weight_lb)} lb` : '—'}</td>
+                    <td className="py-1 pr-3">{round1(c.sleep_hours)}h</td>
+                    <td className="py-1 pr-3">{c.strain}/5</td>
+                    <td className="py-1 pr-3">{c.arm_soreness}/5</td>
+                    <td className="py-1 pr-3">{c.lower_soreness}/5</td>
+                    <td className="py-1 text-neutral-500">{c.notes || '—'}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         )}
       </Card>
     </div>
@@ -277,7 +321,6 @@ export default function AthleteDetail() {
 
   const latestCheckin = checkins[checkins.length - 1] ?? null
   const band = latestCheckin ? bandFor(latestCheckin.readiness_score) : null
-  const styles = band ? BAND_STYLES[band.tone] : null
   const commandSummary = useMemo(() => summarizeByPitchType(pitches), [pitches])
 
   if (!athlete) return <p className="text-sm text-neutral-400">Loading…</p>
@@ -310,7 +353,6 @@ export default function AthleteDetail() {
         <OverviewTab
           latestCheckin={latestCheckin}
           band={band}
-          styles={styles}
           commandSummary={commandSummary}
           assignedPrograms={assignedPrograms}
           onGoTo={setTab}
