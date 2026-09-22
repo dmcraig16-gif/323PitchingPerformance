@@ -15,6 +15,17 @@ const X_MAX = 2.5
 const Y_MIN = 0.5
 const Y_MAX = 5.0
 
+// A regulation baseball is ~2.9" in diameter. Marker sizes are scaled off
+// the plot's horizontal feet-per-pixel ratio (width is what these margins
+// are measured in) so they read true-to-scale rather than as arbitrary
+// dots: the intended target is a 2.5-ball-wide margin of error, the
+// actual result is drawn at one ball's actual width.
+const BASEBALL_DIAMETER_IN = 2.9
+const PX_PER_FT = PLOT_W / (X_MAX - X_MIN)
+const BASEBALL_RADIUS_PX = ((BASEBALL_DIAMETER_IN / 12) * PX_PER_FT) / 2
+const INTENDED_RADIUS_PX = BASEBALL_RADIUS_PX * 2.5
+const ACTUAL_RADIUS_PX = BASEBALL_RADIUS_PX
+
 function toSvgX(x) {
   return PAD + ((x - X_MIN) / (X_MAX - X_MIN)) * PLOT_W
 }
@@ -149,24 +160,25 @@ export default function StrikeZoneTargetPicker({ intended, actual, phase, onPick
             <circle
               cx={toSvgX(intended.x)}
               cy={toSvgY(intended.y)}
-              r={9}
-              fill="none"
+              r={INTENDED_RADIUS_PX}
+              fill="#34c759"
+              fillOpacity={0.12}
               stroke="#34c759"
               strokeWidth={2}
             />
             <line
-              x1={toSvgX(intended.x) - 4}
+              x1={toSvgX(intended.x) - INTENDED_RADIUS_PX * 0.5}
               y1={toSvgY(intended.y)}
-              x2={toSvgX(intended.x) + 4}
+              x2={toSvgX(intended.x) + INTENDED_RADIUS_PX * 0.5}
               y2={toSvgY(intended.y)}
               stroke="#34c759"
               strokeWidth={2}
             />
             <line
               x1={toSvgX(intended.x)}
-              y1={toSvgY(intended.y) - 4}
+              y1={toSvgY(intended.y) - INTENDED_RADIUS_PX * 0.5}
               x2={toSvgX(intended.x)}
-              y2={toSvgY(intended.y) + 4}
+              y2={toSvgY(intended.y) + INTENDED_RADIUS_PX * 0.5}
               stroke="#34c759"
               strokeWidth={2}
             />
@@ -177,7 +189,7 @@ export default function StrikeZoneTargetPicker({ intended, actual, phase, onPick
           <circle
             cx={toSvgX(actual.x)}
             cy={toSvgY(actual.y)}
-            r={6}
+            r={ACTUAL_RADIUS_PX}
             fill="#ff3b30"
             fillOpacity={0.85}
             stroke="#b0271f"
