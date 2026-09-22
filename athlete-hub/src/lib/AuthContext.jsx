@@ -1,12 +1,16 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { supabase, isSupabaseConfigured } from './supabaseClient'
 import { AuthContext } from './authContextObject.js'
+import * as db from './db.js'
+import { ensureSeedData, getCurrentDemoProfileId, setCurrentDemoProfileId } from './localStore.js'
 
 export function AuthProvider({ children }) {
   const [session, setSession] = useState(null)
   const [profile, setProfile] = useState(null)
   const [loading, setLoading] = useState(isSupabaseConfigured)
+  const [demoProfiles, setDemoProfiles] = useState([])
 
+  // --- Supabase mode ---
   useEffect(() => {
     if (!isSupabaseConfigured) return
 
@@ -25,28 +29,48 @@ export function AuthProvider({ children }) {
 
   useEffect(() => {
     if (!isSupabaseConfigured || !session?.user) return
-
     let cancelled = false
-    supabase
-      .from('profiles')
-      .select('*')
-      .eq('user_id', session.user.id)
-      .single()
-      .then(({ data }) => {
-        if (!cancelled) setProfile(data)
-      })
+    db.getProfileByUserId(session.user.id).then((p) => {
+      if (!cancelled) setProfile(p)
+    })
     return () => {
       cancelled = true
     }
   }, [session])
 
+  // --- Demo/preview mode (no Supabase project configured) ---
+  const loadDemoProfile = useCallback(() => {
+    ensureSeedData()
+    setDemoProfiles(db.listDemoProfiles())
+    const id = getCurrentDemoProfileId()
+    db.getProfileById(id).then(setProfile)
+  }, [])
+
+  useEffect(() => {
+    if (isSupabaseConfigured) return
+    // Defer to a microtask so the initial demo-profile load doesn't set
+    // state synchronously within the effect body.
+    Promise.resolve().then(loadDemoProfile)
+  }, [loadDemoProfile])
+
+  const switchDemoProfile = useCallback(
+    (profileId) => {
+      setCurrentDemoProfileId(profileId)
+      loadDemoProfile()
+    },
+    [loadDemoProfile],
+  )
+
   const value = {
     session,
-    user: session?.user ?? null,
+    user: isSupabaseConfigured ? (session?.user ?? null) : { id: 'demo' },
     profile,
     role: profile?.role ?? null,
     loading,
-    signOut: () => supabase.auth.signOut(),
+    signOut: () => (isSupabaseConfigured ? supabase.auth.signOut() : null),
+    isDemoMode: !isSupabaseConfigured,
+    demoProfiles,
+    switchDemoProfile,
   }
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

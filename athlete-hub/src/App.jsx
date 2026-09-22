@@ -5,12 +5,15 @@ import Login from './pages/Login.jsx'
 import Onboarding from './pages/Onboarding.jsx'
 import AppShell from './components/AppShell.jsx'
 import AthleteDashboard from './pages/athlete/Dashboard.jsx'
+import CheckIn from './pages/athlete/CheckIn.jsx'
 import MyProgram from './pages/athlete/MyProgram.jsx'
+import CommandTraining from './pages/athlete/CommandTraining.jsx'
 import Journal from './pages/athlete/Journal.jsx'
 import Devotionals from './pages/athlete/Devotionals.jsx'
 import Habits from './pages/athlete/Habits.jsx'
 import MentalGame from './pages/athlete/MentalGame.jsx'
 import CoachRoster from './pages/coach/Roster.jsx'
+import AthleteDetail from './pages/coach/AthleteDetail.jsx'
 import ProgramBuilder from './pages/coach/ProgramBuilder.jsx'
 import ContentLibrary from './pages/coach/ContentLibrary.jsx'
 
@@ -37,12 +40,15 @@ export default function App() {
       >
         <Route index element={<Navigate to="/dashboard" replace />} />
         <Route path="dashboard" element={<AthleteDashboard />} />
+        <Route path="check-in" element={<CheckIn />} />
         <Route path="program" element={<MyProgram />} />
+        <Route path="command" element={<CommandTraining />} />
         <Route path="journal" element={<Journal />} />
         <Route path="devotionals" element={<Devotionals />} />
         <Route path="habits" element={<Habits />} />
         <Route path="mental-game" element={<MentalGame />} />
         <Route path="coach/roster" element={<CoachRoster />} />
+        <Route path="coach/athletes/:id" element={<AthleteDetail />} />
         <Route path="coach/programs" element={<ProgramBuilder />} />
         <Route path="coach/content" element={<ContentLibrary />} />
       </Route>

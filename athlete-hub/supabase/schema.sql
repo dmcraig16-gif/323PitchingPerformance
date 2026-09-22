@@ -24,6 +24,7 @@ create table programs (
   coach_id uuid not null references profiles(id) on delete cascade,
   name text not null,
   description text,
+  type text not null default 'lifting' check (type in ('lifting', 'throwing')),
   created_at timestamptz not null default now()
 );
 
@@ -126,6 +127,45 @@ create table habit_logs (
   notes text
 );
 
+-- Daily mental + physical check-in. readiness_score is computed client-side
+-- (see src/lib/readiness.js) and stored so history/trends don't need to
+-- recompute from raw inputs, but the raw inputs are kept for auditing.
+create table daily_checkins (
+  id uuid primary key default gen_random_uuid(),
+  athlete_id uuid not null references profiles(id) on delete cascade,
+  date date not null default current_date,
+  sleep_hours numeric not null,
+  sleep_quality int not null check (sleep_quality between 1 and 5),
+  soreness int not null check (soreness between 1 and 5),
+  mood int not null check (mood between 1 and 5),
+  energy int not null check (energy between 1 and 5),
+  nutrition int not null check (nutrition between 1 and 5),
+  prev_day_workload int not null check (prev_day_workload between 1 and 5),
+  notes text,
+  readiness_score numeric not null,
+  created_at timestamptz not null default now(),
+  unique (athlete_id, date)
+);
+
+-- Command training: one row per thrown pitch, comparing intended target to
+-- actual result. Coordinates are feet from the center of the plate
+-- (x = horizontal, y = height), matching Trackman-style plate location so
+-- the visualizer components can be reused. miss_distance_in is inches.
+create table command_pitches (
+  id uuid primary key default gen_random_uuid(),
+  athlete_id uuid not null references profiles(id) on delete cascade,
+  session_date date not null default current_date,
+  pitch_type text not null,
+  velocity numeric,
+  intended_x numeric not null,
+  intended_y numeric not null,
+  actual_x numeric not null,
+  actual_y numeric not null,
+  miss_distance_in numeric not null,
+  notes text,
+  created_at timestamptz not null default now()
+);
+
 create table mental_game_content (
   id uuid primary key default gen_random_uuid(),
   coach_id uuid not null references profiles(id) on delete cascade,
@@ -153,6 +193,8 @@ alter table habit_templates enable row level security;
 alter table habit_assignments enable row level security;
 alter table habit_logs enable row level security;
 alter table mental_game_content enable row level security;
+alter table daily_checkins enable row level security;
+alter table command_pitches enable row level security;
 
 -- Helper: is the current user a coach, and what's their profile id?
 create or replace function current_profile_id() returns uuid as $$
@@ -283,4 +325,20 @@ create policy "mental_game_coach_owns" on mental_game_content for all using (
 );
 create policy "mental_game_athlete_view" on mental_game_content for select using (
   coach_id = (select coach_id from profiles where id = current_profile_id())
+);
+
+-- daily_checkins: athlete owns; coach can view check-ins of their athletes
+create policy "checkins_athlete_own" on daily_checkins for all using (
+  athlete_id = current_profile_id()
+);
+create policy "checkins_coach_view" on daily_checkins for select using (
+  athlete_id in (select id from profiles where coach_id = current_profile_id())
+);
+
+-- command_pitches: athlete owns; coach can view pitches logged by their athletes
+create policy "command_pitches_athlete_own" on command_pitches for all using (
+  athlete_id = current_profile_id()
+);
+create policy "command_pitches_coach_view" on command_pitches for select using (
+  athlete_id in (select id from profiles where coach_id = current_profile_id())
 );

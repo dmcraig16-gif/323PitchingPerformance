@@ -3,7 +3,9 @@ import { useAuth } from '../lib/useAuth.js'
 
 const athleteLinks = [
   { to: '/dashboard', label: 'Dashboard' },
+  { to: '/check-in', label: 'Daily Check-In' },
   { to: '/program', label: 'My Program' },
+  { to: '/command', label: 'Command Training' },
   { to: '/journal', label: 'Journal' },
   { to: '/devotionals', label: 'Devotionals' },
   { to: '/habits', label: 'Habits' },
@@ -17,18 +19,33 @@ const coachLinks = [
 ]
 
 export default function AppShell() {
-  const { profile, role, signOut } = useAuth()
+  const { profile, role, signOut, isDemoMode, demoProfiles, switchDemoProfile } = useAuth()
   const links = role === 'coach' ? [...athleteLinks, ...coachLinks] : athleteLinks
 
   return (
     <div className="min-h-screen bg-slate-50">
       <header className="bg-slate-900 text-white px-6 py-4 flex items-center justify-between">
-        <span className="font-semibold text-lg">Athlete Hub</span>
+        <span className="font-semibold text-lg">323 Performance Hub</span>
         <div className="flex items-center gap-4 text-sm">
+          {isDemoMode && (
+            <select
+              value={profile?.id ?? ''}
+              onChange={(e) => switchDemoProfile(e.target.value)}
+              className="bg-slate-800 text-white text-xs rounded-md px-2 py-1 border border-slate-700"
+            >
+              {demoProfiles.map((p) => (
+                <option key={p.id} value={p.id}>
+                  Preview as: {p.name} ({p.role})
+                </option>
+              ))}
+            </select>
+          )}
           <span>{profile?.name ?? 'Guest'}</span>
-          <button onClick={signOut} className="text-slate-300 hover:text-white">
-            Sign out
-          </button>
+          {!isDemoMode && (
+            <button onClick={signOut} className="text-slate-300 hover:text-white">
+              Sign out
+            </button>
+          )}
         </div>
       </header>
       <div className="flex">
