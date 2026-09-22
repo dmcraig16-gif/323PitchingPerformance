@@ -12,7 +12,7 @@ function ScaleInput({ label, hint, value, onChange }) {
     <div className="mb-4">
       <div className="flex items-baseline justify-between mb-1">
         <label className="text-sm font-medium">{label}</label>
-        <span className="text-xs text-slate-400">{hint}</span>
+        <span className="text-xs text-neutral-400">{hint}</span>
       </div>
       <div className="flex gap-2">
         {[1, 2, 3, 4, 5].map((n) => (
@@ -20,10 +20,10 @@ function ScaleInput({ label, hint, value, onChange }) {
             key={n}
             type="button"
             onClick={() => onChange(n)}
-            className={`flex-1 rounded-md py-2 text-sm font-medium border ${
+            className={`flex-1 rounded-xl py-2 text-sm font-medium border ${
               value === n
-                ? 'bg-slate-900 text-white border-slate-900'
-                : 'bg-white text-slate-600 border-slate-200 hover:border-slate-400'
+                ? 'bg-accent text-white hover:bg-accent-600 transition-colors border-accent'
+                : 'bg-white text-neutral-600 border-neutral-200 hover:border-neutral-400'
             }`}
           >
             {n}
@@ -37,6 +37,7 @@ function ScaleInput({ label, hint, value, onChange }) {
 export default function CheckIn() {
   const { profile } = useAuth()
   const [form, setForm] = useState({
+    weight: '',
     sleepHours: 8,
     sleepQuality: 3,
     soreness: 3,
@@ -57,6 +58,7 @@ export default function CheckIn() {
       const todayRow = rows.find((r) => r.date === today())
       if (todayRow) {
         setForm({
+          weight: todayRow.weight_lb ?? '',
           sleepHours: todayRow.sleep_hours,
           sleepQuality: todayRow.sleep_quality,
           soreness: todayRow.soreness,
@@ -83,6 +85,7 @@ export default function CheckIn() {
     const row = {
       athlete_id: athleteId,
       date: today(),
+      weight_lb: form.weight === '' ? null : Number(form.weight),
       sleep_hours: Number(form.sleepHours),
       sleep_quality: form.sleepQuality,
       soreness: form.soreness,
@@ -105,25 +108,39 @@ export default function CheckIn() {
 
   return (
     <div>
-      <h1 className="text-2xl font-semibold mb-1">Daily Check-In</h1>
-      <p className="text-sm text-slate-500 mb-6">
+      <h1 className="text-[28px] font-semibold tracking-tight text-neutral-900 mb-1">Daily Check-In</h1>
+      <p className="text-sm text-neutral-500 mb-6">
         Takes 30 seconds. Your readiness score factors in sleep, soreness, mood, energy, nutrition,
         and yesterday's training load.
       </p>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
-        <form onSubmit={handleSubmit} className="lg:col-span-2 bg-white rounded-lg shadow-sm p-5">
-          <div className="mb-5">
-            <label className="block text-sm font-medium mb-1">Hours of sleep</label>
-            <input
-              type="number"
-              step="0.25"
-              min="0"
-              max="14"
-              value={form.sleepHours}
-              onChange={(e) => setField('sleepHours', e.target.value)}
-              className="w-32 border rounded-md px-3 py-2 text-sm"
-            />
+        <form onSubmit={handleSubmit} className="lg:col-span-2 bg-white rounded-2xl shadow-card p-5">
+          <div className="flex gap-6 mb-5">
+            <div>
+              <label className="block text-sm font-medium mb-1">Hours of sleep</label>
+              <input
+                type="number"
+                step="0.25"
+                min="0"
+                max="14"
+                value={form.sleepHours}
+                onChange={(e) => setField('sleepHours', e.target.value)}
+                className="w-28 border border-neutral-200 rounded-xl px-3 py-2 text-sm"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-1">Body weight (lb)</label>
+              <input
+                type="number"
+                step="0.1"
+                min="0"
+                value={form.weight}
+                onChange={(e) => setField('weight', e.target.value)}
+                placeholder="optional"
+                className="w-28 border border-neutral-200 rounded-xl px-3 py-2 text-sm"
+              />
+            </div>
           </div>
 
           {CHECKIN_INPUT_FIELDS.map((f) => (
@@ -142,14 +159,14 @@ export default function CheckIn() {
               value={form.notes}
               onChange={(e) => setField('notes', e.target.value)}
               rows={2}
-              className="w-full border rounded-md px-3 py-2 text-sm"
+              className="w-full border rounded-xl px-3 py-2 text-sm"
               placeholder="Anything your coach should know today?"
             />
           </div>
 
           <button
             type="submit"
-            className="w-full bg-slate-900 text-white rounded-md py-2.5 text-sm font-medium"
+            className="w-full bg-accent text-white hover:bg-accent-600 transition-colors rounded-xl py-2.5 text-sm font-medium"
           >
             Save check-in
           </button>
@@ -157,8 +174,8 @@ export default function CheckIn() {
         </form>
 
         <div className="space-y-5">
-          <div className="bg-white rounded-lg shadow-sm p-5 text-center">
-            <p className="text-xs font-medium text-slate-400 uppercase tracking-wide mb-2">
+          <div className="bg-white rounded-2xl shadow-card p-5 text-center">
+            <p className="text-xs font-medium text-neutral-400 uppercase tracking-wide mb-2">
               Readiness score
             </p>
             <p className="text-5xl font-bold mb-2">{readiness.score}</p>
@@ -169,26 +186,26 @@ export default function CheckIn() {
             </span>
           </div>
 
-          <div className="bg-white rounded-lg shadow-sm p-5">
+          <div className="bg-white rounded-2xl shadow-card p-5">
             <p className="text-sm font-semibold mb-3">Breakdown</p>
             {Object.entries(readiness.factors).map(([key, value]) => (
               <div key={key} className="flex items-center justify-between mb-2">
-                <span className="text-xs text-slate-500">{FACTOR_LABELS[key]}</span>
+                <span className="text-xs text-neutral-500">{FACTOR_LABELS[key]}</span>
                 <div className="flex items-center gap-2 w-28">
-                  <div className="flex-1 bg-slate-100 rounded-full h-1.5">
+                  <div className="flex-1 bg-neutral-100 rounded-full h-1.5">
                     <div
-                      className="bg-slate-900 h-1.5 rounded-full"
+                      className="bg-neutral-900 h-1.5 rounded-full"
                       style={{ width: `${(value / 5) * 100}%` }}
                     />
                   </div>
-                  <span className="text-xs text-slate-500 w-6 text-right">{value.toFixed(1)}</span>
+                  <span className="text-xs text-neutral-500 w-6 text-right">{value.toFixed(1)}</span>
                 </div>
               </div>
             ))}
           </div>
 
           {chartData.length > 1 && (
-            <div className="bg-white rounded-lg shadow-sm p-5">
+            <div className="bg-white rounded-2xl shadow-card p-5">
               <p className="text-sm font-semibold mb-3">Last 14 days</p>
               <ResponsiveContainer width="100%" height={140}>
                 <LineChart data={chartData}>
@@ -196,7 +213,7 @@ export default function CheckIn() {
                   <XAxis dataKey="date" tick={{ fontSize: 10 }} />
                   <YAxis domain={[0, 100]} tick={{ fontSize: 10 }} />
                   <Tooltip />
-                  <Line type="monotone" dataKey="score" stroke="#3b82f6" strokeWidth={2} dot={false} />
+                  <Line type="monotone" dataKey="score" stroke="#0071e3" strokeWidth={2} dot={false} />
                 </LineChart>
               </ResponsiveContainer>
             </div>

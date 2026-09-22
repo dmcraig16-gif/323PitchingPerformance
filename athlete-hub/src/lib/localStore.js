@@ -60,7 +60,7 @@ export function remove(table, id) {
 // Bump this when the seed shape changes (new tables/fields) so a browser
 // that already seeded an older demo dataset regenerates instead of running
 // against stale data the new UI doesn't know how to read.
-const SEED_VERSION = '2'
+const SEED_VERSION = '3'
 const SEED_FLAG = `${PREFIX}seeded`
 
 export function ensureSeedData() {
@@ -71,6 +71,7 @@ export function ensureSeedData() {
     'programs',
     'program_assignments',
     'workouts',
+    'exercise_library',
     'exercises',
     'exercise_logs',
     'daily_checkins',
@@ -101,6 +102,43 @@ export function ensureSeedData() {
     coach_id: coach.id,
   })
 
+  const trapBarDeadlift = insert('exercise_library', {
+    coach_id: coach.id,
+    name: 'Trap Bar Deadlift',
+    type: 'strength',
+    description: 'Focus on floor speed. Reset each rep.',
+  })
+  const rfeSplitSquat = insert('exercise_library', {
+    coach_id: coach.id,
+    name: 'Rear Foot Elevated Split Squat',
+    type: 'strength',
+    description: 'Control the eccentric, drive through midfoot.',
+  })
+  const medBallRotational = insert('exercise_library', {
+    coach_id: coach.id,
+    name: 'Med Ball Rotational Throw',
+    type: 'power',
+    description: 'Full extension, let the hips lead.',
+  })
+  const bandPullApart = insert('exercise_library', {
+    coach_id: coach.id,
+    name: 'Band Pull-Apart',
+    type: 'arm-care',
+    description: '3x20, slow and controlled through the full range.',
+  })
+  const fastballCorners = insert('exercise_library', {
+    coach_id: coach.id,
+    name: '4-Seam to Glove Side Corners',
+    type: 'throwing',
+    description: '15 pitches, target both glove-side corners at 90% intent.',
+  })
+  insert('exercise_library', {
+    coach_id: coach.id,
+    name: 'Foam Roll T-Spine',
+    type: 'mobility',
+    description: '2 minutes each side before lifting.',
+  })
+
   const liftingProgram = insert('programs', {
     coach_id: coach.id,
     name: 'In-Season Strength — Phase 2',
@@ -127,19 +165,43 @@ export function ensureSeedData() {
   })
   insert('exercises', {
     workout_id: liftDay1.id,
-    name: 'Trap Bar Deadlift',
-    description: 'Focus on floor speed. Reset each rep.',
+    library_exercise_id: trapBarDeadlift.id,
+    name: trapBarDeadlift.name,
+    type: trapBarDeadlift.type,
+    description: trapBarDeadlift.description,
     sets: 4,
     reps: 3,
     order_index: 0,
   })
   insert('exercises', {
     workout_id: liftDay1.id,
-    name: 'Rear Foot Elevated Split Squat',
-    description: 'Control the eccentric, drive through midfoot.',
+    library_exercise_id: rfeSplitSquat.id,
+    name: rfeSplitSquat.name,
+    type: rfeSplitSquat.type,
+    description: rfeSplitSquat.description,
     sets: 3,
     reps: 8,
     order_index: 1,
+  })
+  insert('exercises', {
+    workout_id: liftDay1.id,
+    library_exercise_id: medBallRotational.id,
+    name: medBallRotational.name,
+    type: medBallRotational.type,
+    description: medBallRotational.description,
+    sets: 3,
+    reps: 5,
+    order_index: 2,
+  })
+  insert('exercises', {
+    workout_id: liftDay1.id,
+    library_exercise_id: bandPullApart.id,
+    name: bandPullApart.name,
+    type: bandPullApart.type,
+    description: bandPullApart.description,
+    sets: 3,
+    reps: 20,
+    order_index: 3,
   })
 
   const throwDay1 = insert('workouts', {
@@ -150,8 +212,10 @@ export function ensureSeedData() {
   })
   insert('exercises', {
     workout_id: throwDay1.id,
-    name: '4-Seam to Glove Side Corners',
-    description: '15 pitches, target both glove-side corners at 90% intent.',
+    library_exercise_id: fastballCorners.id,
+    name: fastballCorners.name,
+    type: fastballCorners.type,
+    description: fastballCorners.description,
     sets: 3,
     reps: 5,
     order_index: 0,
@@ -165,6 +229,7 @@ export function ensureSeedData() {
     insert('daily_checkins', {
       athlete_id: jake.id,
       date,
+      weight_lb: Math.round((189 + Math.random() * 2 - i * 0.1) * 10) / 10,
       sleep_hours: Math.round((6.5 + Math.random() * 2) * 4) / 4,
       sleep_quality: 3 + Math.round(Math.random() * 2),
       soreness: 2 + Math.round(Math.random() * 3),

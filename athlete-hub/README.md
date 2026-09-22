@@ -31,10 +31,18 @@ page reads from this file instead of hardcoding those values.
 
 ## What's built
 
-- **Daily check-in + readiness calculator** (`/check-in`) — sleep, soreness,
-  mood, energy, nutrition, and previous-day training load roll up into a
-  0-100 readiness score with a traffic-light band (`src/lib/readiness.js`,
-  weights defined in `facilityConfig.js`).
+- **Daily check-in + readiness calculator** (`/check-in`) — body weight,
+  sleep, soreness, mood, energy, nutrition, and previous-day training load.
+  The 1-5 factors roll up into a 0-100 readiness score with a traffic-light
+  band (`src/lib/readiness.js`, weights defined in `facilityConfig.js`);
+  weight is tracked alongside it but isn't part of the score.
+- **Exercise Builder** (`/coach/exercises`) — coaches build a reusable
+  library of exercises, each with a type (strength, power/plyo, throwing,
+  arm-care, mobility, conditioning, recovery — configurable in
+  `facilityConfig.js`), a coaching-cue description, and a demo video URL
+  (auto-embedded inline if it's a YouTube link). The Program Builder's
+  Workout Builder pulls from this library instead of retyping an exercise
+  every time — pick one, set sets/reps for this specific workout, done.
 - **Command Tracker** (`/command`) — start a bullpen session, then log each
   pitch one at a time: pitch type, velocity, click-to-place intended target
   vs. actual result on a strike-zone grid, auto-computed miss distance
@@ -55,6 +63,17 @@ page reads from this file instead of hardcoding those values.
   rather than one long scrolling page.
 - **Auth/roles** — Supabase-backed when configured; a localStorage-backed
   demo mode otherwise so the whole app is clickable without a backend.
+
+## Design
+
+Visual language is intentionally minimal and Apple-esque: a system font
+stack, one accent color (`accent` in `tailwind.config.js`, an Apple-blue)
+reserved for primary actions and links, near-black used only for
+navigation/structure (never as a "primary button" color), soft
+`shadow-card`/`rounded-2xl` white cards on a neutral `canvas` background,
+and a black frosted-glass top nav. Sidebar nav is grouped and icon-led
+(`lucide-react`) rather than one flat list. Extend the palette in
+`tailwind.config.js`, not with one-off hex values in components.
 
 ## Not yet wired
 

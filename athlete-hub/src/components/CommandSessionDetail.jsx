@@ -8,7 +8,7 @@ import { PITCH_TYPES } from '../lib/facilityConfig.js'
 
 function Card({ title, children }) {
   return (
-    <div className="bg-white rounded-lg shadow-sm p-5">
+    <div className="bg-white rounded-2xl shadow-card p-5">
       <h2 className="font-semibold mb-3">{title}</h2>
       {children}
     </div>
@@ -65,25 +65,25 @@ export default function CommandSessionDetail({ sessionId, athleteId, basePath, b
 
   const summary = useMemo(() => summarizeByPitchType(pitches ?? []), [pitches])
 
-  if (!session || pitches === null) return <p className="text-sm text-slate-400">Loading…</p>
+  if (!session || pitches === null) return <p className="text-sm text-neutral-400">Loading…</p>
 
   return (
     <div>
-      <Link to={basePath} className="text-xs text-blue-600 font-medium mb-2 inline-block">
+      <Link to={basePath} className="text-xs text-accent hover:text-accent-700 font-medium mb-2 inline-block">
         ← {backLabel ?? 'All sessions'}
       </Link>
-      <h1 className="text-2xl font-semibold mb-1">{session.label || 'Bullpen'}</h1>
-      <p className="text-sm text-slate-500 mb-6">{session.date}</p>
+      <h1 className="text-[28px] font-semibold tracking-tight text-neutral-900 mb-1">{session.label || 'Bullpen'}</h1>
+      <p className="text-sm text-neutral-500 mb-6">{session.date}</p>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 mb-5">
         <Card title="Log a pitch">
           <div className="flex gap-3 mb-4">
             <div className="flex-1">
-              <label className="block text-xs font-medium text-slate-500 mb-1">Pitch type</label>
+              <label className="block text-xs font-medium text-neutral-500 mb-1">Pitch type</label>
               <select
                 value={pitchType}
                 onChange={(e) => setPitchType(e.target.value)}
-                className="w-full border rounded-md px-2 py-1.5 text-sm"
+                className="w-full border rounded-xl px-2 py-1.5 text-sm"
               >
                 {PITCH_TYPES.map((t) => (
                   <option key={t} value={t}>
@@ -93,13 +93,13 @@ export default function CommandSessionDetail({ sessionId, athleteId, basePath, b
               </select>
             </div>
             <div className="w-28">
-              <label className="block text-xs font-medium text-slate-500 mb-1">Velo (mph)</label>
+              <label className="block text-xs font-medium text-neutral-500 mb-1">Velo (mph)</label>
               <input
                 type="number"
                 step="0.1"
                 value={velocity}
                 onChange={(e) => setVelocity(e.target.value)}
-                className="w-full border rounded-md px-2 py-1.5 text-sm"
+                className="w-full border rounded-xl px-2 py-1.5 text-sm"
                 placeholder="e.g. 91.4"
               />
             </div>
@@ -119,14 +119,14 @@ export default function CommandSessionDetail({ sessionId, athleteId, basePath, b
                 setActual(null)
               }}
               disabled={!intended}
-              className="flex-1 border rounded-md py-2 text-sm font-medium text-slate-600 disabled:opacity-40"
+              className="flex-1 border rounded-xl py-2 text-sm font-medium text-neutral-600 disabled:opacity-40"
             >
               Reset
             </button>
             <button
               onClick={logPitch}
               disabled={!intended || !actual || saving}
-              className="flex-1 bg-slate-900 text-white rounded-md py-2 text-sm font-medium disabled:opacity-40"
+              className="flex-1 bg-accent text-white hover:bg-accent-600 transition-colors rounded-xl py-2 text-sm font-medium disabled:opacity-40"
             >
               {saving ? 'Saving…' : 'Log pitch'}
             </button>
@@ -135,7 +135,7 @@ export default function CommandSessionDetail({ sessionId, athleteId, basePath, b
 
         <Card title="Pitch type breakdown (this pen)">
           {summary.byType.length === 0 ? (
-            <p className="text-sm text-slate-500">No pitches logged yet.</p>
+            <p className="text-sm text-neutral-500">No pitches logged yet.</p>
           ) : (
             <>
               <ResponsiveContainer width="100%" height={180}>
@@ -144,12 +144,12 @@ export default function CommandSessionDetail({ sessionId, athleteId, basePath, b
                   <XAxis dataKey="pitchType" tick={{ fontSize: 11 }} />
                   <YAxis tick={{ fontSize: 11 }} />
                   <Tooltip />
-                  <Bar dataKey="avgMissIn" fill="#3b82f6" radius={[4, 4, 0, 0]} />
+                  <Bar dataKey="avgMissIn" fill="#0071e3" radius={[4, 4, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
               <table className="w-full text-sm mt-3">
                 <thead>
-                  <tr className="text-left text-xs text-slate-400">
+                  <tr className="text-left text-xs text-neutral-400">
                     <th className="pb-1">Pitch</th>
                     <th className="pb-1">Count</th>
                     <th className="pb-1">Avg miss</th>
@@ -158,7 +158,7 @@ export default function CommandSessionDetail({ sessionId, athleteId, basePath, b
                 </thead>
                 <tbody>
                   {summary.byType.map((t) => (
-                    <tr key={t.pitchType} className="border-t border-slate-100">
+                    <tr key={t.pitchType} className="border-t border-neutral-100">
                       <td className="py-1">{t.pitchType}</td>
                       <td className="py-1">{t.count}</td>
                       <td className="py-1">{round1(t.avgMissIn)}"</td>
@@ -167,7 +167,7 @@ export default function CommandSessionDetail({ sessionId, athleteId, basePath, b
                   ))}
                 </tbody>
               </table>
-              <p className="text-xs text-slate-400 mt-3">
+              <p className="text-xs text-neutral-400 mt-3">
                 Pen avg: {round1(summary.overall.avgMissIn)}" across {summary.overall.count} pitches
               </p>
             </>
@@ -176,12 +176,12 @@ export default function CommandSessionDetail({ sessionId, athleteId, basePath, b
 
         <Card title="Pitch list — this pen">
           {pitches.length === 0 ? (
-            <p className="text-sm text-slate-500">Log the first pitch to start the list.</p>
+            <p className="text-sm text-neutral-500">Log the first pitch to start the list.</p>
           ) : (
             <div className="max-h-[360px] overflow-y-auto">
               <table className="w-full text-sm">
                 <thead className="sticky top-0 bg-white">
-                  <tr className="text-left text-xs text-slate-400">
+                  <tr className="text-left text-xs text-neutral-400">
                     <th className="pb-1">#</th>
                     <th className="pb-1">Pitch</th>
                     <th className="pb-1">Velo</th>
@@ -190,7 +190,7 @@ export default function CommandSessionDetail({ sessionId, athleteId, basePath, b
                 </thead>
                 <tbody>
                   {pitches.map((p, i) => (
-                    <tr key={p.id} className="border-t border-slate-100">
+                    <tr key={p.id} className="border-t border-neutral-100">
                       <td className="py-1">{i + 1}</td>
                       <td className="py-1">{p.pitch_type}</td>
                       <td className="py-1">{p.velocity ? `${round1(p.velocity)}` : '—'}</td>

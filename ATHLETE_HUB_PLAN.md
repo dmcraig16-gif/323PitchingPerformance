@@ -22,7 +22,9 @@ onboarding_forms     id, athlete_id, answers (jsonb), submitted_at, reviewed_at
 programs             id, coach_id, name, description
 program_assignments  id, program_id, athlete_id, start_date, status
 workouts             id, program_id, name, order_index, day_label
-exercises            id, workout_id, name, description, sets, reps, youtube_url, order_index
+exercise_library     id, coach_id, name, type, description, video_url
+exercises            id, workout_id, library_exercise_id (fk->exercise_library), name, type,
+                     description, sets, reps, youtube_url, order_index
 exercise_logs        id, exercise_id, athlete_id, date, sets_completed, reps_completed, weight, notes
 journal_prompts      id, date or recurring_rule, text, category
 journal_entries      id, athlete_id, prompt_id (nullable), date, content
@@ -32,8 +34,8 @@ habit_templates      id, coach_id, name, description, cadence (daily/weekly), ca
 habit_assignments    id, athlete_id, habit_template_id, target, active
 habit_logs           id, habit_assignment_id, date, completed, value, notes
 mental_game_content  id, coach_id, title, body, media_url, category, published_at
-daily_checkins       id, athlete_id, date, sleep_hours, sleep_quality, soreness, mood,
-                     energy, nutrition, prev_day_workload, notes, readiness_score
+daily_checkins       id, athlete_id, date, weight_lb, sleep_hours, sleep_quality, soreness,
+                     mood, energy, nutrition, prev_day_workload, notes, readiness_score
 command_sessions     id, athlete_id, logged_by (fk->profiles), date, label, notes
 command_pitches      id, session_id (fk->command_sessions), athlete_id, session_date,
                      pitch_type, velocity, intended_x, intended_y, actual_x, actual_y,
@@ -43,7 +45,18 @@ command_pitches      id, session_id (fk->command_sessions), athlete_id, session_
 `programs.type` is `lifting` or `throwing` by default — the list of valid
 types lives in `src/lib/facilityConfig.js` (`PROGRAM_TYPES`), so adding a
 category (arm care, mobility, recovery, etc.) is a config change, not a
-schema migration.
+schema migration. Same pattern for `exercise_library.type` /
+`exercises.type` (`EXERCISE_TYPES`).
+
+`exercise_library` is the Exercise Builder's reusable catalog — name, type,
+a coaching-cue description, and a demo video URL, defined once per coach.
+`exercises` (an exercise as used inside one specific workout) copies
+name/type/description/video from the library entry at add-time and keeps
+`library_exercise_id` for traceability; sets/reps/description can be
+overridden per workout without touching the library. Copying rather than
+referencing live means a program is a snapshot — editing a library
+exercise later doesn't retroactively change workouts already built from
+it.
 
 `daily_checkins.readiness_score` is computed client-side
 (`src/lib/readiness.js`) from the weighted factors defined in
@@ -72,8 +85,8 @@ read/write their own rows; coaches can read/write rows for athletes whose
 - **Dashboard** — today's readiness score, assigned programs, command
   training snapshot, today's journal prompt, today's devotional, habit
   checklist, streaks
-- **Daily Check-In** — sleep/soreness/mood/energy/nutrition/prior-day-load
-  inputs, live readiness score + band, 14-day trend
+- **Daily Check-In** — body weight, sleep/soreness/mood/energy/nutrition/
+  prior-day-load inputs, live readiness score + band, 14-day trend
 - **My Program** — list of lifting/throwing workouts → exercise detail
   (sets/reps/description/embedded YouTube), mark-complete per exercise
 - **Command Tracker** — start a bullpen session, then log each pitch one at
@@ -93,9 +106,14 @@ read/write their own rows; coaches can read/write rows for athletes whose
 - **Athlete roster** — list with today's readiness score and recent command
   metrics at a glance, onboarding status, last activity
 - **Review onboarding** → assign coach/program
-- **Program builder** — create a lifting or throwing program → add
-  workouts → add exercises (name, sets, reps, description, YouTube link) →
-  assign to one or more athletes individually
+- **Exercise Builder** — a reusable library of exercises (name, type,
+  coaching-cue description, demo video — auto-embedded inline for YouTube
+  links), filterable by type, editable/deletable in place
+- **Program builder (Workout Builder)** — create a lifting or throwing
+  program → add workouts → add exercises by picking from the Exercise
+  Builder's library and setting sets/reps for that specific workout
+  (rather than retyping a new exercise each time) → assign to one or more
+  athletes individually
 - **Content library** — mental game talks, devotionals, journal prompts,
   habit templates (CRUD)
 - **Athlete detail** — each athlete's profile is split into category tabs
@@ -111,7 +129,11 @@ read/write their own rows; coaches can read/write rows for athletes whose
 - React + Vite (consistent with your existing app), React Router
 - Supabase JS client for auth (email/password or magic link), Postgres, RLS
 - TanStack Query for data fetching/caching
-- Tailwind for styling (fast to build a clean, consistent UI)
+- Tailwind for styling. Visual language is Apple-inspired and deliberately
+  restrained: system font stack, one accent blue reserved for primary
+  actions/links (`accent` in `tailwind.config.js`), near-black used only
+  for structural nav (never as a button color), soft-shadow rounded-2xl
+  white cards on a neutral canvas background, icon-led grouped sidebar nav
 - Recharts for readiness/command/velocity trend charts; hand-rolled SVG for
   the strike-zone target picker (feet-based coordinates, shared convention
   with the root pitch visualizer app)
@@ -124,14 +146,18 @@ read/write their own rows; coaches can read/write rows for athletes whose
 2. ✅ Onboarding form → coach assignment (manual assignment to start)
 3. ✅ Program builder (coach, lifting + throwing types) + program/workout/
    exercise viewing and mark-done (athlete)
-4. ✅ Daily check-in + readiness calculator, command training (intended vs.
-   actual + miss distance), coach roster + athlete detail with trend charts
-5. Journal prompts + entries
-6. Devotionals (coach posts, athlete views)
-7. Habit templates + assignments + daily check-off + streaks
-8. Mental game content library
-9. Polish: notifications/reminders, exercise_logs progress rollups, CSV
-   import for velo/command data from Trackman/Rapsodo
+4. ✅ Daily check-in (incl. body weight) + readiness calculator, command
+   tracking (bullpen sessions, intended vs. actual + miss distance), coach
+   roster + athlete detail with trend charts
+5. ✅ Exercise Builder (reusable exercise library with type + video) and a
+   Workout Builder that composes workouts from it; Apple-inspired visual
+   redesign across the app
+6. Journal prompts + entries
+7. Devotionals (coach posts, athlete views)
+8. Habit templates + assignments + daily check-off + streaks
+9. Mental game content library
+10. Polish: notifications/reminders, exercise_logs progress rollups, CSV
+    import for velo/command data from Trackman/Rapsodo
 
 ## 7. Facility customization
 

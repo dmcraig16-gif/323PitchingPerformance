@@ -13,19 +13,19 @@ function SessionRow({ session, basePath }) {
   }, [session.id])
 
   return (
-    <tr className="border-t border-slate-100">
+    <tr className="border-t border-neutral-100">
       <td className="py-2 pr-4">{session.date}</td>
       <td className="py-2 pr-4">
-        <Link to={`${basePath}/${session.id}`} className="font-medium text-slate-900 hover:underline">
+        <Link to={`${basePath}/${session.id}`} className="font-medium text-neutral-900 hover:underline">
           {session.label || 'Bullpen'}
         </Link>
       </td>
-      <td className="py-2 pr-4 text-sm text-slate-500">{summary ? summary.overall.count : '…'}</td>
-      <td className="py-2 pr-4 text-sm text-slate-500">
+      <td className="py-2 pr-4 text-sm text-neutral-500">{summary ? summary.overall.count : '…'}</td>
+      <td className="py-2 pr-4 text-sm text-neutral-500">
         {summary?.overall.count ? `${round1(summary.overall.avgMissIn)}"` : '—'}
       </td>
       <td className="py-2">
-        <Link to={`${basePath}/${session.id}`} className="text-xs text-blue-600 font-medium">
+        <Link to={`${basePath}/${session.id}`} className="text-xs text-accent hover:text-accent-700 font-medium">
           Open →
         </Link>
       </td>
@@ -62,23 +62,23 @@ export default function CommandSessionList({ athleteId, loggedByProfileId, baseP
   return (
     <div>
       {allowCreate && (
-        <div className="bg-white rounded-lg shadow-sm p-5 mb-5">
+        <div className="bg-white rounded-2xl shadow-card p-5 mb-5">
           {creating ? (
             <form onSubmit={startSession} className="flex gap-2">
               <input
                 value={label}
                 onChange={(e) => setLabel(e.target.value)}
                 placeholder="Session label (e.g. Fastball Command)"
-                className="flex-1 border rounded-md px-3 py-2 text-sm"
+                className="flex-1 border rounded-xl px-3 py-2 text-sm"
                 autoFocus
               />
-              <button type="submit" className="bg-slate-900 text-white rounded-md px-4 py-2 text-sm font-medium">
+              <button type="submit" className="bg-accent text-white hover:bg-accent-600 transition-colors rounded-xl px-4 py-2 text-sm font-medium">
                 Start
               </button>
               <button
                 type="button"
                 onClick={() => setCreating(false)}
-                className="border rounded-md px-4 py-2 text-sm font-medium text-slate-600"
+                className="border rounded-xl px-4 py-2 text-sm font-medium text-neutral-600"
               >
                 Cancel
               </button>
@@ -86,7 +86,7 @@ export default function CommandSessionList({ athleteId, loggedByProfileId, baseP
           ) : (
             <button
               onClick={() => setCreating(true)}
-              className="bg-slate-900 text-white rounded-md px-4 py-2 text-sm font-medium"
+              className="bg-accent text-white hover:bg-accent-600 transition-colors rounded-xl px-4 py-2 text-sm font-medium"
             >
               + Start new bullpen session
             </button>
@@ -94,15 +94,15 @@ export default function CommandSessionList({ athleteId, loggedByProfileId, baseP
         </div>
       )}
 
-      <div className="bg-white rounded-lg shadow-sm p-5">
+      <div className="bg-white rounded-2xl shadow-card p-5">
         {sessions === null ? (
-          <p className="text-sm text-slate-400">Loading…</p>
+          <p className="text-sm text-neutral-400">Loading…</p>
         ) : sessions.length === 0 ? (
-          <p className="text-sm text-slate-500">No bullpen sessions logged yet.</p>
+          <p className="text-sm text-neutral-500">No bullpen sessions logged yet.</p>
         ) : (
           <table className="w-full text-sm">
             <thead>
-              <tr className="text-left text-xs text-slate-400">
+              <tr className="text-left text-xs text-neutral-400">
                 <th className="pb-2">Date</th>
                 <th className="pb-2">Session</th>
                 <th className="pb-2">Pitches</th>

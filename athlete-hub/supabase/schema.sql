@@ -44,10 +44,31 @@ create table workouts (
   order_index int not null default 0
 );
 
+-- Reusable exercise library — the "Exercise Builder". Coaches define an
+-- exercise once (type, description, demo video) and reuse it across any
+-- number of workouts, instead of retyping it every time.
+create table exercise_library (
+  id uuid primary key default gen_random_uuid(),
+  coach_id uuid not null references profiles(id) on delete cascade,
+  name text not null,
+  type text not null,
+  description text,
+  video_url text,
+  created_at timestamptz not null default now()
+);
+
+-- One exercise as used inside a specific workout. name/description/type/
+-- youtube_url are copied from the library exercise at add-time (so a
+-- program is a snapshot, not silently altered by later library edits);
+-- library_exercise_id keeps the link back for traceability. sets/reps/
+-- description here can be overridden per workout (e.g. lighter sets in a
+-- deload week) without touching the library entry.
 create table exercises (
   id uuid primary key default gen_random_uuid(),
   workout_id uuid not null references workouts(id) on delete cascade,
+  library_exercise_id uuid references exercise_library(id) on delete set null,
   name text not null,
+  type text,
   description text,
   sets int,
   reps int,
@@ -134,6 +155,7 @@ create table daily_checkins (
   id uuid primary key default gen_random_uuid(),
   athlete_id uuid not null references profiles(id) on delete cascade,
   date date not null default current_date,
+  weight_lb numeric,
   sleep_hours numeric not null,
   sleep_quality int not null check (sleep_quality between 1 and 5),
   soreness int not null check (soreness between 1 and 5),
@@ -197,6 +219,7 @@ alter table onboarding_forms enable row level security;
 alter table programs enable row level security;
 alter table program_assignments enable row level security;
 alter table workouts enable row level security;
+alter table exercise_library enable row level security;
 alter table exercises enable row level security;
 alter table exercise_logs enable row level security;
 alter table journal_prompts enable row level security;
@@ -260,6 +283,12 @@ create policy "workouts_coach_owns" on workouts for all using (
 );
 create policy "workouts_athlete_view" on workouts for select using (
   program_id in (select program_id from program_assignments where athlete_id = current_profile_id())
+);
+
+-- exercise_library: coach-owned only — athletes never query it directly,
+-- they see exercises through the workouts/programs assigned to them
+create policy "exercise_library_coach_owns" on exercise_library for all using (
+  coach_id = current_profile_id()
 );
 
 create policy "exercises_coach_owns" on exercises for all using (

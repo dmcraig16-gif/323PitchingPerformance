@@ -17,11 +17,28 @@ export const PROGRAM_TYPES = [
 ]
 
 export function programTypeMeta(value) {
-  return PROGRAM_TYPES.find((t) => t.value === value) ?? { label: value, badgeClass: 'bg-slate-100 text-slate-700' }
+  return PROGRAM_TYPES.find((t) => t.value === value) ?? { label: value, badgeClass: 'bg-neutral-100 text-neutral-700' }
 }
 
 // Pitch types offered in Command Tracker's pitch-type selector.
 export const PITCH_TYPES = ['Fastball', 'Sinker', 'Cutter', 'Slider', 'Curveball', 'Changeup', 'Splitter']
+
+// Exercise categories offered in the Exercise Builder. Add another entry
+// and it shows up automatically in the exercise-type selector and every
+// exercise badge across the Workout Builder and athlete program view.
+export const EXERCISE_TYPES = [
+  { value: 'strength', label: 'Strength', badgeClass: 'bg-blue-100 text-blue-700' },
+  { value: 'power', label: 'Power / Plyometric', badgeClass: 'bg-violet-100 text-violet-700' },
+  { value: 'throwing', label: 'Throwing', badgeClass: 'bg-orange-100 text-orange-700' },
+  { value: 'arm-care', label: 'Arm Care', badgeClass: 'bg-teal-100 text-teal-700' },
+  { value: 'mobility', label: 'Mobility', badgeClass: 'bg-emerald-100 text-emerald-700' },
+  { value: 'conditioning', label: 'Conditioning', badgeClass: 'bg-rose-100 text-rose-700' },
+  { value: 'recovery', label: 'Recovery', badgeClass: 'bg-neutral-100 text-neutral-700' },
+]
+
+export function exerciseTypeMeta(value) {
+  return EXERCISE_TYPES.find((t) => t.value === value) ?? { label: value, badgeClass: 'bg-neutral-100 text-neutral-700' }
+}
 
 // Daily check-in input fields (the 1-5 buttons an athlete taps through).
 // `key` must match the field name used in CheckIn.jsx's form state.

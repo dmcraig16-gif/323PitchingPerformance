@@ -22,12 +22,12 @@ function RosterRow({ athlete }) {
   const styles = band ? BAND_STYLES[band.tone] : null
 
   return (
-    <tr className="border-t border-slate-100">
+    <tr className="border-t border-neutral-100">
       <td className="py-3 pr-4">
-        <Link to={`/coach/athletes/${athlete.id}`} className="font-medium text-slate-900 hover:underline">
+        <Link to={`/coach/athletes/${athlete.id}`} className="font-medium text-neutral-900 hover:underline">
           {athlete.name}
         </Link>
-        <p className="text-xs text-slate-400">{athlete.email}</p>
+        <p className="text-xs text-neutral-400">{athlete.email}</p>
       </td>
       <td className="py-3 pr-4">
         {checkin ? (
@@ -35,23 +35,23 @@ function RosterRow({ athlete }) {
             {checkin.readiness_score} · {band.label}
           </span>
         ) : (
-          <span className="text-xs text-slate-400">No check-in today</span>
+          <span className="text-xs text-neutral-400">No check-in today</span>
         )}
       </td>
       <td className="py-3 pr-4 text-sm">
         {commandSummary?.overall.count ? (
           <>
             {round1(commandSummary.overall.avgMissIn)}" avg miss
-            <span className="text-slate-400"> ({commandSummary.overall.count} pitches)</span>
+            <span className="text-neutral-400"> ({commandSummary.overall.count} pitches)</span>
           </>
         ) : (
-          <span className="text-slate-400">No pitches logged</span>
+          <span className="text-neutral-400">No pitches logged</span>
         )}
       </td>
       <td className="py-3">
         <Link
           to={`/coach/athletes/${athlete.id}`}
-          className="text-xs text-blue-600 font-medium"
+          className="text-xs text-accent hover:text-accent-700 font-medium"
         >
           View profile →
         </Link>
@@ -71,16 +71,16 @@ export default function Roster() {
 
   return (
     <div>
-      <h1 className="text-2xl font-semibold mb-6">Athletes</h1>
-      <div className="bg-white rounded-lg shadow-sm p-5">
+      <h1 className="text-[28px] font-semibold tracking-tight text-neutral-900 mb-6">Athletes</h1>
+      <div className="bg-white rounded-2xl shadow-card p-5">
         {athletes === null ? (
-          <p className="text-sm text-slate-400">Loading…</p>
+          <p className="text-sm text-neutral-400">Loading…</p>
         ) : athletes.length === 0 ? (
-          <p className="text-sm text-slate-500">No athletes assigned yet.</p>
+          <p className="text-sm text-neutral-500">No athletes assigned yet.</p>
         ) : (
           <table className="w-full text-sm">
             <thead>
-              <tr className="text-left text-xs text-slate-400">
+              <tr className="text-left text-xs text-neutral-400">
                 <th className="pb-2">Athlete</th>
                 <th className="pb-2">Today's readiness</th>
                 <th className="pb-2">Command (last 20)</th>

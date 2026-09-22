@@ -38,14 +38,14 @@ export default function Onboarding() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 py-12 px-4">
-      <form onSubmit={handleSubmit} className="max-w-xl mx-auto bg-white p-8 rounded-lg shadow-sm">
+    <div className="min-h-screen bg-neutral-50 py-12 px-4">
+      <form onSubmit={handleSubmit} className="max-w-xl mx-auto bg-white p-8 rounded-2xl shadow-card">
         <h1 className="text-xl font-semibold mb-6">Welcome — let's get you set up</h1>
         {QUESTIONS.map((q) => (
           <div key={q.key} className="mb-5">
             <label className="block text-sm font-medium mb-1">{q.label}</label>
             <textarea
-              className="w-full border rounded-md px-3 py-2 text-sm"
+              className="w-full border rounded-xl px-3 py-2 text-sm"
               rows={2}
               value={answers[q.key] ?? ''}
               onChange={(e) => setAnswers({ ...answers, [q.key]: e.target.value })}
@@ -55,7 +55,7 @@ export default function Onboarding() {
         ))}
         <button
           type="submit"
-          className="w-full bg-slate-900 text-white rounded-md py-2 text-sm font-medium"
+          className="w-full bg-accent text-white hover:bg-accent-600 transition-colors rounded-xl py-2 text-sm font-medium"
         >
           Submit
         </button>

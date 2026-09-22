@@ -60,7 +60,7 @@ export default function StrikeZoneTargetPicker({ intended, actual, phase, onPick
         height={H}
         onClick={handleClick}
         className={phase === 'done' ? '' : 'cursor-crosshair'}
-        style={{ display: 'block', margin: '0 auto', background: '#f8fafc', borderRadius: 8 }}
+        style={{ display: 'block', margin: '0 auto', background: '#f5f5f7', borderRadius: 8 }}
       >
         {[-2, -1, 0, 1, 2].map((x) => (
           <line
@@ -91,7 +91,7 @@ export default function StrikeZoneTargetPicker({ intended, actual, phase, onPick
           width={zoneX2 - zoneX1}
           height={zoneY2 - zoneY1}
           fill="none"
-          stroke="#3b82f6"
+          stroke="#0071e3"
           strokeWidth={2}
         />
         {[1, 2].map((i) => {
@@ -104,7 +104,7 @@ export default function StrikeZoneTargetPicker({ intended, actual, phase, onPick
                 y1={zoneY1 + yw * i}
                 x2={zoneX2}
                 y2={zoneY1 + yw * i}
-                stroke="#3b82f6"
+                stroke="#0071e3"
                 strokeWidth={0.5}
                 strokeOpacity={0.5}
               />
@@ -113,7 +113,7 @@ export default function StrikeZoneTargetPicker({ intended, actual, phase, onPick
                 y1={zoneY1}
                 x2={zoneX1 + xw * i}
                 y2={zoneY2}
-                stroke="#3b82f6"
+                stroke="#0071e3"
                 strokeWidth={0.5}
                 strokeOpacity={0.5}
               />
@@ -140,7 +140,7 @@ export default function StrikeZoneTargetPicker({ intended, actual, phase, onPick
               cy={toSvgY(intended.y)}
               r={9}
               fill="none"
-              stroke="#16a34a"
+              stroke="#34c759"
               strokeWidth={2}
             />
             <line
@@ -148,7 +148,7 @@ export default function StrikeZoneTargetPicker({ intended, actual, phase, onPick
               y1={toSvgY(intended.y)}
               x2={toSvgX(intended.x) + 4}
               y2={toSvgY(intended.y)}
-              stroke="#16a34a"
+              stroke="#34c759"
               strokeWidth={2}
             />
             <line
@@ -156,7 +156,7 @@ export default function StrikeZoneTargetPicker({ intended, actual, phase, onPick
               y1={toSvgY(intended.y) - 4}
               x2={toSvgX(intended.x)}
               y2={toSvgY(intended.y) + 4}
-              stroke="#16a34a"
+              stroke="#34c759"
               strokeWidth={2}
             />
           </g>
@@ -167,17 +167,17 @@ export default function StrikeZoneTargetPicker({ intended, actual, phase, onPick
             cx={toSvgX(actual.x)}
             cy={toSvgY(actual.y)}
             r={6}
-            fill="#dc2626"
+            fill="#ff3b30"
             fillOpacity={0.85}
-            stroke="#7f1d1d"
+            stroke="#b0271f"
             strokeWidth={1}
           />
         )}
       </svg>
-      <p className="text-xs text-slate-500 text-center mt-2">{helperText}</p>
+      <p className="text-xs text-neutral-500 text-center mt-2">{helperText}</p>
       {missIn != null && (
         <p className="text-center text-sm font-medium mt-1">
-          Miss distance: <span className="text-slate-900">{missIn.toFixed(1)}"</span>
+          Miss distance: <span className="text-neutral-900">{missIn.toFixed(1)}"</span>
         </p>
       )}
     </div>

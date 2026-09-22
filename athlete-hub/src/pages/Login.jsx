@@ -32,8 +32,8 @@ export default function Login() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-slate-50">
-      <form onSubmit={handleSubmit} className="bg-white p-8 rounded-lg shadow-sm w-full max-w-sm">
+    <div className="min-h-screen flex items-center justify-center bg-neutral-50">
+      <form onSubmit={handleSubmit} className="bg-white p-8 rounded-2xl shadow-card w-full max-w-sm">
         <h1 className="text-xl font-semibold mb-6">Athlete Hub</h1>
         {!isSupabaseConfigured && (
           <p className="text-sm text-amber-600 mb-4">
@@ -45,7 +45,7 @@ export default function Login() {
           type="email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          className="w-full border rounded-md px-3 py-2 mb-4 text-sm"
+          className="w-full border rounded-xl px-3 py-2 mb-4 text-sm"
           required
         />
         <label className="block text-sm font-medium mb-1">Password</label>
@@ -53,20 +53,20 @@ export default function Login() {
           type="password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          className="w-full border rounded-md px-3 py-2 mb-6 text-sm"
+          className="w-full border rounded-xl px-3 py-2 mb-6 text-sm"
           required
         />
         {error && <p className="text-sm text-red-600 mb-4">{error}</p>}
         <button
           type="submit"
-          className="w-full bg-slate-900 text-white rounded-md py-2 text-sm font-medium"
+          className="w-full bg-accent text-white hover:bg-accent-600 transition-colors rounded-xl py-2 text-sm font-medium"
         >
           {mode === 'sign-in' ? 'Sign in' : 'Create account'}
         </button>
         <button
           type="button"
           onClick={() => setMode(mode === 'sign-in' ? 'sign-up' : 'sign-in')}
-          className="w-full mt-3 text-sm text-slate-500"
+          className="w-full mt-3 text-sm text-neutral-500"
         >
           {mode === 'sign-in' ? 'Need an account? Sign up' : 'Have an account? Sign in'}
         </button>

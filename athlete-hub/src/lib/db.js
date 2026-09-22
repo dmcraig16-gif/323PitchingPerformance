@@ -261,6 +261,55 @@ export async function createExercise(row) {
   return local.insert('exercises', row)
 }
 
+// ---------- exercise library (Exercise Builder) ----------
+
+export async function listExerciseLibrary(coachId) {
+  if (isSupabaseConfigured) {
+    const { data } = await supabase
+      .from('exercise_library')
+      .select('*')
+      .eq('coach_id', coachId)
+      .order('name')
+    return data ?? []
+  }
+  return local
+    .getAll('exercise_library')
+    .filter((e) => e.coach_id === coachId)
+    .sort((a, b) => a.name.localeCompare(b.name))
+}
+
+export async function createLibraryExercise(row) {
+  if (isSupabaseConfigured) {
+    const { data, error } = await supabase.from('exercise_library').insert(row).select().single()
+    if (error) throw error
+    return data
+  }
+  return local.insert('exercise_library', row)
+}
+
+export async function updateLibraryExercise(id, patch) {
+  if (isSupabaseConfigured) {
+    const { data, error } = await supabase
+      .from('exercise_library')
+      .update(patch)
+      .eq('id', id)
+      .select()
+      .single()
+    if (error) throw error
+    return data
+  }
+  return local.update('exercise_library', id, patch)
+}
+
+export async function deleteLibraryExercise(id) {
+  if (isSupabaseConfigured) {
+    const { error } = await supabase.from('exercise_library').delete().eq('id', id)
+    if (error) throw error
+    return
+  }
+  local.remove('exercise_library', id)
+}
+
 export async function listExerciseLogsForDate(athleteId, date) {
   if (isSupabaseConfigured) {
     const { data } = await supabase

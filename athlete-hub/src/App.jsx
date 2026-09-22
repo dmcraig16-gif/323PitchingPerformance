@@ -17,6 +17,7 @@ import CoachRoster from './pages/coach/Roster.jsx'
 import AthleteDetail from './pages/coach/AthleteDetail.jsx'
 import AthleteCommandSession from './pages/coach/AthleteCommandSession.jsx'
 import ProgramBuilder from './pages/coach/ProgramBuilder.jsx'
+import ExerciseBuilder from './pages/coach/ExerciseBuilder.jsx'
 import ContentLibrary from './pages/coach/ContentLibrary.jsx'
 
 function RequireAuth({ children }) {
@@ -54,6 +55,7 @@ export default function App() {
         <Route path="coach/athletes/:id" element={<AthleteDetail />} />
         <Route path="coach/athletes/:id/sessions/:sessionId" element={<AthleteCommandSession />} />
         <Route path="coach/programs" element={<ProgramBuilder />} />
+        <Route path="coach/exercises" element={<ExerciseBuilder />} />
         <Route path="coach/content" element={<ContentLibrary />} />
       </Route>
     </Routes>

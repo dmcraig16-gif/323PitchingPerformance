@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
 import { useAuth } from '../../lib/useAuth.js'
 import * as db from '../../lib/db.js'
-import { PROGRAM_TYPES, programTypeMeta } from '../../lib/facilityConfig.js'
+import { PROGRAM_TYPES, programTypeMeta, EXERCISE_TYPES, exerciseTypeMeta } from '../../lib/facilityConfig.js'
 
 function NewProgramForm({ coachId, onCreated }) {
   const [name, setName] = useState('')
@@ -18,20 +19,20 @@ function NewProgramForm({ coachId, onCreated }) {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="bg-white rounded-lg shadow-sm p-5 mb-5">
+    <form onSubmit={handleSubmit} className="bg-white rounded-2xl shadow-card p-5 mb-5">
       <h2 className="font-semibold mb-3">New program</h2>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-3">
         <input
           value={name}
           onChange={(e) => setName(e.target.value)}
           placeholder="Program name"
-          className="border rounded-md px-3 py-2 text-sm md:col-span-2"
+          className="border rounded-xl px-3 py-2 text-sm md:col-span-2"
           required
         />
         <select
           value={type}
           onChange={(e) => setType(e.target.value)}
-          className="border rounded-md px-3 py-2 text-sm"
+          className="border rounded-xl px-3 py-2 text-sm"
         >
           {PROGRAM_TYPES.map((t) => (
             <option key={t.value} value={t.value}>
@@ -45,9 +46,9 @@ function NewProgramForm({ coachId, onCreated }) {
         onChange={(e) => setDescription(e.target.value)}
         placeholder="Description (optional)"
         rows={2}
-        className="w-full border rounded-md px-3 py-2 text-sm mb-3"
+        className="w-full border rounded-xl px-3 py-2 text-sm mb-3"
       />
-      <button type="submit" className="bg-slate-900 text-white rounded-md px-4 py-2 text-sm font-medium">
+      <button type="submit" className="bg-accent text-white hover:bg-accent-600 transition-colors rounded-xl px-4 py-2 text-sm font-medium">
         Create program
       </button>
     </form>
@@ -73,84 +74,127 @@ function NewWorkoutForm({ programId, onCreated }) {
         value={dayLabel}
         onChange={(e) => setDayLabel(e.target.value)}
         placeholder="Day (e.g. Monday)"
-        className="border rounded-md px-2 py-1.5 text-xs w-32"
+        className="border rounded-xl px-2 py-1.5 text-xs w-32"
       />
       <input
         value={name}
         onChange={(e) => setName(e.target.value)}
         placeholder="Workout name"
-        className="border rounded-md px-2 py-1.5 text-xs flex-1"
+        className="border rounded-xl px-2 py-1.5 text-xs flex-1"
         required
       />
-      <button type="submit" className="bg-slate-900 text-white rounded-md px-3 py-1.5 text-xs font-medium">
+      <button type="submit" className="bg-accent text-white hover:bg-accent-600 transition-colors rounded-xl px-3 py-1.5 text-xs font-medium">
         Add workout
       </button>
     </form>
   )
 }
 
-function NewExerciseForm({ workoutId, onCreated }) {
-  const [form, setForm] = useState({ name: '', sets: '', reps: '', description: '', youtube_url: '' })
+// Workout Builder: pulls from the coach's exercise library (built in the
+// Exercise Builder) rather than typing a new exercise from scratch each
+// time. sets/reps/notes are specific to this workout — the library entry
+// itself (name/type/video) is untouched.
+function AddExerciseToWorkout({ workoutId, coachId, onCreated }) {
+  const [library, setLibrary] = useState(null)
+  const [selectedId, setSelectedId] = useState('')
+  const [sets, setSets] = useState('')
+  const [reps, setReps] = useState('')
+  const [notes, setNotes] = useState('')
+
+  useEffect(() => {
+    db.listExerciseLibrary(coachId).then(setLibrary)
+  }, [coachId])
 
   async function handleSubmit(e) {
     e.preventDefault()
-    if (!form.name) return
+    const source = library.find((ex) => ex.id === selectedId)
+    if (!source) return
     const exercise = await db.createExercise({
       workout_id: workoutId,
-      name: form.name,
-      sets: form.sets ? Number(form.sets) : null,
-      reps: form.reps ? Number(form.reps) : null,
-      description: form.description,
-      youtube_url: form.youtube_url,
+      library_exercise_id: source.id,
+      name: source.name,
+      type: source.type,
+      sets: sets ? Number(sets) : null,
+      reps: reps ? Number(reps) : null,
+      description: notes || source.description,
+      youtube_url: source.video_url,
       order_index: 0,
     })
-    setForm({ name: '', sets: '', reps: '', description: '', youtube_url: '' })
+    setSelectedId('')
+    setSets('')
+    setReps('')
+    setNotes('')
     onCreated(exercise)
+  }
+
+  if (library === null) return <p className="text-xs text-neutral-400">Loading library…</p>
+
+  if (library.length === 0) {
+    return (
+      <p className="text-xs text-neutral-500">
+        No exercises in your library yet.{' '}
+        <Link to="/coach/exercises" className="text-accent hover:text-accent-700 font-medium">
+          Build one in Exercise Builder →
+        </Link>
+      </p>
+    )
   }
 
   return (
     <form onSubmit={handleSubmit} className="grid grid-cols-6 gap-2 mb-2">
-      <input
-        value={form.name}
-        onChange={(e) => setForm({ ...form, name: e.target.value })}
-        placeholder="Exercise name"
-        className="border rounded-md px-2 py-1 text-xs col-span-2"
+      <select
+        value={selectedId}
+        onChange={(e) => setSelectedId(e.target.value)}
+        className="border border-neutral-200 rounded-xl px-2 py-1.5 text-xs col-span-3"
         required
-      />
+      >
+        <option value="">Choose an exercise…</option>
+        {EXERCISE_TYPES.map((t) => {
+          const options = library.filter((ex) => ex.type === t.value)
+          if (options.length === 0) return null
+          return (
+            <optgroup key={t.value} label={t.label}>
+              {options.map((ex) => (
+                <option key={ex.id} value={ex.id}>
+                  {ex.name}
+                </option>
+              ))}
+            </optgroup>
+          )
+        })}
+      </select>
       <input
-        value={form.sets}
-        onChange={(e) => setForm({ ...form, sets: e.target.value })}
+        value={sets}
+        onChange={(e) => setSets(e.target.value)}
         placeholder="Sets"
         type="number"
-        className="border rounded-md px-2 py-1 text-xs"
+        className="border border-neutral-200 rounded-xl px-2 py-1.5 text-xs"
       />
       <input
-        value={form.reps}
-        onChange={(e) => setForm({ ...form, reps: e.target.value })}
+        value={reps}
+        onChange={(e) => setReps(e.target.value)}
         placeholder="Reps"
         type="number"
-        className="border rounded-md px-2 py-1 text-xs"
+        className="border border-neutral-200 rounded-xl px-2 py-1.5 text-xs"
       />
-      <input
-        value={form.youtube_url}
-        onChange={(e) => setForm({ ...form, youtube_url: e.target.value })}
-        placeholder="Video URL"
-        className="border rounded-md px-2 py-1 text-xs"
-      />
-      <button type="submit" className="bg-slate-900 text-white rounded-md px-2 py-1 text-xs font-medium">
+      <button
+        type="submit"
+        disabled={!selectedId}
+        className="bg-accent text-white hover:bg-accent-600 transition-colors rounded-xl px-2 py-1.5 text-xs font-medium disabled:opacity-40"
+      >
         Add
       </button>
       <input
-        value={form.description}
-        onChange={(e) => setForm({ ...form, description: e.target.value })}
-        placeholder="Coaching cue / description"
-        className="border rounded-md px-2 py-1 text-xs col-span-6"
+        value={notes}
+        onChange={(e) => setNotes(e.target.value)}
+        placeholder="Notes for this workout (optional — overrides the library description)"
+        className="border border-neutral-200 rounded-xl px-2 py-1.5 text-xs col-span-6"
       />
     </form>
   )
 }
 
-function WorkoutBlock({ workout }) {
+function WorkoutBlock({ workout, coachId }) {
   const [exercises, setExercises] = useState([])
 
   useEffect(() => {
@@ -158,22 +202,33 @@ function WorkoutBlock({ workout }) {
   }, [workout.id])
 
   return (
-    <div className="border border-slate-100 rounded-md p-3 mb-2">
+    <div className="border border-neutral-100 rounded-xl p-3 mb-2">
       <p className="text-sm font-medium mb-2">
         {workout.day_label ? `${workout.day_label} — ` : ''}
         {workout.name}
       </p>
       {exercises.length > 0 && (
-        <ul className="text-xs text-slate-600 mb-2 space-y-1">
+        <ul className="text-xs text-neutral-600 mb-2 space-y-1">
           {exercises.map((ex) => (
-            <li key={ex.id}>
-              {ex.name}
-              {ex.sets && ex.reps ? ` — ${ex.sets}x${ex.reps}` : ''}
+            <li key={ex.id} className="flex items-center gap-2">
+              {ex.type && (
+                <span className={`shrink-0 text-[10px] px-1.5 py-0.5 rounded-full font-medium ${exerciseTypeMeta(ex.type).badgeClass}`}>
+                  {exerciseTypeMeta(ex.type).label}
+                </span>
+              )}
+              <span>
+                {ex.name}
+                {ex.sets && ex.reps ? ` — ${ex.sets}x${ex.reps}` : ''}
+              </span>
             </li>
           ))}
         </ul>
       )}
-      <NewExerciseForm workoutId={workout.id} onCreated={(ex) => setExercises((prev) => [...prev, ex])} />
+      <AddExerciseToWorkout
+        workoutId={workout.id}
+        coachId={coachId}
+        onCreated={(ex) => setExercises((prev) => [...prev, ex])}
+      />
     </div>
   )
 }
@@ -198,8 +253,8 @@ function AssignPanel({ programId, coachId }) {
   if (athletes.length === 0) return null
 
   return (
-    <div className="mt-3 pt-3 border-t border-slate-100">
-      <p className="text-xs font-medium text-slate-500 mb-2">Assign to athletes</p>
+    <div className="mt-3 pt-3 border-t border-neutral-100">
+      <p className="text-xs font-medium text-neutral-500 mb-2">Assign to athletes</p>
       <div className="flex flex-wrap gap-2">
         {athletes.map((a) => (
           <button
@@ -209,7 +264,7 @@ function AssignPanel({ programId, coachId }) {
             className={`text-xs px-3 py-1.5 rounded-full font-medium border ${
               assignedIds.has(a.id)
                 ? 'bg-emerald-100 text-emerald-700 border-emerald-200'
-                : 'bg-white text-slate-600 border-slate-200 hover:border-slate-400'
+                : 'bg-white text-neutral-600 border-neutral-200 hover:border-neutral-400'
             }`}
           >
             {assignedIds.has(a.id) ? `✓ ${a.name}` : a.name}
@@ -228,7 +283,7 @@ function ProgramBlock({ program, coachId }) {
   }, [program.id])
 
   return (
-    <div className="bg-white rounded-lg shadow-sm p-5 mb-5">
+    <div className="bg-white rounded-2xl shadow-card p-5 mb-5">
       <div className="flex items-center gap-2 mb-1">
         <h2 className="font-semibold">{program.name}</h2>
         <span
@@ -237,10 +292,10 @@ function ProgramBlock({ program, coachId }) {
           {programTypeMeta(program.type).label}
         </span>
       </div>
-      {program.description && <p className="text-sm text-slate-500 mb-3">{program.description}</p>}
+      {program.description && <p className="text-sm text-neutral-500 mb-3">{program.description}</p>}
 
       {workouts?.map((w) => (
-        <WorkoutBlock key={w.id} workout={w} />
+        <WorkoutBlock key={w.id} workout={w} coachId={coachId} />
       ))}
       <NewWorkoutForm
         programId={program.id}
@@ -265,15 +320,20 @@ export default function ProgramBuilder() {
 
   return (
     <div>
-      <h1 className="text-2xl font-semibold mb-6">Program Builder</h1>
+      <div className="flex items-center justify-between mb-6">
+        <h1 className="text-[28px] font-semibold tracking-tight text-neutral-900">Program Builder</h1>
+        <Link to="/coach/exercises" className="text-sm text-accent hover:text-accent-700 font-medium">
+          Manage exercise library →
+        </Link>
+      </div>
       <NewProgramForm
         coachId={profile.id}
         onCreated={(p) => setPrograms((prev) => [...(prev ?? []), p])}
       />
       {programs === null ? (
-        <p className="text-sm text-slate-400">Loading…</p>
+        <p className="text-sm text-neutral-400">Loading…</p>
       ) : programs.length === 0 ? (
-        <p className="text-sm text-slate-500">No programs yet — create one above.</p>
+        <p className="text-sm text-neutral-500">No programs yet — create one above.</p>
       ) : (
         programs.map((p) => <ProgramBlock key={p.id} program={p} coachId={profile.id} />)
       )}
