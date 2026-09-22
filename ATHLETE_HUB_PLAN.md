@@ -1,31 +1,36 @@
-# Athlete Hub — Architecture & Build Plan
+# 3:23 — Architecture & Build Plan
 
 A standalone web app for coaches to deliver programming (lifting +
-throwing), run daily mental/physical check-ins with a readiness score,
-track command (intended vs. actual target) and velocity, and deliver
-mental-game content and habit/journal tools to athletes. Built on
+throwing) Trainerize-style from a reusable exercise library, run daily
+mental/physical check-ins with a readiness score, track command (intended
+vs. actual target), velocity, and logged workout results over time, and
+deliver mental-game content and habit/journal tools to athletes. Built on
 React + Supabase (Postgres, Auth, Storage, Row Level Security).
 
 ## 1. Roles
 
-- **Admin/Coach** — creates programs, workouts, exercises, journal prompts,
-  devotionals, habit templates; reviews onboarding forms; assigns athletes to
-  themselves; views athlete logs/progress.
-- **Athlete** — completes onboarding form, gets assigned a coach, views their
-  assigned program, logs workouts/sets, journals daily, tracks habits.
+- **Coach** — signs up choosing the Coach role; builds an exercise library
+  and programs/workouts from it; claims newly-signed-up athletes onto
+  their roster (or an athlete picks a coach some other way); assigns
+  programs; views each athlete's check-ins, command sessions, and logged
+  results.
+- **Athlete** — signs up choosing the Athlete role, lands on today's
+  check-in; once assigned a coach and programming, views their program,
+  logs results per exercise (weight/reps or velocity), tracks command,
+  journals.
 
 ## 2. Core data model (Postgres tables)
 
 ```
 profiles            id, user_id, role (coach|athlete), name, email, coach_id (nullable, fk->profiles)
-onboarding_forms     id, athlete_id, answers (jsonb), submitted_at, reviewed_at
 programs             id, coach_id, name, description
 program_assignments  id, program_id, athlete_id, start_date, status
 workouts             id, program_id, name, order_index, day_label
 exercise_library     id, coach_id, name, type, description, video_url
 exercises            id, workout_id, library_exercise_id (fk->exercise_library), name, type,
-                     description, sets, reps, youtube_url, order_index
-exercise_logs        id, exercise_id, athlete_id, date, sets_completed, reps_completed, weight, notes
+                     description, sets, reps, target_value, target_unit, youtube_url, order_index
+exercise_logs        id, exercise_id, athlete_id, date, sets_completed, reps_completed,
+                     weight, velocity, notes
 journal_prompts      id, date or recurring_rule, text, category
 journal_entries      id, athlete_id, prompt_id (nullable), date, content
 devotionals          id, date, title, body, media_url
@@ -34,13 +39,22 @@ habit_templates      id, coach_id, name, description, cadence (daily/weekly), ca
 habit_assignments    id, athlete_id, habit_template_id, target, active
 habit_logs           id, habit_assignment_id, date, completed, value, notes
 mental_game_content  id, coach_id, title, body, media_url, category, published_at
-daily_checkins       id, athlete_id, date, weight_lb, sleep_hours, sleep_quality, soreness,
-                     mood, energy, nutrition, prev_day_workload, notes, readiness_score
+daily_checkins       id, athlete_id, date, weight_lb, sleep_hours, sleep_quality, strain,
+                     arm_soreness, lower_soreness, mood, energy, nutrition, hydration,
+                     notes, readiness_score
 command_sessions     id, athlete_id, logged_by (fk->profiles), date, label, notes
 command_pitches      id, session_id (fk->command_sessions), athlete_id, session_date,
                      pitch_type, velocity, intended_x, intended_y, actual_x, actual_y,
                      miss_distance_in, notes
 ```
+
+There is no `onboarding_forms` table — role (athlete/coach) is chosen once,
+at signup, and travels in Supabase auth metadata (`signUp`'s `options.data`)
+so the `profiles` row can be created under RLS on first real sign-in, even
+when email confirmation delays when a session actually exists (see
+`AuthContext.jsx`). An unassigned athlete (`coach_id is null`) is visible
+to every coach via a dedicated RLS policy, so any coach can claim them onto
+their roster from `/coach/roster`.
 
 `programs.type` is `lifting` or `throwing` by default — the list of valid
 types lives in `src/lib/facilityConfig.js` (`PROGRAM_TYPES`), so adding a
@@ -52,18 +66,28 @@ schema migration. Same pattern for `exercise_library.type` /
 a coaching-cue description, and a demo video URL, defined once per coach.
 `exercises` (an exercise as used inside one specific workout) copies
 name/type/description/video from the library entry at add-time and keeps
-`library_exercise_id` for traceability; sets/reps/description can be
+`library_exercise_id` for traceability; sets/reps/description/target can be
 overridden per workout without touching the library. Copying rather than
 referencing live means a program is a snapshot — editing a library
 exercise later doesn't retroactively change workouts already built from
-it.
+it. `target_value`/`target_unit` is the prescribed load (lb) or velocity
+(mph) for that exercise in that workout.
+
+`exercise_logs` is what an athlete actually did — weight + reps_completed
+for a lifting exercise, velocity for a throwing one.
+`src/lib/exerciseTrends.js` turns a list of these into a latest value, a
+delta vs. the previous entry, and a sparkline series; My Program groups
+logs by `exercises.library_exercise_id` (falling back to the exercise row
+itself) so the trend spans every workout that reused the same movement,
+not just one program instance.
 
 `daily_checkins.readiness_score` is computed client-side
-(`src/lib/readiness.js`) from the weighted factors defined in
-`facilityConfig.js` (`READINESS_FACTORS`) — sleep (hours + quality),
-soreness, mood, energy, nutrition, and inverted previous-day workload —
-then stored for fast history/trend queries. Retuning the formula for a
-facility's own philosophy means editing that one array.
+(`src/lib/readiness.js`) from the weighted slider factors defined in
+`facilityConfig.js` (`CHECKIN_SLIDERS` → `READINESS_FACTORS`) — sleep
+(hours + quality), strain, arm soreness, lower-body soreness, energy,
+mood, nutrition, and hydration — then stored for fast history/trend
+queries. Retuning the formula for a facility's own philosophy means
+editing that one array; weights must sum to 1.
 
 A `command_session` is one bullpen/flat-ground/pre-game pen. `logged_by`
 records whether the athlete or a coach (charting live from the athlete's
@@ -81,39 +105,44 @@ read/write their own rows; coaches can read/write rows for athletes whose
 
 ## 3. Screens (athlete view)
 
-- **Onboarding form** (first login, blocks until submitted)
+- **Sign up / log in** — pick Athlete or Coach at signup; lands on today's
+  check-in if not done yet, otherwise the dashboard (`Landing.jsx`)
 - **Dashboard** — today's readiness score, assigned programs, command
-  training snapshot, today's journal prompt, today's devotional, habit
+  tracker snapshot, today's journal prompt, today's devotional, habit
   checklist, streaks
-- **Daily Check-In** — body weight, sleep/soreness/mood/energy/nutrition/
-  prior-day-load inputs, live readiness score + band, 14-day trend
+- **Daily Check-In** — body weight, sleep hours, and sliders for sleep
+  quality, strain (yesterday's load), arm soreness, lower-body soreness,
+  energy, mood, nutrition, hydration; live readiness score + band
+  (Full Intensity / Modify Intensity / Recovery Day), 14-day trend
 - **My Program** — list of lifting/throwing workouts → exercise detail
-  (sets/reps/description/embedded YouTube), mark-complete per exercise
+  (type badge, sets/reps/target, description, embedded YouTube demo) →
+  log a result per exercise (weight+reps or velocity depending on type),
+  see the delta vs. last time and a sparkline once there's a trend
 - **Command Tracker** — start a bullpen session, then log each pitch one at
   a time: pitch type, velocity, click-to-place intended target vs. actual
   result on a strike-zone grid, auto-computed miss distance. Produces a
   pitch-by-pitch list for that pen plus a live pitch-type breakdown (avg
   miss distance / avg velocity), and profile-wide trends across sessions
-- **Journal** — calendar of past entries + today's prompt + freeform entry
+- **Journal** — freeform reflective notes + running history, separate from
+  the check-in's own per-day notes field
 - **Devotionals** — daily devotional archive
 - **Habits** — customizable routine view (morning/evening rhythm: sleep
   window, light exposure, meals) with daily check-off
 - **Mental Game** — library of talks/articles from coach
-- **Profile/Progress** — workout history, habit streaks, journal history
 
 ## 4. Screens (coach view)
 
-- **Athlete roster** — list with today's readiness score and recent command
-  metrics at a glance, onboarding status, last activity
-- **Review onboarding** → assign coach/program
+- **Athlete roster** — a "new athletes waiting for a coach" panel (claim
+  an unassigned athlete onto your roster with one click), then the roster
+  itself: today's readiness score and recent command metrics per athlete
 - **Exercise Builder** — a reusable library of exercises (name, type,
   coaching-cue description, demo video — auto-embedded inline for YouTube
   links), filterable by type, editable/deletable in place
-- **Program builder (Workout Builder)** — create a lifting or throwing
-  program → add workouts → add exercises by picking from the Exercise
-  Builder's library and setting sets/reps for that specific workout
-  (rather than retyping a new exercise each time) → assign to one or more
-  athletes individually
+- **Program builder (Workout Builder)** — Trainerize-style: create a
+  lifting or throwing program → add a day/workout → click an exercise from
+  a library side-panel to drop it in → edit sets/reps/target weight-or-
+  velocity inline → reorder with up/down → duplicate or delete a
+  workout/day → assign to one or more athletes individually
 - **Content library** — mental game talks, devotionals, journal prompts,
   habit templates (CRUD)
 - **Athlete detail** — each athlete's profile is split into category tabs
@@ -143,7 +172,8 @@ read/write their own rows; coaches can read/write rows for athletes whose
 ## 6. Build order (incremental, each step shippable)
 
 1. ✅ Repo scaffold + Supabase project + auth (sign up/login) + `profiles` table
-2. ✅ Onboarding form → coach assignment (manual assignment to start)
+2. ✅ Sign up with role selection (athlete/coach), auto-created profile row,
+   coach-claims-unassigned-athlete flow
 3. ✅ Program builder (coach, lifting + throwing types) + program/workout/
    exercise viewing and mark-done (athlete)
 4. ✅ Daily check-in (incl. body weight) + readiness calculator, command
@@ -152,11 +182,15 @@ read/write their own rows; coaches can read/write rows for athletes whose
 5. ✅ Exercise Builder (reusable exercise library with type + video) and a
    Workout Builder that composes workouts from it; Apple-inspired visual
    redesign across the app
-6. Journal prompts + entries
+6. ✅ Slider-based check-in with strain/arm-soreness/lower-soreness/
+   hydration factors; result logging (weight/reps or velocity) with
+   trend deltas + sparklines; functional journal; Trainerize-style
+   click-to-add/reorder/duplicate Workout Builder; smart post-login
+   redirect; coach-only nav
 7. Devotionals (coach posts, athlete views)
 8. Habit templates + assignments + daily check-off + streaks
 9. Mental game content library
-10. Polish: notifications/reminders, exercise_logs progress rollups, CSV
+10. Polish: notifications/reminders, coach-visible journal entries, CSV
     import for velo/command data from Trackman/Rapsodo
 
 ## 7. Facility customization
@@ -166,10 +200,12 @@ categories (check-ins, calculators, session logs) hung off an athlete's
 profile — but built so the specific categories and their math are a config
 edit for this facility rather than baked into the UI:
 
-- `src/lib/facilityConfig.js` centralizes facility name, program
-  categories (`PROGRAM_TYPES`), Command Tracker's pitch-type list
-  (`PITCH_TYPES`), daily check-in fields (`CHECKIN_INPUT_FIELDS`), and the
-  readiness score's weighted factors (`READINESS_FACTORS`).
+- `src/lib/facilityConfig.js` centralizes facility name (`FACILITY_NAME`,
+  currently "3:23"), program/exercise categories (`PROGRAM_TYPES`,
+  `EXERCISE_TYPES`), Command Tracker's pitch-type list (`PITCH_TYPES`),
+  the daily check-in's sliders (`CHECKIN_SLIDERS`), and the readiness
+  score's weighted factors (`READINESS_FACTORS`, derived from
+  `CHECKIN_SLIDERS`'s weights).
 - Every check-in and calculator lives as its own category on the athlete
   profile (coach view: Overview / Check-Ins / Command Tracker / Programs
   tabs) so a new one (e.g. a mobility screen, a strength-testing
@@ -181,7 +217,12 @@ edit for this facility rather than baked into the UI:
 
 ## 8. Open decisions for later
 
-- Auto-assignment of coach vs. manual (multiple coaches?)
-- Whether journals are private or visible to coach
-- Push/email reminders for daily journal & habits
+- Coach assignment is manual-claim today (any coach can pick up any
+  unassigned athlete); a multi-coach facility might want an invite code or
+  admin approval step instead
+- Whether journal entries are private or visible to the coach (currently
+  athlete-only; not surfaced anywhere in the coach view)
+- Push/email reminders for daily check-in & habits
 - Mobile: responsive web first, native app later if needed
+- Reordering exercises is up/down buttons, not drag-and-drop; fine at
+  typical workout lengths but worth revisiting if workouts get long

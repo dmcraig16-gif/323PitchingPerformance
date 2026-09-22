@@ -64,12 +64,15 @@ function initials(name) {
 
 export default function AppShell() {
   const { profile, role, signOut, isDemoMode, demoProfiles, switchDemoProfile } = useAuth()
-  const groups = role === 'coach' ? [...athleteGroups, coachGroup] : athleteGroups
+  // Coaches get a dedicated coaching workspace — not the athlete's own
+  // check-in/program nav, which would otherwise point at the coach's own
+  // (empty) athlete-style data and just be noise.
+  const groups = role === 'coach' ? [coachGroup] : athleteGroups
 
   return (
     <div className="min-h-screen bg-canvas">
       <header className="sticky top-0 z-20 h-14 px-6 flex items-center justify-between bg-neutral-900/90 backdrop-blur-xl text-white border-b border-white/10">
-        <span className="font-semibold text-[15px] tracking-tight">{FACILITY_NAME}</span>
+        <span className="font-semibold text-[15px] tracking-tight tabular-nums opacity-95">{FACILITY_NAME}</span>
         <div className="flex items-center gap-3 text-sm">
           {isDemoMode && (
             <select

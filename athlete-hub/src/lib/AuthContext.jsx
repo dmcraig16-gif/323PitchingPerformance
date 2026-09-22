@@ -30,8 +30,25 @@ export function AuthProvider({ children }) {
   useEffect(() => {
     if (!isSupabaseConfigured || !session?.user) return
     let cancelled = false
-    db.getProfileByUserId(session.user.id).then((p) => {
-      if (!cancelled) setProfile(p)
+    db.getProfileByUserId(session.user.id).then(async (p) => {
+      if (cancelled) return
+      if (p) {
+        setProfile(p)
+        return
+      }
+      // First sign-in after signup: no profiles row exists yet. The
+      // role/name chosen at signup travels in auth metadata (set via
+      // supabase.auth.signUp's `options.data`) since — when email
+      // confirmation is required — there's no authenticated session (and
+      // so no RLS-permitted insert) available at signup time itself.
+      const meta = session.user.user_metadata ?? {}
+      const created = await db.createProfile({
+        user_id: session.user.id,
+        role: meta.role === 'coach' ? 'coach' : 'athlete',
+        name: meta.name || session.user.email,
+        email: session.user.email,
+      })
+      if (!cancelled) setProfile(created)
     })
     return () => {
       cancelled = true

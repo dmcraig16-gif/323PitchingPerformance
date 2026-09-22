@@ -1,26 +1,18 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useAuth } from '../../lib/useAuth.js'
 import * as db from '../../lib/db.js'
 import { programTypeMeta, exerciseTypeMeta } from '../../lib/facilityConfig.js'
+import ExerciseLogger from '../../components/ExerciseLogger.jsx'
 
-function ProgramCard({ program, athleteId, completedToday }) {
-  const [workouts, setWorkouts] = useState(null)
-  const [exercisesByWorkout, setExercisesByWorkout] = useState({})
-  const [doneIds, setDoneIds] = useState(completedToday)
+// Groups an athlete's exercise_logs by "the movement" (library_exercise_id
+// when the exercise came from the library, otherwise the workout-instance
+// id) so weight/velocity trends span every workout that reused it, not
+// just one program.
+function trendKey(exercise) {
+  return exercise.library_exercise_id ?? exercise.id
+}
 
-  useEffect(() => {
-    db.listWorkouts(program.id).then(async (ws) => {
-      setWorkouts(ws)
-      const entries = await Promise.all(ws.map((w) => db.listExercises(w.id).then((ex) => [w.id, ex])))
-      setExercisesByWorkout(Object.fromEntries(entries))
-    })
-  }, [program.id])
-
-  async function markDone(exerciseId) {
-    await db.logExerciseComplete(exerciseId, athleteId)
-    setDoneIds((prev) => new Set(prev).add(exerciseId))
-  }
-
+function ProgramBlock({ program, workouts, exercisesByWorkout, athleteId, trendsByKey, onLogged }) {
   return (
     <div className="bg-white rounded-2xl shadow-card p-5 mb-5">
       <div className="flex items-center gap-2 mb-1">
@@ -31,9 +23,7 @@ function ProgramCard({ program, athleteId, completedToday }) {
       </div>
       {program.description && <p className="text-sm text-neutral-500 mb-4">{program.description}</p>}
 
-      {workouts === null ? (
-        <p className="text-sm text-neutral-400">Loading…</p>
-      ) : workouts.length === 0 ? (
+      {workouts.length === 0 ? (
         <p className="text-sm text-neutral-400">No workouts added to this program yet.</p>
       ) : (
         <div className="space-y-4">
@@ -43,7 +33,7 @@ function ProgramCard({ program, athleteId, completedToday }) {
                 {w.day_label ? `${w.day_label} — ` : ''}
                 {w.name}
               </p>
-              <ul className="space-y-2">
+              <ul className="space-y-3">
                 {(exercisesByWorkout[w.id] ?? []).map((ex) => (
                   <li key={ex.id} className="flex items-start justify-between gap-3 text-sm">
                     <div>
@@ -57,6 +47,9 @@ function ProgramCard({ program, athleteId, completedToday }) {
                           {ex.name}
                           {ex.sets && ex.reps ? (
                             <span className="text-neutral-400 font-normal"> — {ex.sets}x{ex.reps}</span>
+                          ) : null}
+                          {ex.target_value ? (
+                            <span className="text-neutral-400 font-normal"> · target {ex.target_value}{ex.target_unit}</span>
                           ) : null}
                         </p>
                       </div>
@@ -72,17 +65,12 @@ function ProgramCard({ program, athleteId, completedToday }) {
                         </a>
                       )}
                     </div>
-                    <button
-                      onClick={() => markDone(ex.id)}
-                      disabled={doneIds.has(ex.id)}
-                      className={`shrink-0 text-xs px-3 py-1.5 rounded-xl font-medium ${
-                        doneIds.has(ex.id)
-                          ? 'bg-emerald-100 text-emerald-700'
-                          : 'bg-accent text-white hover:bg-accent-600 transition-colors'
-                      }`}
-                    >
-                      {doneIds.has(ex.id) ? 'Done ✓' : 'Mark done'}
-                    </button>
+                    <ExerciseLogger
+                      exercise={ex}
+                      athleteId={athleteId}
+                      trendLogs={trendsByKey[trendKey(ex)] ?? []}
+                      onLogged={(log) => onLogged(trendKey(ex), log)}
+                    />
                   </li>
                 ))}
               </ul>
@@ -97,23 +85,60 @@ function ProgramCard({ program, athleteId, completedToday }) {
 export default function MyProgram() {
   const { profile } = useAuth()
   const [programs, setPrograms] = useState(null)
-  const [completedToday, setCompletedToday] = useState(new Set())
+  const [workoutsByProgram, setWorkoutsByProgram] = useState({})
+  const [exercisesByWorkout, setExercisesByWorkout] = useState({})
+  const [trendsByKey, setTrendsByKey] = useState({})
   const athleteId = profile?.id
 
   useEffect(() => {
     if (!athleteId) return
-    db.listAssignedPrograms(athleteId).then(setPrograms)
-    db.listExerciseLogsForDate(athleteId, new Date().toISOString().slice(0, 10)).then((logs) =>
-      setCompletedToday(new Set(logs.map((l) => l.exercise_id))),
-    )
+    db.listAssignedPrograms(athleteId).then(async (progs) => {
+      setPrograms(progs)
+
+      const workoutEntries = await Promise.all(
+        progs.map((p) => db.listWorkouts(p.id).then((ws) => [p.id, ws])),
+      )
+      const workoutsMap = Object.fromEntries(workoutEntries)
+      setWorkoutsByProgram(workoutsMap)
+
+      const allWorkouts = Object.values(workoutsMap).flat()
+      const exerciseEntries = await Promise.all(
+        allWorkouts.map((w) => db.listExercises(w.id).then((ex) => [w.id, ex])),
+      )
+      const exercisesMap = Object.fromEntries(exerciseEntries)
+      setExercisesByWorkout(exercisesMap)
+
+      const allExercises = Object.values(exercisesMap).flat()
+      const logEntries = await Promise.all(
+        allExercises.map((ex) => db.listExerciseLogsForExercise(ex.id).then((logs) => [ex, logs])),
+      )
+      const grouped = {}
+      for (const [ex, logs] of logEntries) {
+        const key = trendKey(ex)
+        grouped[key] = [...(grouped[key] ?? []), ...logs].sort((a, b) => a.date.localeCompare(b.date))
+      }
+      setTrendsByKey(grouped)
+    })
   }, [athleteId])
+
+  function handleLogged(key, log) {
+    setTrendsByKey((prev) => ({ ...prev, [key]: [...(prev[key] ?? []), log] }))
+  }
+
+  const programBlocks = useMemo(() => {
+    if (!programs) return null
+    return programs.map((p) => ({
+      program: p,
+      workouts: workoutsByProgram[p.id] ?? [],
+    }))
+  }, [programs, workoutsByProgram])
 
   return (
     <div>
       <h1 className="text-[28px] font-semibold tracking-tight text-neutral-900 mb-6">My Program</h1>
-      {programs === null ? (
+      {programBlocks === null ? (
         <p className="text-sm text-neutral-400">Loading…</p>
-      ) : programs.length === 0 ? (
+      ) : programBlocks.length === 0 ? (
         <div className="bg-white rounded-2xl shadow-card p-5">
           <p className="text-sm text-neutral-500">
             You haven't been assigned a program yet. Once your coach assigns lifting or throwing
@@ -121,8 +146,16 @@ export default function MyProgram() {
           </p>
         </div>
       ) : (
-        programs.map((p) => (
-          <ProgramCard key={p.id} program={p} athleteId={athleteId} completedToday={completedToday} />
+        programBlocks.map(({ program, workouts }) => (
+          <ProgramBlock
+            key={program.id}
+            program={program}
+            workouts={workouts}
+            exercisesByWorkout={exercisesByWorkout}
+            athleteId={athleteId}
+            trendsByKey={trendsByKey}
+            onLogged={handleLogged}
+          />
         ))
       )}
     </div>

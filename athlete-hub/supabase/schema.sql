@@ -11,14 +11,6 @@ create table profiles (
   created_at timestamptz not null default now()
 );
 
-create table onboarding_forms (
-  id uuid primary key default gen_random_uuid(),
-  athlete_id uuid not null references auth.users(id) on delete cascade,
-  answers jsonb not null,
-  submitted_at timestamptz not null default now(),
-  reviewed_at timestamptz
-);
-
 create table programs (
   id uuid primary key default gen_random_uuid(),
   coach_id uuid not null references profiles(id) on delete cascade,
@@ -72,10 +64,20 @@ create table exercises (
   description text,
   sets int,
   reps int,
+  -- Prescribed target for this workout instance — a weight (lb) for a
+  -- lifting exercise or a velocity (mph) for a throwing drill. Athletes
+  -- log their actual result against it in exercise_logs.
+  target_value numeric,
+  target_unit text,
   youtube_url text,
   order_index int not null default 0
 );
 
+-- One row per time an athlete logs a result for a prescribed exercise.
+-- Lifting exercises log weight + reps_completed; throwing exercises log
+-- velocity. Grouping logs by exercises.library_exercise_id (when set)
+-- shows the trend for "this exercise" across every workout that reused it,
+-- not just one program instance.
 create table exercise_logs (
   id uuid primary key default gen_random_uuid(),
   exercise_id uuid not null references exercises(id) on delete cascade,
@@ -84,6 +86,7 @@ create table exercise_logs (
   sets_completed int,
   reps_completed int,
   weight numeric,
+  velocity numeric,
   notes text,
   created_at timestamptz not null default now()
 );
@@ -158,11 +161,13 @@ create table daily_checkins (
   weight_lb numeric,
   sleep_hours numeric not null,
   sleep_quality int not null check (sleep_quality between 1 and 5),
-  soreness int not null check (soreness between 1 and 5),
+  strain int not null check (strain between 1 and 5),
+  arm_soreness int not null check (arm_soreness between 1 and 5),
+  lower_soreness int not null check (lower_soreness between 1 and 5),
   mood int not null check (mood between 1 and 5),
   energy int not null check (energy between 1 and 5),
   nutrition int not null check (nutrition between 1 and 5),
-  prev_day_workload int not null check (prev_day_workload between 1 and 5),
+  hydration int not null check (hydration between 1 and 5),
   notes text,
   readiness_score numeric not null,
   created_at timestamptz not null default now(),
@@ -215,7 +220,6 @@ create table mental_game_content (
 -- Row Level Security
 
 alter table profiles enable row level security;
-alter table onboarding_forms enable row level security;
 alter table programs enable row level security;
 alter table program_assignments enable row level security;
 alter table workouts enable row level security;
@@ -251,14 +255,16 @@ create policy "profiles_coach_view_athletes" on profiles for select using (
 );
 create policy "profiles_insert_self" on profiles for insert with check (user_id = auth.uid());
 
--- onboarding_forms: athlete owns their own; coach can view forms of their assigned athletes
-create policy "onboarding_athlete_own" on onboarding_forms for all using (
-  athlete_id = auth.uid()
+-- unassigned athletes (coach_id is null) are visible to any coach, and any
+-- coach can claim one onto their own roster — lets a newly signed-up
+-- athlete who hasn't picked a coach yet show up for a coach to add
+create policy "profiles_view_unassigned_athletes" on profiles for select using (
+  role = 'athlete' and coach_id is null
 );
-create policy "onboarding_coach_view" on onboarding_forms for select using (
-  is_coach() and athlete_id in (
-    select user_id from profiles where coach_id = current_profile_id()
-  )
+create policy "profiles_coach_claim_athlete" on profiles for update using (
+  is_coach() and role = 'athlete' and coach_id is null
+) with check (
+  coach_id = current_profile_id()
 );
 
 -- programs: owned by coach

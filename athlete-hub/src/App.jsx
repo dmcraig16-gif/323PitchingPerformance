@@ -2,7 +2,7 @@ import { Navigate, Route, Routes } from 'react-router-dom'
 import { useAuth } from './lib/useAuth.js'
 import { isSupabaseConfigured } from './lib/supabaseClient'
 import Login from './pages/Login.jsx'
-import Onboarding from './pages/Onboarding.jsx'
+import Landing from './pages/Landing.jsx'
 import AppShell from './components/AppShell.jsx'
 import AthleteDashboard from './pages/athlete/Dashboard.jsx'
 import CheckIn from './pages/athlete/CheckIn.jsx'
@@ -32,7 +32,6 @@ export default function App() {
   return (
     <Routes>
       <Route path="/login" element={<Login />} />
-      <Route path="/onboarding" element={<Onboarding />} />
       <Route
         path="/"
         element={
@@ -41,7 +40,7 @@ export default function App() {
           </RequireAuth>
         }
       >
-        <Route index element={<Navigate to="/dashboard" replace />} />
+        <Route index element={<Landing />} />
         <Route path="dashboard" element={<AthleteDashboard />} />
         <Route path="check-in" element={<CheckIn />} />
         <Route path="program" element={<MyProgram />} />

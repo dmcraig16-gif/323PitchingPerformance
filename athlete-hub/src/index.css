@@ -12,3 +12,53 @@
     @apply bg-canvas text-neutral-900;
   }
 }
+
+@layer utilities {
+  /* Apple-style range slider. --slider-fill (set inline per-instance) is
+     the filled portion's width, used to paint the track blue up to the
+     thumb via a background gradient rather than a separate fill element. */
+  .slider-accent {
+    -webkit-appearance: none;
+    appearance: none;
+    height: 6px;
+    border-radius: 9999px;
+    background: linear-gradient(
+      to right,
+      #0071e3 0%,
+      #0071e3 var(--slider-fill, 0%),
+      #e5e5ea var(--slider-fill, 0%),
+      #e5e5ea 100%
+    );
+    outline: none;
+    cursor: pointer;
+  }
+
+  .slider-accent::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 22px;
+    height: 22px;
+    border-radius: 9999px;
+    background: #ffffff;
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.25);
+    cursor: pointer;
+    margin-top: -8px;
+  }
+
+  .slider-accent::-moz-range-thumb {
+    width: 22px;
+    height: 22px;
+    border-radius: 9999px;
+    background: #ffffff;
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.25);
+    cursor: pointer;
+  }
+
+  .slider-accent::-moz-range-track {
+    height: 6px;
+    border-radius: 9999px;
+    background: transparent;
+  }
+}

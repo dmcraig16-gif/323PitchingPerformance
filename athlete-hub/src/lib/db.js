@@ -36,6 +36,43 @@ export function listDemoProfiles() {
   return local.getAll('profiles')
 }
 
+export async function createProfile(row) {
+  if (isSupabaseConfigured) {
+    const { data, error } = await supabase.from('profiles').insert(row).select().single()
+    if (error) throw error
+    return data
+  }
+  return local.insert('profiles', row)
+}
+
+// Athletes who signed up without picking a coach yet — any coach can see
+// and claim them onto their roster.
+export async function listUnassignedAthletes() {
+  if (isSupabaseConfigured) {
+    const { data } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('role', 'athlete')
+      .is('coach_id', null)
+    return data ?? []
+  }
+  return local.getAll('profiles').filter((p) => p.role === 'athlete' && !p.coach_id)
+}
+
+export async function claimAthlete(athleteId, coachId) {
+  if (isSupabaseConfigured) {
+    const { data, error } = await supabase
+      .from('profiles')
+      .update({ coach_id: coachId })
+      .eq('id', athleteId)
+      .select()
+      .single()
+    if (error) throw error
+    return data
+  }
+  return local.update('profiles', athleteId, { coach_id: coachId })
+}
+
 // ---------- daily check-ins ----------
 
 export async function listCheckins(athleteId) {
@@ -310,28 +347,89 @@ export async function deleteLibraryExercise(id) {
   local.remove('exercise_library', id)
 }
 
-export async function listExerciseLogsForDate(athleteId, date) {
+// One row per time an athlete logs a result: weight+reps for a lifting
+// exercise, velocity for a throwing one. `row` should already carry
+// exercise_id/athlete_id/date plus whichever of weight/reps_completed/
+// velocity/notes apply.
+export async function logExerciseResult(row) {
+  const full = { date: today(), ...row }
+  if (isSupabaseConfigured) {
+    const { data, error } = await supabase.from('exercise_logs').insert(full).select().single()
+    if (error) throw error
+    return data
+  }
+  return local.insert('exercise_logs', full)
+}
+
+// Every logged result for one workout-instance exercise, oldest first —
+// used to trend a specific exercise over time.
+export async function listExerciseLogsForExercise(exerciseId) {
   if (isSupabaseConfigured) {
     const { data } = await supabase
       .from('exercise_logs')
       .select('*')
-      .eq('athlete_id', athleteId)
-      .eq('date', date)
+      .eq('exercise_id', exerciseId)
+      .order('date', { ascending: true })
     return data ?? []
   }
   return local
     .getAll('exercise_logs')
-    .filter((l) => l.athlete_id === athleteId && l.date === date)
+    .filter((l) => l.exercise_id === exerciseId)
+    .sort((a, b) => a.date.localeCompare(b.date))
 }
 
-export async function logExerciseComplete(exerciseId, athleteId) {
-  const row = { exercise_id: exerciseId, athlete_id: athleteId, date: today() }
+export async function updateExercise(id, patch) {
   if (isSupabaseConfigured) {
-    const { data, error } = await supabase.from('exercise_logs').insert(row).select().single()
+    const { data, error } = await supabase.from('exercises').update(patch).eq('id', id).select().single()
     if (error) throw error
     return data
   }
-  return local.insert('exercise_logs', row)
+  return local.update('exercises', id, patch)
+}
+
+export async function deleteExercise(id) {
+  if (isSupabaseConfigured) {
+    const { error } = await supabase.from('exercises').delete().eq('id', id)
+    if (error) throw error
+    return
+  }
+  local.remove('exercises', id)
+}
+
+export async function deleteWorkout(id) {
+  if (isSupabaseConfigured) {
+    const { error } = await supabase.from('workouts').delete().eq('id', id)
+    if (error) throw error
+    return
+  }
+  local.remove('workouts', id)
+}
+
+// ---------- journal (freeform notes) ----------
+
+export async function listJournalEntries(athleteId) {
+  if (isSupabaseConfigured) {
+    const { data } = await supabase
+      .from('journal_entries')
+      .select('*')
+      .eq('athlete_id', athleteId)
+      .order('date', { ascending: false })
+    return data ?? []
+  }
+  return local
+    .getAll('journal_entries')
+    .filter((j) => j.athlete_id === athleteId)
+    .sort((a, b) => b.date.localeCompare(a.date) || b.created_at.localeCompare(a.created_at))
+}
+
+export async function createJournalEntry(row) {
+  const full = { date: today(), ...row }
+  if (isSupabaseConfigured) {
+    const { data, error } = await supabase.from('journal_entries').insert(full).select().single()
+    if (error) throw error
+    return data
+  }
+  return local.insert('journal_entries', full)
 }
 
 function today() {

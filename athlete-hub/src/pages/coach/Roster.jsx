@@ -60,6 +60,46 @@ function RosterRow({ athlete }) {
   )
 }
 
+function UnassignedPanel({ coachId, onClaimed }) {
+  const [unassigned, setUnassigned] = useState([])
+
+  useEffect(() => {
+    db.listUnassignedAthletes().then(setUnassigned)
+  }, [])
+
+  async function claim(athleteId) {
+    await db.claimAthlete(athleteId, coachId)
+    setUnassigned((prev) => prev.filter((a) => a.id !== athleteId))
+    onClaimed()
+  }
+
+  if (unassigned.length === 0) return null
+
+  return (
+    <div className="bg-accent-50 border border-accent/20 rounded-2xl p-5 mb-5">
+      <p className="text-sm font-semibold text-neutral-900 mb-3">
+        New athletes waiting for a coach ({unassigned.length})
+      </p>
+      <div className="flex flex-wrap gap-2">
+        {unassigned.map((a) => (
+          <div key={a.id} className="bg-white rounded-xl border border-neutral-200 px-3 py-2 flex items-center gap-3">
+            <div>
+              <p className="text-sm font-medium">{a.name}</p>
+              <p className="text-xs text-neutral-400">{a.email}</p>
+            </div>
+            <button
+              onClick={() => claim(a.id)}
+              className="text-xs bg-accent text-white hover:bg-accent-600 transition-colors rounded-full px-3 py-1.5 font-medium"
+            >
+              Add to roster
+            </button>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
 export default function Roster() {
   const { profile } = useAuth()
   const [athletes, setAthletes] = useState(null)
@@ -69,9 +109,14 @@ export default function Roster() {
     db.listAthletesForCoach(profile.id).then(setAthletes)
   }, [profile?.id])
 
+  function refresh() {
+    if (profile?.id) db.listAthletesForCoach(profile.id).then(setAthletes)
+  }
+
   return (
     <div>
       <h1 className="text-[28px] font-semibold tracking-tight text-neutral-900 mb-6">Athletes</h1>
+      {profile?.id && <UnassignedPanel coachId={profile.id} onClaimed={refresh} />}
       <div className="bg-white rounded-2xl shadow-card p-5">
         {athletes === null ? (
           <p className="text-sm text-neutral-400">Loading…</p>

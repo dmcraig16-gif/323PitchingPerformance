@@ -60,14 +60,13 @@ export function remove(table, id) {
 // Bump this when the seed shape changes (new tables/fields) so a browser
 // that already seeded an older demo dataset regenerates instead of running
 // against stale data the new UI doesn't know how to read.
-const SEED_VERSION = '3'
+const SEED_VERSION = '4'
 const SEED_FLAG = `${PREFIX}seeded`
 
 export function ensureSeedData() {
   if (localStorage.getItem(SEED_FLAG) === SEED_VERSION) return
   for (const table of [
     'profiles',
-    'onboarding_forms',
     'programs',
     'program_assignments',
     'workouts',
@@ -77,6 +76,7 @@ export function ensureSeedData() {
     'daily_checkins',
     'command_sessions',
     'command_pitches',
+    'journal_entries',
   ]) {
     localStorage.removeItem(key(table))
   }
@@ -100,6 +100,14 @@ export function ensureSeedData() {
     name: 'Maria Chen',
     email: 'maria@example.com',
     coach_id: coach.id,
+  })
+
+  // Signed up but not yet claimed by a coach — demonstrates the roster's
+  // "new athletes waiting for a coach" panel.
+  insert('profiles', {
+    role: 'athlete',
+    name: 'Sam Torres',
+    email: 'sam@example.com',
   })
 
   const trapBarDeadlift = insert('exercise_library', {
@@ -163,7 +171,7 @@ export function ensureSeedData() {
     day_label: 'Monday',
     order_index: 0,
   })
-  insert('exercises', {
+  const deadliftEx = insert('exercises', {
     workout_id: liftDay1.id,
     library_exercise_id: trapBarDeadlift.id,
     name: trapBarDeadlift.name,
@@ -171,6 +179,8 @@ export function ensureSeedData() {
     description: trapBarDeadlift.description,
     sets: 4,
     reps: 3,
+    target_value: 315,
+    target_unit: 'lb',
     order_index: 0,
   })
   insert('exercises', {
@@ -210,7 +220,7 @@ export function ensureSeedData() {
     day_label: 'Tuesday',
     order_index: 0,
   })
-  insert('exercises', {
+  const fastballEx = insert('exercises', {
     workout_id: throwDay1.id,
     library_exercise_id: fastballCorners.id,
     name: fastballCorners.name,
@@ -218,10 +228,38 @@ export function ensureSeedData() {
     description: fastballCorners.description,
     sets: 3,
     reps: 5,
+    target_value: 92,
+    target_unit: 'mph',
     order_index: 0,
   })
 
+  // A few weeks of logged results so My Program's weight/velocity trends
+  // have something to show right away.
   const today = new Date()
+  const deadliftProgression = [275, 285, 285, 295, 305]
+  deadliftProgression.forEach((weight, i) => {
+    const d = new Date(today)
+    d.setDate(d.getDate() - (deadliftProgression.length - i) * 4)
+    insert('exercise_logs', {
+      exercise_id: deadliftEx.id,
+      athlete_id: jake.id,
+      date: d.toISOString().slice(0, 10),
+      weight,
+      reps_completed: 3,
+    })
+  })
+  const velocityProgression = [88.4, 89.1, 89.8, 90.2]
+  velocityProgression.forEach((velocity, i) => {
+    const d = new Date(today)
+    d.setDate(d.getDate() - (velocityProgression.length - i) * 3)
+    insert('exercise_logs', {
+      exercise_id: fastballEx.id,
+      athlete_id: jake.id,
+      date: d.toISOString().slice(0, 10),
+      velocity,
+    })
+  })
+
   for (let i = 6; i >= 0; i--) {
     const d = new Date(today)
     d.setDate(d.getDate() - i)
@@ -232,11 +270,13 @@ export function ensureSeedData() {
       weight_lb: Math.round((189 + Math.random() * 2 - i * 0.1) * 10) / 10,
       sleep_hours: Math.round((6.5 + Math.random() * 2) * 4) / 4,
       sleep_quality: 3 + Math.round(Math.random() * 2),
-      soreness: 2 + Math.round(Math.random() * 3),
+      strain: 2 + Math.round(Math.random() * 3),
+      arm_soreness: 2 + Math.round(Math.random() * 3),
+      lower_soreness: 2 + Math.round(Math.random() * 3),
       mood: 3 + Math.round(Math.random() * 2),
       energy: 3 + Math.round(Math.random() * 2),
       nutrition: 3 + Math.round(Math.random() * 2),
-      prev_day_workload: 2 + Math.round(Math.random() * 3),
+      hydration: 3 + Math.round(Math.random() * 2),
       readiness_score: 60 + Math.round(Math.random() * 35),
     })
   }

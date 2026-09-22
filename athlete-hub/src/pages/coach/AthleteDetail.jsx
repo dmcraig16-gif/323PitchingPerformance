@@ -115,7 +115,9 @@ function CheckinsTab({ checkins }) {
                 <th className="pb-1">Score</th>
                 <th className="pb-1">Weight</th>
                 <th className="pb-1">Sleep</th>
-                <th className="pb-1">Soreness</th>
+                <th className="pb-1">Strain</th>
+                <th className="pb-1">Arm</th>
+                <th className="pb-1">Lower</th>
                 <th className="pb-1">Notes</th>
               </tr>
             </thead>
@@ -126,7 +128,9 @@ function CheckinsTab({ checkins }) {
                   <td className="py-1">{c.readiness_score}</td>
                   <td className="py-1">{c.weight_lb ? `${round1(c.weight_lb)} lb` : '—'}</td>
                   <td className="py-1">{round1(c.sleep_hours)}h</td>
-                  <td className="py-1">{c.soreness}/5</td>
+                  <td className="py-1">{c.strain}/5</td>
+                  <td className="py-1">{c.arm_soreness}/5</td>
+                  <td className="py-1">{c.lower_soreness}/5</td>
                   <td className="py-1 text-neutral-500">{c.notes || '—'}</td>
                 </tr>
               ))}
