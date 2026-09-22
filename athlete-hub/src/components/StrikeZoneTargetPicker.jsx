@@ -1,4 +1,4 @@
-import { ZONE, missDistanceInches } from '../lib/commandMetrics'
+import { MLB_ZONE, missDistanceInches } from '../lib/commandMetrics'
 
 // Click-to-place strike zone target picker used by Command Training.
 // First click places the intended target, second click places the actual
@@ -41,11 +41,11 @@ function clamp(v, min, max) {
   return Math.min(max, Math.max(min, v))
 }
 
-export default function StrikeZoneTargetPicker({ intended, actual, phase, onPick }) {
-  const zoneX1 = toSvgX(ZONE.left)
-  const zoneX2 = toSvgX(ZONE.right)
-  const zoneY1 = toSvgY(ZONE.top)
-  const zoneY2 = toSvgY(ZONE.bottom)
+export default function StrikeZoneTargetPicker({ intended, actual, phase, onPick, zone = MLB_ZONE }) {
+  const zoneX1 = toSvgX(zone.left)
+  const zoneX2 = toSvgX(zone.right)
+  const zoneY1 = toSvgY(zone.top)
+  const zoneY2 = toSvgY(zone.bottom)
 
   const helperText =
     phase === 'intended'

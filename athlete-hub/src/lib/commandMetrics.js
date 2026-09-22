@@ -6,22 +6,49 @@
 // PlateLocSide/PlateLocHeight so the same strike-zone geometry used by the
 // pitch visualizer applies here.
 
-// Width is fixed — home plate is 17" wide regardless of batter. Height
-// follows MLB's Automated Ball-Strike System definition (in effect since
-// 2026): 53.5% of the batter's height at the top of the zone, 27% at the
-// bottom. This app doesn't track individual batter heights, so ZONE uses
-// the 2025 MLB-average player height (6'1.58" / 73.6") to produce a
-// single average-batter zone for the target picker and visualizer.
-const AVG_BATTER_HEIGHT_IN = 73.6
-const ZONE_TOP_PCT = 0.535
-const ZONE_BOTTOM_PCT = 0.27
+// Both zones below get a uniform 1" buffer on every side — a pitch only
+// has to touch part of the zone to be a strike, and umpires/catchers
+// generally work with that same margin, so a drawn/target zone that's
+// exactly rulebook-tight reads as stricter than the game actually is.
+const BUFFER_IN = 1
 
-export const ZONE = {
+function withBuffer(zone) {
+  const b = BUFFER_IN / 12
+  return { left: zone.left - b, right: zone.right + b, bottom: zone.bottom - b, top: zone.top + b }
+}
+
+// MLB — Automated Ball-Strike System (in effect since 2026): the top of
+// the zone is 53.5% of the batter's height, the bottom is 27%. This app
+// doesn't track individual batter heights, so it's applied to the 2025
+// MLB-average player height (6'1.58" / 73.6") to produce a single
+// average-batter zone.
+const MLB_AVG_HEIGHT_IN = 73.6
+export const MLB_ZONE = withBuffer({
   left: -8.5 / 12,
   right: 8.5 / 12,
-  bottom: (AVG_BATTER_HEIGHT_IN * ZONE_BOTTOM_PCT) / 12,
-  top: (AVG_BATTER_HEIGHT_IN * ZONE_TOP_PCT) / 12,
-}
+  bottom: (MLB_AVG_HEIGHT_IN * 0.27) / 12,
+  top: (MLB_AVG_HEIGHT_IN * 0.535) / 12,
+})
+
+// High school (NFHS Rule 2-35-2): the top of the zone is the midpoint
+// between the batter's shoulders and waistline, the bottom is the top of
+// the knees, in their natural batting stance — an anatomically different
+// (and generally taller) definition than MLB's pants-top-to-kneecap-
+// hollow zone above. NFHS doesn't publish a %-of-height formula the way
+// MLB's ABS does, so this uses the ~1.5'-3.5' reference zone long used
+// across amateur baseball to approximate that definition for an
+// average-size high schooler.
+export const HS_ZONE = withBuffer({
+  left: -8.5 / 12,
+  right: 8.5 / 12,
+  bottom: 1.5,
+  top: 3.5,
+})
+
+export const ZONE_LEVELS = [
+  { value: 'mlb', label: 'MLB', zone: MLB_ZONE },
+  { value: 'hs', label: 'High School', zone: HS_ZONE },
+]
 
 export function missDistanceInches(intended, actual) {
   const dx = actual.x - intended.x

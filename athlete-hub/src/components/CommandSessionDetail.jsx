@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom'
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
 import * as db from '../lib/db.js'
 import StrikeZoneTargetPicker from './StrikeZoneTargetPicker.jsx'
-import { summarizeByPitchType, round1 } from '../lib/commandMetrics.js'
+import { summarizeByPitchType, round1, ZONE_LEVELS } from '../lib/commandMetrics.js'
 import { PITCH_TYPES } from '../lib/facilityConfig.js'
 
 function Card({ title, children }) {
@@ -24,6 +24,7 @@ export default function CommandSessionDetail({ sessionId, athleteId, basePath, b
   const [pitches, setPitches] = useState(null)
   const [pitchType, setPitchType] = useState(PITCH_TYPES[0])
   const [velocity, setVelocity] = useState('')
+  const [zoneLevel, setZoneLevel] = useState(ZONE_LEVELS[0].value)
   const [intended, setIntended] = useState(null)
   const [actual, setActual] = useState(null)
   const [saving, setSaving] = useState(false)
@@ -64,6 +65,7 @@ export default function CommandSessionDetail({ sessionId, athleteId, basePath, b
   }
 
   const summary = useMemo(() => summarizeByPitchType(pitches ?? []), [pitches])
+  const zone = ZONE_LEVELS.find((l) => l.value === zoneLevel).zone
 
   if (!session || pitches === null) return <p className="text-sm text-neutral-400">Loading…</p>
 
@@ -105,11 +107,29 @@ export default function CommandSessionDetail({ sessionId, athleteId, basePath, b
             </div>
           </div>
 
+          <div className="flex items-center justify-center gap-1.5 mb-3">
+            {ZONE_LEVELS.map((l) => (
+              <button
+                key={l.value}
+                type="button"
+                onClick={() => setZoneLevel(l.value)}
+                className={`text-[11px] px-2.5 py-1 rounded-full font-medium border ${
+                  zoneLevel === l.value
+                    ? 'bg-neutral-900 text-white border-neutral-900'
+                    : 'bg-white text-neutral-600 border-neutral-200 hover:border-neutral-400'
+                }`}
+              >
+                {l.label} zone
+              </button>
+            ))}
+          </div>
+
           <StrikeZoneTargetPicker
             intended={intended}
             actual={actual}
             phase={phase}
             onPick={handlePick}
+            zone={zone}
           />
 
           <div className="flex gap-2 mt-4">
