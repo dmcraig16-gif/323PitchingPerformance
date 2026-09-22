@@ -4,79 +4,108 @@ import * as db from '../../lib/db.js'
 import { programTypeMeta, exerciseTypeMeta } from '../../lib/facilityConfig.js'
 import ExerciseLogger from '../../components/ExerciseLogger.jsx'
 
+const todayStr = () => new Date().toISOString().slice(0, 10)
+
 // Groups an athlete's exercise_logs by "the movement" (library_exercise_id
-// when the exercise came from the library, otherwise the workout-instance
-// id) so weight/velocity trends span every workout that reused it, not
-// just one program.
-function trendKey(exercise) {
-  return exercise.library_exercise_id ?? exercise.id
+// when the drill came from the library, otherwise the drill-instance id)
+// so weight/velocity trends span every session that reused it, not just
+// one week.
+function trendKey(drill) {
+  return drill.library_exercise_id ?? drill.id
 }
 
-function ProgramBlock({ program, workouts, exercisesByWorkout, athleteId, trendsByKey, onLogged }) {
-  return (
-    <div className="bg-white rounded-2xl shadow-card p-5 mb-5">
-      <div className="flex items-center gap-2 mb-1">
-        <h2 className="font-semibold">{program.name}</h2>
-        <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${programTypeMeta(program.type).badgeClass}`}>
-          {programTypeMeta(program.type).label}
-        </span>
-      </div>
-      {program.description && <p className="text-sm text-neutral-500 mb-4">{program.description}</p>}
+function formatDate(dateStr) {
+  const d = new Date(`${dateStr}T00:00:00`)
+  return d.toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' })
+}
 
-      {workouts.length === 0 ? (
-        <p className="text-sm text-neutral-400">No workouts added to this program yet.</p>
-      ) : (
-        <div className="space-y-4">
-          {workouts.map((w) => (
-            <div key={w.id} className="border-t border-neutral-100 pt-3">
-              <p className="text-sm font-medium mb-2">
-                {w.day_label ? `${w.day_label} — ` : ''}
-                {w.name}
-              </p>
-              <ul className="space-y-3">
-                {(exercisesByWorkout[w.id] ?? []).map((ex) => (
-                  <li key={ex.id} className="flex items-start justify-between gap-3 text-sm">
-                    <div>
-                      <div className="flex items-center gap-1.5">
-                        {ex.type && (
-                          <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-medium ${exerciseTypeMeta(ex.type).badgeClass}`}>
-                            {exerciseTypeMeta(ex.type).label}
-                          </span>
-                        )}
-                        <p className="font-medium text-neutral-800">
-                          {ex.name}
-                          {ex.sets && ex.reps ? (
-                            <span className="text-neutral-400 font-normal"> — {ex.sets}x{ex.reps}</span>
-                          ) : null}
-                          {ex.target_value ? (
-                            <span className="text-neutral-400 font-normal"> · target {ex.target_value}{ex.target_unit}</span>
-                          ) : null}
-                        </p>
-                      </div>
-                      {ex.description && <p className="text-neutral-500 text-xs mt-0.5">{ex.description}</p>}
-                      {ex.youtube_url && (
-                        <a
-                          href={ex.youtube_url}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="text-xs text-accent hover:text-accent-700 underline"
-                        >
-                          Watch demo
-                        </a>
-                      )}
-                    </div>
-                    <ExerciseLogger
-                      exercise={ex}
-                      athleteId={athleteId}
-                      trendLogs={trendsByKey[trendKey(ex)] ?? []}
-                      onLogged={(log) => onLogged(trendKey(ex), log)}
-                    />
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ))}
+function DrillItem({ drill, athleteId, trendLogs, onLogged }) {
+  return (
+    <li className="flex items-start justify-between gap-3 text-sm">
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center gap-1.5 flex-wrap">
+          {drill.type && (
+            <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-medium ${exerciseTypeMeta(drill.type).badgeClass}`}>
+              {exerciseTypeMeta(drill.type).label}
+            </span>
+          )}
+          <p className="font-medium text-neutral-800">
+            {drill.name}
+            {drill.sets && drill.reps ? (
+              <span className="text-neutral-400 font-normal"> — {drill.sets}x{drill.reps}</span>
+            ) : null}
+            {drill.target_value ? (
+              <span className="text-neutral-400 font-normal"> · target {drill.target_value}{drill.target_unit}</span>
+            ) : null}
+          </p>
         </div>
+        {drill.intent && <p className="text-neutral-500 text-xs mt-0.5 italic">{drill.intent}</p>}
+        {drill.description && <p className="text-neutral-500 text-xs mt-0.5">{drill.description}</p>}
+        {drill.youtube_url && (
+          <a
+            href={drill.youtube_url}
+            target="_blank"
+            rel="noreferrer"
+            className="text-xs text-accent hover:text-accent-700 underline"
+          >
+            Watch demo
+          </a>
+        )}
+      </div>
+      <ExerciseLogger
+        exercise={drill}
+        athleteId={athleteId}
+        trendLogs={trendLogs}
+        onLogged={onLogged}
+      />
+    </li>
+  )
+}
+
+function SessionCard({ session, program, drills, athleteId, trendsByKey, onLogged, highlighted, defaultOpen }) {
+  const [open, setOpen] = useState(defaultOpen)
+
+  return (
+    <div className={`bg-white rounded-2xl shadow-card p-5 mb-4 ${highlighted ? 'ring-2 ring-accent' : ''}`}>
+      <button
+        type="button"
+        className="w-full flex items-center justify-between gap-3 text-left"
+        onClick={() => setOpen((o) => !o)}
+      >
+        <div>
+          <div className="flex items-center gap-2 flex-wrap">
+            {highlighted && (
+              <span className="text-[10px] px-2 py-0.5 rounded-full font-semibold bg-accent text-white">Today</span>
+            )}
+            <span className="text-xs text-neutral-400">{formatDate(session.date)}</span>
+            {program && (
+              <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-medium ${programTypeMeta(program.type).badgeClass}`}>
+                {programTypeMeta(program.type).label}
+              </span>
+            )}
+          </div>
+          <h3 className="font-semibold mt-0.5">{session.name}</h3>
+          {session.notes && <p className="text-xs text-neutral-400 mt-0.5">{session.notes}</p>}
+        </div>
+        <span className="text-neutral-400 text-lg leading-none shrink-0">{open ? '−' : '+'}</span>
+      </button>
+
+      {open && (
+        drills.length === 0 ? (
+          <p className="text-sm text-neutral-400 mt-3">No drills in this session.</p>
+        ) : (
+          <ul className="space-y-3 mt-4 pt-3 border-t border-neutral-100">
+            {drills.map((d) => (
+              <DrillItem
+                key={d.id}
+                drill={d}
+                athleteId={athleteId}
+                trendLogs={trendsByKey[trendKey(d)] ?? []}
+                onLogged={(log) => onLogged(trendKey(d), log)}
+              />
+            ))}
+          </ul>
+        )
       )}
     </div>
   )
@@ -84,61 +113,82 @@ function ProgramBlock({ program, workouts, exercisesByWorkout, athleteId, trends
 
 export default function MyProgram() {
   const { profile } = useAuth()
-  const [programs, setPrograms] = useState(null)
-  const [workoutsByProgram, setWorkoutsByProgram] = useState({})
-  const [exercisesByWorkout, setExercisesByWorkout] = useState({})
+  const [sessions, setSessions] = useState(null)
+  const [drillsBySession, setDrillsBySession] = useState({})
+  const [programByAssignment, setProgramByAssignment] = useState({})
   const [trendsByKey, setTrendsByKey] = useState({})
   const athleteId = profile?.id
+  const coachId = profile?.coach_id
 
   useEffect(() => {
     if (!athleteId) return
-    db.listAssignedPrograms(athleteId).then(async (progs) => {
-      setPrograms(progs)
+    let cancelled = false
 
-      const workoutEntries = await Promise.all(
-        progs.map((p) => db.listWorkouts(p.id).then((ws) => [p.id, ws])),
+    async function load() {
+      const [assignments, sess, programs] = await Promise.all([
+        db.listAssignmentsForAthlete(athleteId),
+        db.listAthleteSessions(athleteId),
+        coachId ? db.listProgramsForCoach(coachId) : Promise.resolve([]),
+      ])
+      const programById = Object.fromEntries(programs.map((p) => [p.id, p]))
+      const progByAssignment = Object.fromEntries(
+        assignments.map((a) => [a.id, programById[a.program_id] ?? null]),
       )
-      const workoutsMap = Object.fromEntries(workoutEntries)
-      setWorkoutsByProgram(workoutsMap)
 
-      const allWorkouts = Object.values(workoutsMap).flat()
-      const exerciseEntries = await Promise.all(
-        allWorkouts.map((w) => db.listExercises(w.id).then((ex) => [w.id, ex])),
+      const drillEntries = await Promise.all(
+        sess.map((s) => db.listAthleteDrills(s.id).then((drills) => [s.id, drills])),
       )
-      const exercisesMap = Object.fromEntries(exerciseEntries)
-      setExercisesByWorkout(exercisesMap)
+      const drillsMap = Object.fromEntries(drillEntries)
 
-      const allExercises = Object.values(exercisesMap).flat()
+      const allDrills = Object.values(drillsMap).flat()
       const logEntries = await Promise.all(
-        allExercises.map((ex) => db.listExerciseLogsForExercise(ex.id).then((logs) => [ex, logs])),
+        allDrills.map((d) => db.listExerciseLogsForDrill(d.id).then((logs) => [d, logs])),
       )
       const grouped = {}
-      for (const [ex, logs] of logEntries) {
-        const key = trendKey(ex)
+      for (const [d, logs] of logEntries) {
+        const key = trendKey(d)
         grouped[key] = [...(grouped[key] ?? []), ...logs].sort((a, b) => a.date.localeCompare(b.date))
       }
+
+      if (cancelled) return
+      setSessions(sess)
+      setDrillsBySession(drillsMap)
+      setProgramByAssignment(progByAssignment)
       setTrendsByKey(grouped)
-    })
-  }, [athleteId])
+    }
+
+    load()
+    return () => {
+      cancelled = true
+    }
+  }, [athleteId, coachId])
 
   function handleLogged(key, log) {
     setTrendsByKey((prev) => ({ ...prev, [key]: [...(prev[key] ?? []), log] }))
   }
 
-  const programBlocks = useMemo(() => {
-    if (!programs) return null
-    return programs.map((p) => ({
-      program: p,
-      workouts: workoutsByProgram[p.id] ?? [],
-    }))
-  }, [programs, workoutsByProgram])
+  const today = todayStr()
+
+  const { todaySession, weeks } = useMemo(() => {
+    if (!sessions) return { todaySession: null, weeks: [] }
+    const byWeek = {}
+    for (const s of sessions) {
+      byWeek[s.week_number] = [...(byWeek[s.week_number] ?? []), s]
+    }
+    const weekNumbers = Object.keys(byWeek).map(Number).sort((a, b) => a - b)
+    return {
+      todaySession: sessions.find((s) => s.date === today) ?? null,
+      weeks: weekNumbers.map((n) => ({ weekNumber: n, sessions: byWeek[n] })),
+    }
+  }, [sessions, today])
 
   return (
     <div>
       <h1 className="text-[28px] font-semibold tracking-tight text-neutral-900 mb-6">My Program</h1>
-      {programBlocks === null ? (
+
+      {sessions === null ? (
         <p className="text-sm text-neutral-400">Loading…</p>
-      ) : programBlocks.length === 0 ? (
+      ) : sessions.length === 0 ? (
         <div className="bg-white rounded-2xl shadow-card p-5">
           <p className="text-sm text-neutral-500">
             You haven't been assigned a program yet. Once your coach assigns lifting or throwing
@@ -146,17 +196,46 @@ export default function MyProgram() {
           </p>
         </div>
       ) : (
-        programBlocks.map(({ program, workouts }) => (
-          <ProgramBlock
-            key={program.id}
-            program={program}
-            workouts={workouts}
-            exercisesByWorkout={exercisesByWorkout}
-            athleteId={athleteId}
-            trendsByKey={trendsByKey}
-            onLogged={handleLogged}
-          />
-        ))
+        <>
+          {todaySession && (
+            <div className="mb-6">
+              <p className="text-xs font-semibold text-neutral-400 uppercase tracking-wide mb-2">Today</p>
+              <SessionCard
+                session={todaySession}
+                program={programByAssignment[todaySession.assignment_id]}
+                drills={drillsBySession[todaySession.id] ?? []}
+                athleteId={athleteId}
+                trendsByKey={trendsByKey}
+                onLogged={handleLogged}
+                highlighted
+                defaultOpen
+              />
+            </div>
+          )}
+
+          {weeks.map(({ weekNumber, sessions: weekSessions }) => {
+            // Today's session already has its own card above — don't show
+            // it a second time in the week it belongs to.
+            const rest = weekSessions.filter((s) => s.id !== todaySession?.id)
+            if (rest.length === 0) return null
+            return (
+              <div key={weekNumber} className="mb-6">
+                <p className="text-xs font-semibold text-neutral-400 uppercase tracking-wide mb-2">Week {weekNumber}</p>
+                {rest.map((s) => (
+                  <SessionCard
+                    key={s.id}
+                    session={s}
+                    program={programByAssignment[s.assignment_id]}
+                    drills={drillsBySession[s.id] ?? []}
+                    athleteId={athleteId}
+                    trendsByKey={trendsByKey}
+                    onLogged={handleLogged}
+                  />
+                ))}
+              </div>
+            )
+          })}
+        </>
       )}
     </div>
   )

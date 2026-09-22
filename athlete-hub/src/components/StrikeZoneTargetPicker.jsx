@@ -46,8 +46,11 @@ export default function StrikeZoneTargetPicker({ intended, actual, phase, onPick
   function handleClick(e) {
     if (phase !== 'intended' && phase !== 'actual') return
     const rect = e.currentTarget.getBoundingClientRect()
-    const px = e.clientX - rect.left
-    const py = e.clientY - rect.top
+    // The SVG scales to fit narrow (phone) screens via viewBox, so convert
+    // the click's rendered-pixel position back into the fixed W×H
+    // coordinate space toSvgX/toSvgY and fromSvg operate in.
+    const px = ((e.clientX - rect.left) / rect.width) * W
+    const py = ((e.clientY - rect.top) / rect.height) * H
     onPick(fromSvg(px, py))
   }
 
@@ -56,11 +59,19 @@ export default function StrikeZoneTargetPicker({ intended, actual, phase, onPick
   return (
     <div>
       <svg
-        width={W}
-        height={H}
+        viewBox={`0 0 ${W} ${H}`}
         onClick={handleClick}
         className={phase === 'done' ? '' : 'cursor-crosshair'}
-        style={{ display: 'block', margin: '0 auto', background: '#f5f5f7', borderRadius: 8 }}
+        style={{
+          display: 'block',
+          margin: '0 auto',
+          width: '100%',
+          maxWidth: W,
+          height: 'auto',
+          aspectRatio: `${W} / ${H}`,
+          background: '#f5f5f7',
+          borderRadius: 8,
+        }}
       >
         {[-2, -1, 0, 1, 2].map((x) => (
           <line

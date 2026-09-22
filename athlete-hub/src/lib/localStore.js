@@ -60,7 +60,7 @@ export function remove(table, id) {
 // Bump this when the seed shape changes (new tables/fields) so a browser
 // that already seeded an older demo dataset regenerates instead of running
 // against stale data the new UI doesn't know how to read.
-const SEED_VERSION = '5'
+const SEED_VERSION = '6'
 const SEED_FLAG = `${PREFIX}seeded`
 
 export function ensureSeedData() {
@@ -68,10 +68,13 @@ export function ensureSeedData() {
   for (const table of [
     'profiles',
     'programs',
+    'program_weeks',
+    'template_sessions',
+    'template_drills',
     'program_assignments',
-    'workouts',
+    'athlete_sessions',
+    'athlete_drills',
     'exercise_library',
-    'exercises',
     'exercise_logs',
     'daily_checkins',
     'command_sessions',
@@ -147,6 +150,11 @@ export function ensureSeedData() {
     description: '2 minutes each side before lifting.',
   })
 
+  // ---------- programs (templates) ----------
+  //
+  // Pure templates, no dates — each gets 12 numbered weeks up front, same
+  // as createProgram() in db.js.
+
   const liftingProgram = insert('programs', {
     coach_id: coach.id,
     name: 'In-Season Strength — Phase 2',
@@ -161,77 +169,187 @@ export function ensureSeedData() {
     type: 'throwing',
   })
 
-  insert('program_assignments', { program_id: liftingProgram.id, athlete_id: jake.id })
-  insert('program_assignments', { program_id: throwingProgram.id, athlete_id: jake.id })
-  insert('program_assignments', { program_id: liftingProgram.id, athlete_id: maria.id })
+  const liftingWeeks = Array.from({ length: 12 }, (_, i) =>
+    insert('program_weeks', { program_id: liftingProgram.id, week_number: i + 1 }),
+  )
+  const throwingWeeks = Array.from({ length: 12 }, (_, i) =>
+    insert('program_weeks', { program_id: throwingProgram.id, week_number: i + 1 }),
+  )
+  const liftWeek1 = liftingWeeks[0]
+  const liftWeek2 = liftingWeeks[1]
+  const throwWeek1 = throwingWeeks[0]
 
-  const liftDay1 = insert('workouts', {
-    program_id: liftingProgram.id,
+  const liftDay1 = insert('template_sessions', {
+    week_id: liftWeek1.id,
+    day_number: 1,
     name: 'Lower Body — Heavy',
-    day_label: 'Monday',
     order_index: 0,
   })
-  const deadliftEx = insert('exercises', {
-    workout_id: liftDay1.id,
-    library_exercise_id: trapBarDeadlift.id,
-    name: trapBarDeadlift.name,
-    type: trapBarDeadlift.type,
-    description: trapBarDeadlift.description,
-    sets: 4,
-    reps: 3,
-    target_value: 315,
-    target_unit: 'lb',
+  const liftDay1Drills = [
+    insert('template_drills', {
+      session_id: liftDay1.id,
+      library_exercise_id: trapBarDeadlift.id,
+      name: trapBarDeadlift.name,
+      type: trapBarDeadlift.type,
+      description: trapBarDeadlift.description,
+      intent: 'Build to a heavy triple, reset each rep',
+      sets: 4,
+      reps: 3,
+      target_value: 315,
+      target_unit: 'lb',
+      order_index: 0,
+    }),
+    insert('template_drills', {
+      session_id: liftDay1.id,
+      library_exercise_id: rfeSplitSquat.id,
+      name: rfeSplitSquat.name,
+      type: rfeSplitSquat.type,
+      description: rfeSplitSquat.description,
+      intent: 'Control the eccentric, drive through midfoot',
+      sets: 3,
+      reps: 8,
+      order_index: 1,
+    }),
+    insert('template_drills', {
+      session_id: liftDay1.id,
+      library_exercise_id: medBallRotational.id,
+      name: medBallRotational.name,
+      type: medBallRotational.type,
+      description: medBallRotational.description,
+      intent: 'Full extension, let the hips lead',
+      sets: 3,
+      reps: 5,
+      order_index: 2,
+    }),
+    insert('template_drills', {
+      session_id: liftDay1.id,
+      library_exercise_id: bandPullApart.id,
+      name: bandPullApart.name,
+      type: bandPullApart.type,
+      description: bandPullApart.description,
+      intent: 'Slow and controlled through the full range',
+      sets: 3,
+      reps: 20,
+      order_index: 3,
+    }),
+  ]
+
+  const liftDay2 = insert('template_sessions', {
+    week_id: liftWeek2.id,
+    day_number: 1,
+    name: 'Lower Body — Heavy',
     order_index: 0,
   })
-  insert('exercises', {
-    workout_id: liftDay1.id,
-    library_exercise_id: rfeSplitSquat.id,
-    name: rfeSplitSquat.name,
-    type: rfeSplitSquat.type,
-    description: rfeSplitSquat.description,
-    sets: 3,
-    reps: 8,
-    order_index: 1,
+  const liftDay2Drills = [
+    insert('template_drills', {
+      session_id: liftDay2.id,
+      library_exercise_id: trapBarDeadlift.id,
+      name: trapBarDeadlift.name,
+      type: trapBarDeadlift.type,
+      description: trapBarDeadlift.description,
+      intent: 'Add 10lb from last week if bar speed stayed crisp',
+      sets: 4,
+      reps: 3,
+      target_value: 325,
+      target_unit: 'lb',
+      order_index: 0,
+    }),
+  ]
+
+  const throwDay1 = insert('template_sessions', {
+    week_id: throwWeek1.id,
+    day_number: 2,
+    name: 'Bullpen — Fastball Command',
+    order_index: 0,
   })
-  insert('exercises', {
-    workout_id: liftDay1.id,
-    library_exercise_id: medBallRotational.id,
-    name: medBallRotational.name,
-    type: medBallRotational.type,
-    description: medBallRotational.description,
-    sets: 3,
-    reps: 5,
-    order_index: 2,
+  const throwDay1Drills = [
+    insert('template_drills', {
+      session_id: throwDay1.id,
+      library_exercise_id: fastballCorners.id,
+      name: fastballCorners.name,
+      type: fastballCorners.type,
+      description: fastballCorners.description,
+      intent: '90% intent, live at both knees',
+      sets: 3,
+      reps: 5,
+      target_value: 92,
+      target_unit: 'mph',
+      order_index: 0,
+    }),
+  ]
+
+  // ---------- assignments (where dates enter) ----------
+  //
+  // Assign every athlete starting today, so week 1 day 1 lands on "today"
+  // in the demo — the same date math generateAthleteSessions() in db.js
+  // runs for a real assignment.
+  const todayStr = new Date().toISOString().slice(0, 10)
+
+  function seedSessionDate(startDate, weekNumber, dayNumber) {
+    const d = new Date(`${startDate}T00:00:00`)
+    d.setDate(d.getDate() + (weekNumber - 1) * 7 + (dayNumber - 1))
+    return d.toISOString().slice(0, 10)
+  }
+
+  const jakeLiftAssignment = insert('program_assignments', {
+    program_id: liftingProgram.id,
+    athlete_id: jake.id,
+    start_date: todayStr,
   })
-  insert('exercises', {
-    workout_id: liftDay1.id,
-    library_exercise_id: bandPullApart.id,
-    name: bandPullApart.name,
-    type: bandPullApart.type,
-    description: bandPullApart.description,
-    sets: 3,
-    reps: 20,
-    order_index: 3,
+  const jakeThrowAssignment = insert('program_assignments', {
+    program_id: throwingProgram.id,
+    athlete_id: jake.id,
+    start_date: todayStr,
+  })
+  const mariaLiftAssignment = insert('program_assignments', {
+    program_id: liftingProgram.id,
+    athlete_id: maria.id,
+    start_date: todayStr,
   })
 
-  const throwDay1 = insert('workouts', {
-    program_id: throwingProgram.id,
-    name: 'Bullpen — Fastball Command',
-    day_label: 'Tuesday',
-    order_index: 0,
-  })
-  const fastballEx = insert('exercises', {
-    workout_id: throwDay1.id,
-    library_exercise_id: fastballCorners.id,
-    name: fastballCorners.name,
-    type: fastballCorners.type,
-    description: fastballCorners.description,
-    sets: 3,
-    reps: 5,
-    target_value: 92,
-    target_unit: 'mph',
-    order_index: 0,
-  })
+  // ---------- athlete_sessions / athlete_drills (the dated schedule) ----------
+  //
+  // Snapshot each assignment's template into dated, athlete-owned rows —
+  // mirrors generateAthleteSessions() in db.js.
+  function seedAthleteSession(assignment, week, templateSession, templateDrills) {
+    const athleteSession = insert('athlete_sessions', {
+      assignment_id: assignment.id,
+      athlete_id: assignment.athlete_id,
+      template_session_id: templateSession.id,
+      week_number: week.week_number,
+      day_number: templateSession.day_number,
+      date: seedSessionDate(assignment.start_date, week.week_number, templateSession.day_number),
+      name: templateSession.name,
+      notes: templateSession.notes ?? null,
+      order_index: templateSession.order_index,
+    })
+    const athleteDrills = templateDrills.map((td) =>
+      insert('athlete_drills', {
+        athlete_session_id: athleteSession.id,
+        template_drill_id: td.id,
+        library_exercise_id: td.library_exercise_id,
+        name: td.name,
+        type: td.type,
+        description: td.description,
+        intent: td.intent,
+        sets: td.sets,
+        reps: td.reps,
+        target_value: td.target_value,
+        target_unit: td.target_unit,
+        youtube_url: td.youtube_url,
+        order_index: td.order_index,
+      }),
+    )
+    return { athleteSession, athleteDrills }
+  }
+
+  const jakeLiftWeek1 = seedAthleteSession(jakeLiftAssignment, liftWeek1, liftDay1, liftDay1Drills)
+  seedAthleteSession(jakeLiftAssignment, liftWeek2, liftDay2, liftDay2Drills)
+  const jakeThrowWeek1 = seedAthleteSession(jakeThrowAssignment, throwWeek1, throwDay1, throwDay1Drills)
+  seedAthleteSession(mariaLiftAssignment, liftWeek1, liftDay1, liftDay1Drills)
+
+  const jakeDeadliftDrill = jakeLiftWeek1.athleteDrills[0]
+  const jakeFastballDrill = jakeThrowWeek1.athleteDrills[0]
 
   // A few weeks of logged results so My Program's weight/velocity trends
   // have something to show right away.
@@ -241,7 +359,7 @@ export function ensureSeedData() {
     const d = new Date(today)
     d.setDate(d.getDate() - (deadliftProgression.length - i) * 4)
     insert('exercise_logs', {
-      exercise_id: deadliftEx.id,
+      drill_id: jakeDeadliftDrill.id,
       athlete_id: jake.id,
       date: d.toISOString().slice(0, 10),
       weight,
@@ -253,7 +371,7 @@ export function ensureSeedData() {
     const d = new Date(today)
     d.setDate(d.getDate() - (velocityProgression.length - i) * 3)
     insert('exercise_logs', {
-      exercise_id: fastballEx.id,
+      drill_id: jakeFastballDrill.id,
       athlete_id: jake.id,
       date: d.toISOString().slice(0, 10),
       velocity,

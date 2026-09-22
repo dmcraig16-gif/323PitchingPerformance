@@ -23,14 +23,21 @@ React + Supabase (Postgres, Auth, Storage, Row Level Security).
 
 ```
 profiles            id, user_id, role (coach|athlete), name, email, coach_id (nullable, fk->profiles)
-programs             id, coach_id, name, description
-program_assignments  id, program_id, athlete_id, start_date, status
-workouts             id, program_id, name, order_index, day_label
+programs             id, coach_id, name, description, type      -- pure template, no dates
+program_weeks         id, program_id, week_number (1-12), name
+template_sessions     id, week_id (fk->program_weeks), day_number (1-7), name, notes, order_index
 exercise_library     id, coach_id, name, type, description, video_url
-exercises            id, workout_id, library_exercise_id (fk->exercise_library), name, type,
-                     description, sets, reps, target_value, target_unit, youtube_url, order_index
-exercise_logs        id, exercise_id, athlete_id, date, sets_completed, reps_completed,
-                     weight, velocity, notes
+template_drills        id, session_id (fk->template_sessions), library_exercise_id (fk->exercise_library),
+                       name, type, description, intent, sets, reps, target_value, target_unit,
+                       youtube_url, order_index
+program_assignments  id, program_id, athlete_id, start_date, status   -- where dates enter
+athlete_sessions      id, assignment_id, athlete_id, template_session_id (nullable), week_number,
+                       day_number, date, name, notes, order_index     -- the athlete's dated schedule
+athlete_drills         id, athlete_session_id, template_drill_id (nullable), library_exercise_id,
+                       name, type, description, intent, sets, reps, target_value, target_unit,
+                       youtube_url, order_index
+exercise_logs        id, drill_id (fk->athlete_drills), athlete_id, date, sets_completed,
+                     reps_completed, weight, velocity, notes
 journal_prompts      id, date or recurring_rule, text, category
 journal_entries      id, athlete_id, prompt_id (nullable), date, content
 devotionals          id, date, title, body, media_url
@@ -65,22 +72,37 @@ schema migration. Same pattern for `exercise_library.type` /
 
 `exercise_library` is the Exercise Builder's reusable catalog — name, type,
 a coaching-cue description, and a demo video URL, defined once per coach.
-`exercises` (an exercise as used inside one specific workout) copies
-name/type/description/video from the library entry at add-time and keeps
-`library_exercise_id` for traceability; sets/reps/description/target can be
-overridden per workout without touching the library. Copying rather than
-referencing live means a program is a snapshot — editing a library
-exercise later doesn't retroactively change workouts already built from
-it. `target_value`/`target_unit` is the prescribed load (lb) or velocity
-(mph) for that exercise in that workout.
+
+**Program is a pure template, with no dates anywhere.** It's built out of
+`program_weeks` (numbered 1-12, created automatically alongside the
+program), `template_sessions` inside a week (ordered by `day_number`
+1-7), and `template_drills` inside a session (sets, reps, `intent`, a
+video link) — `template_drills` copies name/type/description/video from
+the library entry at add-time and keeps `library_exercise_id` for
+traceability, same snapshot pattern as before: editing a library exercise
+later doesn't retroactively change a template already built from it.
+
+**Assignment is where dates enter.** Assigning a program to an athlete
+(`program_assignments`, now with a `start_date`) snapshots the template's
+current shape into that athlete's own dated rows —
+`generateAthleteSessions()` in `db.js` walks every week → session → drill
+and creates a matching `athlete_sessions`/`athlete_drills` row, with each
+session's `date` computed as `start_date + (week_number-1)*7 +
+(day_number-1)` days. Those rows are the athlete's actual schedule and are
+independently editable — `shiftAthleteSessions()` moves one athlete's
+sessions (e.g. after a week-three injury) by a number of days without
+touching the template or any other athlete's schedule. My Program reads
+only from `athlete_sessions`/`athlete_drills`; Program Builder reads only
+from the template tables.
 
 `exercise_logs` is what an athlete actually did — weight + reps_completed
-for a lifting exercise, velocity for a throwing one.
+for a lifting drill, velocity for a throwing one — logged against a
+specific `athlete_drills` row (`drill_id`), never the template.
 `src/lib/exerciseTrends.js` turns a list of these into a latest value, a
 delta vs. the previous entry, and a sparkline series; My Program groups
-logs by `exercises.library_exercise_id` (falling back to the exercise row
-itself) so the trend spans every workout that reused the same movement,
-not just one program instance.
+logs by `athlete_drills.library_exercise_id` (falling back to the drill
+row itself) so the trend spans every session that reused the same
+movement, not just one week.
 
 `daily_checkins.readiness_score` is computed client-side
 (`src/lib/readiness.js`) from the weighted slider factors defined in
@@ -124,10 +146,12 @@ read/write their own rows; coaches can read/write rows for athletes whose
   Recovery blends into the score); live score on a circular gauge with
   band (Full Intensity / Modify Intensity / Recovery Day), 7-day average,
   and a 14-day band-colored trend chart
-- **My Program** — list of lifting/throwing workouts → exercise detail
-  (type badge, sets/reps/target, description, embedded YouTube demo) →
-  log a result per exercise (weight+reps or velocity depending on type),
-  see the delta vs. last time and a sparkline once there's a trend
+- **My Program** — the athlete's generated dated schedule (`athlete_sessions`),
+  grouped by week; today's session (if any) gets its own card up top,
+  expanded by default. Each drill shows its type badge, sets/reps/target,
+  coaching intent, description, and embedded YouTube demo → log a result
+  per drill (weight+reps or velocity depending on type), see the delta vs.
+  last time and a sparkline once there's a trend
 - **Command Tracker** — start a bullpen session, then log each pitch one at
   a time: pitch type, velocity, click-to-place intended target vs. actual
   result on a strike-zone grid, auto-computed miss distance. Produces a
@@ -148,11 +172,15 @@ read/write their own rows; coaches can read/write rows for athletes whose
 - **Exercise Builder** — a reusable library of exercises (name, type,
   coaching-cue description, demo video — auto-embedded inline for YouTube
   links), filterable by type, editable/deletable in place
-- **Program builder (Workout Builder)** — Trainerize-style: create a
-  lifting or throwing program → add a day/workout → click an exercise from
-  a library side-panel to drop it in → edit sets/reps/target weight-or-
-  velocity inline → reorder with up/down → duplicate or delete a
-  workout/day → assign to one or more athletes individually
+- **Program builder** — Trainerize-style, template/assignment separated:
+  create a lifting or throwing program (a pure template, no dates —
+  12 weeks created automatically) → pick a week (1-12 pill selector) → add
+  a day-numbered session → click a drill from a library side-panel to drop
+  it in → edit sets/reps/intent/target inline → reorder with up/down →
+  duplicate or delete a session → assign to one or more athletes,
+  picking a start date per assignment (generates that athlete's actual
+  dated schedule; shifting one athlete's dates later, e.g. after an
+  injury, never touches the template or other athletes)
 - **Content library** — mental game talks, devotionals, journal prompts,
   habit templates (CRUD)
 - **Athlete detail** — each athlete's profile is split into category tabs
@@ -203,10 +231,18 @@ read/write their own rows; coaches can read/write rows for athletes whose
    HR tracked for trends), circular gauge (`ReadinessGauge.jsx`), 7-day
    average, band-colored 14/21-day trend bars — consistent across
    Dashboard, the Readiness page, and the coach's Readiness tab
-8. Devotionals (coach posts, athlete views)
-9. Habit templates + assignments + daily check-off + streaks
-10. Mental game content library
-11. Polish: notifications/reminders, coach-visible journal entries, CSV
+8. ✅ Program/assignment separation: Program → Week (1-12) → Session
+   (day-numbered) → Drill (sets/reps/intent/video) as a pure template;
+   assigning picks a start date and generates the athlete's own dated
+   schedule (`athlete_sessions`/`athlete_drills`), editable independently
+   of the template
+9. ✅ Mobile-first pass: bottom tab bar + slide-up "More"/hamburger nav
+   below `md`, athlete pages audited for no horizontal scroll and
+   touch-sized targets (coach pages get a lighter pass — desktop-first)
+10. Devotionals (coach posts, athlete views)
+11. Habit templates + assignments + daily check-off + streaks
+12. Mental game content library
+13. Polish: notifications/reminders, coach-visible journal entries, CSV
     import for velo/command data from Trackman/Rapsodo, real WHOOP OAuth
     sync (today's WHOOP fields are manual entry only)
 
@@ -241,7 +277,11 @@ edit for this facility rather than baked into the UI:
 - Whether journal entries are private or visible to the coach (currently
   athlete-only; not surfaced anywhere in the coach view)
 - Push/email reminders for daily check-in & habits
-- Mobile: responsive web first, native app later if needed
+- Mobile: responsive web first (done — see build order item 9), native
+  app later if needed. Athletes are iPhone-primary, so `AppShell.jsx`
+  switches to a bottom tab bar + slide-up sheets below the `md` breakpoint;
+  coaches stay on the desktop sidebar with a lighter mobile pass (hamburger
+  drawer, same nav)
 - Reordering exercises is up/down buttons, not drag-and-drop; fine at
   typical workout lengths but worth revisiting if workouts get long
 - WHOOP is manual entry only (no OAuth sync) — the app has no backend

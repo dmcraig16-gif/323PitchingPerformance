@@ -147,26 +147,28 @@ export default function CommandSessionDetail({ sessionId, athleteId, basePath, b
                   <Bar dataKey="avgMissIn" fill="#0071e3" radius={[4, 4, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
-              <table className="w-full text-sm mt-3">
-                <thead>
-                  <tr className="text-left text-xs text-neutral-400">
-                    <th className="pb-1">Pitch</th>
-                    <th className="pb-1">Count</th>
-                    <th className="pb-1">Avg miss</th>
-                    <th className="pb-1">Avg velo</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {summary.byType.map((t) => (
-                    <tr key={t.pitchType} className="border-t border-neutral-100">
-                      <td className="py-1">{t.pitchType}</td>
-                      <td className="py-1">{t.count}</td>
-                      <td className="py-1">{round1(t.avgMissIn)}"</td>
-                      <td className="py-1">{t.avgVelocity ? `${round1(t.avgVelocity)} mph` : '—'}</td>
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm mt-3">
+                  <thead>
+                    <tr className="text-left text-xs text-neutral-400">
+                      <th className="pb-1">Pitch</th>
+                      <th className="pb-1">Count</th>
+                      <th className="pb-1">Avg miss</th>
+                      <th className="pb-1">Avg velo</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody>
+                    {summary.byType.map((t) => (
+                      <tr key={t.pitchType} className="border-t border-neutral-100">
+                        <td className="py-1">{t.pitchType}</td>
+                        <td className="py-1">{t.count}</td>
+                        <td className="py-1">{round1(t.avgMissIn)}"</td>
+                        <td className="py-1">{t.avgVelocity ? `${round1(t.avgVelocity)} mph` : '—'}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
               <p className="text-xs text-neutral-400 mt-3">
                 Pen avg: {round1(summary.overall.avgMissIn)}" across {summary.overall.count} pitches
               </p>
@@ -178,7 +180,7 @@ export default function CommandSessionDetail({ sessionId, athleteId, basePath, b
           {pitches.length === 0 ? (
             <p className="text-sm text-neutral-500">Log the first pitch to start the list.</p>
           ) : (
-            <div className="max-h-[360px] overflow-y-auto">
+            <div className="max-h-[360px] overflow-y-auto overflow-x-auto">
               <table className="w-full text-sm">
                 <thead className="sticky top-0 bg-white">
                   <tr className="text-left text-xs text-neutral-400">

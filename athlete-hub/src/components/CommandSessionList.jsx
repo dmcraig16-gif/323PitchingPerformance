@@ -100,22 +100,24 @@ export default function CommandSessionList({ athleteId, loggedByProfileId, baseP
         ) : sessions.length === 0 ? (
           <p className="text-sm text-neutral-500">No bullpen sessions logged yet.</p>
         ) : (
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="text-left text-xs text-neutral-400">
-                <th className="pb-2">Date</th>
-                <th className="pb-2">Session</th>
-                <th className="pb-2">Pitches</th>
-                <th className="pb-2">Avg miss</th>
-                <th className="pb-2"></th>
-              </tr>
-            </thead>
-            <tbody>
-              {sessions.map((s) => (
-                <SessionRow key={s.id} session={s} basePath={basePath} />
-              ))}
-            </tbody>
-          </table>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="text-left text-xs text-neutral-400">
+                  <th className="pb-2">Date</th>
+                  <th className="pb-2">Session</th>
+                  <th className="pb-2">Pitches</th>
+                  <th className="pb-2">Avg miss</th>
+                  <th className="pb-2"></th>
+                </tr>
+              </thead>
+              <tbody>
+                {sessions.map((s) => (
+                  <SessionRow key={s.id} session={s} basePath={basePath} />
+                ))}
+              </tbody>
+            </table>
+          </div>
         )}
       </div>
     </div>

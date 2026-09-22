@@ -10,23 +10,31 @@ import {
   THROWING_EXERCISE_TYPE,
 } from '../../lib/facilityConfig.js'
 
+const today = () => new Date().toISOString().slice(0, 10)
+
 function NewProgramForm({ coachId, onCreated }) {
   const [name, setName] = useState('')
   const [description, setDescription] = useState('')
   const [type, setType] = useState(PROGRAM_TYPES[0].value)
+  const [creating, setCreating] = useState(false)
 
   async function handleSubmit(e) {
     e.preventDefault()
     if (!name) return
+    setCreating(true)
     const program = await db.createProgram({ coach_id: coachId, name, description, type })
     setName('')
     setDescription('')
+    setCreating(false)
     onCreated(program)
   }
 
   return (
     <form onSubmit={handleSubmit} className="bg-white rounded-2xl shadow-card p-5 mb-5">
-      <h2 className="font-semibold mb-3">New program</h2>
+      <h2 className="font-semibold mb-1">New program</h2>
+      <p className="text-xs text-neutral-500 mb-3">
+        A reusable template — no dates yet. It's built out with 12 weeks you fill in as needed.
+      </p>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-3">
         <input
           value={name}
@@ -54,55 +62,63 @@ function NewProgramForm({ coachId, onCreated }) {
         rows={2}
         className="w-full border rounded-xl px-3 py-2 text-sm mb-3"
       />
-      <button type="submit" className="bg-accent text-white hover:bg-accent-600 transition-colors rounded-xl px-4 py-2 text-sm font-medium">
-        Create program
+      <button
+        type="submit"
+        disabled={creating}
+        className="bg-accent text-white hover:bg-accent-600 transition-colors rounded-xl px-4 py-2 text-sm font-medium disabled:opacity-50"
+      >
+        {creating ? 'Creating…' : 'Create program'}
       </button>
     </form>
   )
 }
 
-function NewWorkoutForm({ programId, onCreated, nextOrderIndex }) {
+function NewSessionForm({ weekId, onCreated, nextOrderIndex }) {
   const [name, setName] = useState('')
-  const [dayLabel, setDayLabel] = useState('')
+  const [dayNumber, setDayNumber] = useState('')
 
   async function handleSubmit(e) {
     e.preventDefault()
-    if (!name) return
-    const workout = await db.createWorkout({
-      program_id: programId,
+    if (!name || !dayNumber) return
+    const session = await db.createTemplateSession({
+      week_id: weekId,
+      day_number: Number(dayNumber),
       name,
-      day_label: dayLabel,
       order_index: nextOrderIndex,
     })
     setName('')
-    setDayLabel('')
-    onCreated(workout)
+    setDayNumber('')
+    onCreated(session)
   }
 
   return (
-    <form onSubmit={handleSubmit} className="flex gap-2">
+    <form onSubmit={handleSubmit} className="flex flex-wrap gap-2">
       <input
-        value={dayLabel}
-        onChange={(e) => setDayLabel(e.target.value)}
-        placeholder="Day (e.g. Monday)"
-        className="border rounded-xl px-2 py-1.5 text-xs w-32"
+        value={dayNumber}
+        onChange={(e) => setDayNumber(e.target.value)}
+        placeholder="Day #"
+        type="number"
+        min={1}
+        max={7}
+        className="border rounded-xl px-2 py-1.5 text-xs w-20 shrink-0"
+        required
       />
       <input
         value={name}
         onChange={(e) => setName(e.target.value)}
-        placeholder="Workout name"
-        className="border rounded-xl px-2 py-1.5 text-xs flex-1"
+        placeholder="Session name (e.g. Lower Body — Heavy)"
+        className="border rounded-xl px-2 py-1.5 text-xs flex-1 min-w-[10rem]"
         required
       />
-      <button type="submit" className="bg-accent text-white hover:bg-accent-600 transition-colors rounded-xl px-3 py-1.5 text-xs font-medium whitespace-nowrap">
-        + Add day
+      <button type="submit" className="bg-accent text-white hover:bg-accent-600 transition-colors rounded-xl px-3 py-1.5 text-xs font-medium whitespace-nowrap shrink-0">
+        + Add session
       </button>
     </form>
   )
 }
 
 // Click-to-add exercise picker, filterable by type — the "browse your
-// library while building a workout" half of the Trainerize-style layout.
+// library while building a session" half of the Trainerize-style layout.
 function ExerciseLibraryPicker({ coachId, onAdd }) {
   const [library, setLibrary] = useState(null)
   const [filterType, setFilterType] = useState('all')
@@ -128,7 +144,7 @@ function ExerciseLibraryPicker({ coachId, onAdd }) {
 
   return (
     <div className="bg-neutral-50 border border-neutral-200 rounded-xl p-3">
-      <p className="text-xs font-medium text-neutral-500 mb-2">Add from your library</p>
+      <p className="text-xs font-medium text-neutral-500 mb-2">Add a drill from your library</p>
       <div className="flex flex-wrap gap-1.5 mb-2">
         <button
           onClick={() => setFilterType('all')}
@@ -171,23 +187,24 @@ function ExerciseLibraryPicker({ coachId, onAdd }) {
   )
 }
 
-// One exercise row inside a workout, inline-editable — sets/reps/target
-// save on blur, no separate "edit mode" needed. Up/down reorder swaps
-// order_index with the neighboring row.
-function ExerciseRow({ exercise, canMoveUp, canMoveDown, onMove, onRemove, onChange }) {
-  const [sets, setSets] = useState(exercise.sets ?? '')
-  const [reps, setReps] = useState(exercise.reps ?? '')
-  const [target, setTarget] = useState(exercise.target_value ?? '')
-  const targetUnit = exercise.type === THROWING_EXERCISE_TYPE ? 'mph' : 'lb'
+// One drill row inside a session, inline-editable — sets/reps/intent/
+// target save on blur, no separate "edit mode" needed. Up/down reorder
+// swaps order_index with the neighboring row.
+function DrillRow({ drill, canMoveUp, canMoveDown, onMove, onRemove, onChange }) {
+  const [sets, setSets] = useState(drill.sets ?? '')
+  const [reps, setReps] = useState(drill.reps ?? '')
+  const [intent, setIntent] = useState(drill.intent ?? '')
+  const [target, setTarget] = useState(drill.target_value ?? '')
+  const targetUnit = drill.type === THROWING_EXERCISE_TYPE ? 'mph' : 'lb'
 
-  async function saveField(field, value) {
-    const patch = { [field]: value === '' ? null : Number(value) }
-    const updated = await db.updateExercise(exercise.id, patch)
+  async function saveField(field, value, numeric = true) {
+    const patch = { [field]: value === '' ? null : numeric ? Number(value) : value }
+    const updated = await db.updateTemplateDrill(drill.id, patch)
     onChange(updated)
   }
 
   return (
-    <div className="flex items-center gap-2 py-1.5">
+    <div className="flex flex-wrap items-center gap-2 py-1.5">
       <div className="flex flex-col -my-1">
         <button
           onClick={() => onMove(-1)}
@@ -207,10 +224,10 @@ function ExerciseRow({ exercise, canMoveUp, canMoveDown, onMove, onRemove, onCha
         </button>
       </div>
 
-      <span className={`shrink-0 text-[10px] px-1.5 py-0.5 rounded-full font-medium ${exerciseTypeMeta(exercise.type).badgeClass}`}>
-        {exerciseTypeMeta(exercise.type).label}
+      <span className={`shrink-0 text-[10px] px-1.5 py-0.5 rounded-full font-medium ${exerciseTypeMeta(drill.type).badgeClass}`}>
+        {exerciseTypeMeta(drill.type).label}
       </span>
-      <span className="text-sm font-medium text-neutral-800 flex-1 truncate">{exercise.name}</span>
+      <span className="text-sm font-medium text-neutral-800 flex-1 min-w-[8rem] truncate">{drill.name}</span>
 
       <input
         value={sets}
@@ -229,6 +246,13 @@ function ExerciseRow({ exercise, canMoveUp, canMoveDown, onMove, onRemove, onCha
         type="number"
         className="w-14 border border-neutral-200 rounded-lg px-1.5 py-1 text-xs text-center"
       />
+      <input
+        value={intent}
+        onChange={(e) => setIntent(e.target.value)}
+        onBlur={() => saveField('intent', intent, false)}
+        placeholder="Intent"
+        className="w-24 border border-neutral-200 rounded-lg px-1.5 py-1 text-xs"
+      />
       <div className="flex items-center gap-1">
         <input
           value={target}
@@ -244,7 +268,7 @@ function ExerciseRow({ exercise, canMoveUp, canMoveDown, onMove, onRemove, onCha
       <button
         onClick={onRemove}
         className="text-neutral-300 hover:text-danger transition-colors text-sm px-1"
-        aria-label="Remove exercise"
+        aria-label="Remove drill"
       >
         ✕
       </button>
@@ -252,16 +276,16 @@ function ExerciseRow({ exercise, canMoveUp, canMoveDown, onMove, onRemove, onCha
   )
 }
 
-function WorkoutBlock({ workout, coachId, workoutCount, onDuplicated, onDeleted }) {
-  const [exercises, setExercises] = useState(null)
+function SessionBlock({ session, coachId, sessionCount, onDuplicated, onDeleted }) {
+  const [drills, setDrills] = useState(null)
 
   useEffect(() => {
-    db.listExercises(workout.id).then(setExercises)
-  }, [workout.id])
+    db.listTemplateDrills(session.id).then(setDrills)
+  }, [session.id])
 
   async function handleAdd(libraryExercise) {
-    const exercise = await db.createExercise({
-      workout_id: workout.id,
+    const drill = await db.createTemplateDrill({
+      session_id: session.id,
       library_exercise_id: libraryExercise.id,
       name: libraryExercise.name,
       type: libraryExercise.type,
@@ -269,100 +293,98 @@ function WorkoutBlock({ workout, coachId, workoutCount, onDuplicated, onDeleted 
       youtube_url: libraryExercise.video_url,
       sets: 3,
       reps: 10,
-      order_index: exercises.length,
+      order_index: drills.length,
     })
-    setExercises((prev) => [...prev, exercise])
+    setDrills((prev) => [...prev, drill])
   }
 
   function handleChange(updated) {
-    setExercises((prev) => prev.map((ex) => (ex.id === updated.id ? updated : ex)))
+    setDrills((prev) => prev.map((d) => (d.id === updated.id ? updated : d)))
   }
 
   async function handleRemove(id) {
-    await db.deleteExercise(id)
-    setExercises((prev) => prev.filter((ex) => ex.id !== id))
+    await db.deleteTemplateDrill(id)
+    setDrills((prev) => prev.filter((d) => d.id !== id))
   }
 
   async function handleMove(index, direction) {
-    const target = exercises[index + direction]
-    const current = exercises[index]
+    const target = drills[index + direction]
+    const current = drills[index]
     if (!target) return
     const [updatedCurrent, updatedTarget] = await Promise.all([
-      db.updateExercise(current.id, { order_index: target.order_index }),
-      db.updateExercise(target.id, { order_index: current.order_index }),
+      db.updateTemplateDrill(current.id, { order_index: target.order_index }),
+      db.updateTemplateDrill(target.id, { order_index: current.order_index }),
     ])
-    const next = [...exercises]
+    const next = [...drills]
     next[index] = updatedTarget
     next[index + direction] = updatedCurrent
-    setExercises(next.sort((a, b) => a.order_index - b.order_index))
+    setDrills(next.sort((a, b) => a.order_index - b.order_index))
   }
 
   async function handleDuplicate() {
-    const copy = await db.createWorkout({
-      program_id: workout.program_id,
-      name: `${workout.name} (copy)`,
-      day_label: workout.day_label,
-      order_index: workoutCount,
+    const copy = await db.createTemplateSession({
+      week_id: session.week_id,
+      day_number: session.day_number,
+      name: `${session.name} (copy)`,
+      order_index: sessionCount,
     })
     await Promise.all(
-      exercises.map((ex) =>
-        db.createExercise({
-          workout_id: copy.id,
-          library_exercise_id: ex.library_exercise_id,
-          name: ex.name,
-          type: ex.type,
-          description: ex.description,
-          youtube_url: ex.youtube_url,
-          sets: ex.sets,
-          reps: ex.reps,
-          target_value: ex.target_value,
-          target_unit: ex.target_unit,
-          order_index: ex.order_index,
+      drills.map((d) =>
+        db.createTemplateDrill({
+          session_id: copy.id,
+          library_exercise_id: d.library_exercise_id,
+          name: d.name,
+          type: d.type,
+          description: d.description,
+          intent: d.intent,
+          youtube_url: d.youtube_url,
+          sets: d.sets,
+          reps: d.reps,
+          target_value: d.target_value,
+          target_unit: d.target_unit,
+          order_index: d.order_index,
         }),
       ),
     )
-    // The new WorkoutBlock mounts from this and fetches its own exercises
-    // (already persisted above), so nothing more to pass up.
     onDuplicated(copy)
   }
 
-  async function handleDeleteWorkout() {
-    if (!window.confirm(`Delete "${workout.name}"? This removes its exercises too.`)) return
-    await db.deleteWorkout(workout.id)
-    onDeleted(workout.id)
+  async function handleDeleteSession() {
+    if (!window.confirm(`Delete "${session.name}"? This removes its drills too.`)) return
+    await db.deleteTemplateSession(session.id)
+    onDeleted(session.id)
   }
 
   return (
     <div className="border border-neutral-100 rounded-xl p-3 mb-3">
       <div className="flex items-center justify-between mb-2">
         <p className="text-sm font-medium">
-          {workout.day_label ? `${workout.day_label} — ` : ''}
-          {workout.name}
+          Day {session.day_number} — {session.name}
         </p>
         <div className="flex items-center gap-3">
           <button onClick={handleDuplicate} className="text-xs text-neutral-500 hover:text-neutral-800 font-medium">
             Duplicate
           </button>
-          <button onClick={handleDeleteWorkout} className="text-xs text-danger/80 hover:text-danger font-medium">
+          <button onClick={handleDeleteSession} className="text-xs text-danger/80 hover:text-danger font-medium">
             Delete
           </button>
         </div>
       </div>
 
-      {exercises === null ? (
+      {drills === null ? (
         <p className="text-xs text-neutral-400">Loading…</p>
       ) : (
         <>
-          {exercises.length > 0 && (
+          {drills.length > 0 && (
             <div className="divide-y divide-neutral-100 mb-2">
-              {exercises.map((ex, i) => (
-                <ExerciseRow
-                  key={ex.id}
-                  exercise={ex}
+              {drills.map((d, i) => (
+                <DrillRow
+                  key={d.id}
+                  drill={d}
                   canMoveUp={i > 0}
-                  canMoveDown={i < exercises.length - 1}
+                  canMoveDown={i < drills.length - 1}
                   onMove={(direction) => handleMove(i, direction)}
-                  onRemove={() => handleRemove(ex.id)}
+                  onRemove={() => handleRemove(d.id)}
                   onChange={handleChange}
                 />
               ))}
@@ -375,9 +397,45 @@ function WorkoutBlock({ workout, coachId, workoutCount, onDuplicated, onDeleted 
   )
 }
 
+function WeekPanel({ week, coachId }) {
+  const [sessions, setSessions] = useState(null)
+
+  useEffect(() => {
+    db.listTemplateSessions(week.id).then(setSessions)
+  }, [week.id])
+
+  if (sessions === null) return <p className="text-xs text-neutral-400">Loading…</p>
+
+  return (
+    <div>
+      {sessions.length === 0 ? (
+        <p className="text-sm text-neutral-500 mb-3">No sessions in week {week.week_number} yet.</p>
+      ) : (
+        sessions.map((s) => (
+          <SessionBlock
+            key={s.id}
+            session={s}
+            coachId={coachId}
+            sessionCount={sessions.length}
+            onDuplicated={(copy) => setSessions((prev) => [...prev, copy])}
+            onDeleted={(id) => setSessions((prev) => prev.filter((s2) => s2.id !== id))}
+          />
+        ))
+      )}
+      <NewSessionForm
+        weekId={week.id}
+        nextOrderIndex={sessions.length}
+        onCreated={(s) => setSessions((prev) => [...prev, s])}
+      />
+    </div>
+  )
+}
+
 function AssignPanel({ programId, coachId }) {
   const [athletes, setAthletes] = useState([])
   const [assignedIds, setAssignedIds] = useState(new Set())
+  const [assigningId, setAssigningId] = useState(null)
+  const [startDate, setStartDate] = useState(today())
 
   useEffect(() => {
     db.listAthletesForCoach(coachId).then(setAthletes)
@@ -387,29 +445,39 @@ function AssignPanel({ programId, coachId }) {
   }, [coachId, programId])
 
   async function toggleAssign(athleteId) {
-    if (assignedIds.has(athleteId)) return
-    await db.assignProgram(programId, athleteId)
+    if (assignedIds.has(athleteId) || assigningId) return
+    setAssigningId(athleteId)
+    await db.assignProgram(programId, athleteId, startDate)
     setAssignedIds((prev) => new Set(prev).add(athleteId))
+    setAssigningId(null)
   }
 
   if (athletes.length === 0) return null
 
   return (
     <div className="mt-3 pt-3 border-t border-neutral-100">
-      <p className="text-xs font-medium text-neutral-500 mb-2">Assign to athletes</p>
+      <div className="flex items-center gap-2 mb-2 flex-wrap">
+        <p className="text-xs font-medium text-neutral-500">Assign to athletes, starting</p>
+        <input
+          type="date"
+          value={startDate}
+          onChange={(e) => setStartDate(e.target.value)}
+          className="border border-neutral-200 rounded-lg px-2 py-1 text-xs max-w-full"
+        />
+      </div>
       <div className="flex flex-wrap gap-2">
         {athletes.map((a) => (
           <button
             key={a.id}
             onClick={() => toggleAssign(a.id)}
-            disabled={assignedIds.has(a.id)}
+            disabled={assignedIds.has(a.id) || assigningId === a.id}
             className={`text-xs px-3 py-1.5 rounded-full font-medium border ${
               assignedIds.has(a.id)
                 ? 'bg-emerald-100 text-emerald-700 border-emerald-200'
                 : 'bg-white text-neutral-600 border-neutral-200 hover:border-neutral-400'
             }`}
           >
-            {assignedIds.has(a.id) ? `✓ ${a.name}` : a.name}
+            {assignedIds.has(a.id) ? `✓ ${a.name}` : assigningId === a.id ? 'Scheduling…' : a.name}
           </button>
         ))}
       </div>
@@ -418,11 +486,14 @@ function AssignPanel({ programId, coachId }) {
 }
 
 function ProgramBlock({ program, coachId }) {
-  const [workouts, setWorkouts] = useState(null)
+  const [weeks, setWeeks] = useState(null)
+  const [selectedWeekNumber, setSelectedWeekNumber] = useState(1)
 
   useEffect(() => {
-    db.listWorkouts(program.id).then(setWorkouts)
+    db.listProgramWeeks(program.id).then(setWeeks)
   }, [program.id])
+
+  const selectedWeek = weeks?.find((w) => w.week_number === selectedWeekNumber)
 
   return (
     <div className="bg-white rounded-2xl shadow-card p-5 mb-5">
@@ -436,28 +507,26 @@ function ProgramBlock({ program, coachId }) {
       </div>
       {program.description && <p className="text-sm text-neutral-500 mb-3">{program.description}</p>}
 
-      {workouts === null ? (
-        <p className="text-xs text-neutral-400">Loading…</p>
+      <div className="flex flex-wrap gap-1.5 mb-4">
+        {Array.from({ length: 12 }, (_, i) => i + 1).map((n) => (
+          <button
+            key={n}
+            onClick={() => setSelectedWeekNumber(n)}
+            className={`text-xs w-9 h-9 rounded-full font-medium border ${
+              selectedWeekNumber === n
+                ? 'bg-neutral-900 text-white border-neutral-900'
+                : 'bg-white text-neutral-600 border-neutral-200 hover:border-neutral-400'
+            }`}
+          >
+            {n}
+          </button>
+        ))}
+      </div>
+
+      {selectedWeek ? (
+        <WeekPanel key={selectedWeek.id} week={selectedWeek} coachId={coachId} />
       ) : (
-        <>
-          {workouts.map((w) => (
-            <WorkoutBlock
-              key={w.id}
-              workout={w}
-              coachId={coachId}
-              workoutCount={workouts.length}
-              onDuplicated={(copy) => setWorkouts((prev) => [...prev, copy])}
-              onDeleted={(id) => setWorkouts((prev) => prev.filter((w2) => w2.id !== id))}
-            />
-          ))}
-          <div className="mt-2">
-            <NewWorkoutForm
-              programId={program.id}
-              nextOrderIndex={workouts.length}
-              onCreated={(w) => setWorkouts((prev) => [...prev, w])}
-            />
-          </div>
-        </>
+        <p className="text-xs text-neutral-400">Loading week…</p>
       )}
 
       <AssignPanel programId={program.id} coachId={coachId} />
@@ -478,7 +547,7 @@ export default function ProgramBuilder() {
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between mb-6">
         <h1 className="text-[28px] font-semibold tracking-tight text-neutral-900">Program Builder</h1>
         <Link to="/coach/exercises" className="text-sm text-accent hover:text-accent-700 font-medium">
           Manage exercise library →

@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { NavLink, Outlet } from 'react-router-dom'
 import {
   Home,
@@ -12,6 +13,8 @@ import {
   ClipboardList,
   Video,
   LogOut,
+  Menu,
+  X,
 } from 'lucide-react'
 import { useAuth } from '../lib/useAuth.js'
 import { FACILITY_NAME, LOGO_CIRCLE } from '../lib/facilityConfig.js'
@@ -52,6 +55,18 @@ const coachGroup = {
   ],
 }
 
+// The bottom tab bar (phones, athletes only — coaches stay desktop-first)
+// only has room for a handful of thumb-reachable destinations. The four
+// busiest athlete screens go straight on the bar; everything else — the
+// "Growth" group — sits one tap away behind "More".
+const athletePrimaryLinks = [
+  { to: '/dashboard', label: 'Home', icon: Home },
+  { to: '/check-in', label: 'Readiness', icon: ClipboardCheck },
+  { to: '/program', label: 'Program', icon: Dumbbell },
+  { to: '/command', label: 'Command', icon: Target },
+]
+const athleteMoreLinks = athleteGroups[2].links
+
 function initials(name) {
   if (!name) return '?'
   return name
@@ -62,8 +77,104 @@ function initials(name) {
     .toUpperCase()
 }
 
+function SidebarLinks({ groups, onNavigate }) {
+  return (
+    <>
+      {groups.map((group, i) => (
+        <div key={group.label} className={i === 0 ? '' : 'mt-6'}>
+          <p className="px-3 mb-2 text-[11px] font-semibold uppercase tracking-wide text-neutral-400">
+            {group.label}
+          </p>
+          {group.links.map((link) => {
+            const Icon = link.icon
+            return (
+              <NavLink
+                key={link.to}
+                to={link.to}
+                onClick={onNavigate}
+                className={({ isActive }) =>
+                  `flex items-center gap-2.5 rounded-xl px-3 py-2.5 md:py-2 text-sm font-medium mb-0.5 transition-colors ${
+                    isActive ? 'bg-neutral-900 text-white' : 'text-neutral-600 hover:bg-neutral-100'
+                  }`
+                }
+              >
+                <Icon size={16} strokeWidth={2} />
+                {link.label}
+              </NavLink>
+            )
+          })}
+        </div>
+      ))}
+    </>
+  )
+}
+
+// Slide-up sheet for the phone nav's "More" tab and (on small screens) the
+// hamburger menu — same link set as the desktop sidebar, just presented as
+// a full-width overlay instead of a fixed column.
+function NavSheet({ title, groups, onClose }) {
+  return (
+    <div className="fixed inset-0 z-40 md:hidden" role="dialog" aria-modal="true">
+      <div className="absolute inset-0 bg-black/30" onClick={onClose} />
+      <div className="absolute bottom-0 inset-x-0 bg-white rounded-t-3xl shadow-elevated max-h-[80vh] overflow-y-auto pb-[env(safe-area-inset-bottom)]">
+        <div className="flex items-center justify-between px-5 pt-4 pb-2">
+          <p className="text-sm font-semibold text-neutral-900">{title}</p>
+          <button
+            onClick={onClose}
+            className="p-1.5 rounded-full text-neutral-400 hover:bg-neutral-100"
+            aria-label="Close menu"
+          >
+            <X size={18} />
+          </button>
+        </div>
+        <div className="px-3 pb-4">
+          <SidebarLinks groups={groups} onNavigate={onClose} />
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function MobileTabBar({ role, onMore }) {
+  const primaryLinks = role === 'coach' ? coachGroup.links : athletePrimaryLinks
+  return (
+    <nav className="md:hidden fixed bottom-0 inset-x-0 z-30 bg-white/95 backdrop-blur-xl border-t border-neutral-200/70 pb-[env(safe-area-inset-bottom)]">
+      <div className="flex items-stretch">
+        {primaryLinks.map((link) => {
+          const Icon = link.icon
+          return (
+            <NavLink
+              key={link.to}
+              to={link.to}
+              className={({ isActive }) =>
+                `flex-1 flex flex-col items-center justify-center gap-0.5 py-2 text-[11px] font-medium ${
+                  isActive ? 'text-accent' : 'text-neutral-400'
+                }`
+              }
+            >
+              <Icon size={20} strokeWidth={2} />
+              {link.label}
+            </NavLink>
+          )
+        })}
+        {role !== 'coach' && (
+          <button
+            onClick={onMore}
+            className="flex-1 flex flex-col items-center justify-center gap-0.5 py-2 text-[11px] font-medium text-neutral-400"
+          >
+            <Menu size={20} strokeWidth={2} />
+            More
+          </button>
+        )}
+      </div>
+    </nav>
+  )
+}
+
 export default function AppShell() {
   const { profile, role, signOut, isDemoMode, demoProfiles, switchDemoProfile } = useAuth()
+  const [moreOpen, setMoreOpen] = useState(false)
+  const [drawerOpen, setDrawerOpen] = useState(false)
   // Coaches get a dedicated coaching workspace — not the athlete's own
   // check-in/program nav, which would otherwise point at the coach's own
   // (empty) athlete-style data and just be noise.
@@ -71,17 +182,26 @@ export default function AppShell() {
 
   return (
     <div className="min-h-screen bg-canvas">
-      <header className="sticky top-0 z-20 h-14 px-6 flex items-center justify-between bg-neutral-900/90 backdrop-blur-xl text-white border-b border-white/10">
-        <div className="flex items-center gap-2">
-          <img src={LOGO_CIRCLE} alt={FACILITY_NAME} className="w-8 h-8" />
-          <span className="font-semibold text-[15px] tracking-tight tabular-nums opacity-95">{FACILITY_NAME}</span>
+      <header className="sticky top-0 z-20 h-14 px-4 md:px-6 flex items-center justify-between bg-neutral-900/90 backdrop-blur-xl text-white border-b border-white/10">
+        <div className="flex items-center gap-2 min-w-0">
+          <button
+            onClick={() => setDrawerOpen(true)}
+            className="md:hidden -ml-1 p-1.5 rounded-full hover:bg-white/10 transition-colors shrink-0"
+            aria-label="Open menu"
+          >
+            <Menu size={20} />
+          </button>
+          <img src={LOGO_CIRCLE} alt={FACILITY_NAME} className="w-8 h-8 shrink-0" />
+          <span className="font-semibold text-[15px] tracking-tight tabular-nums opacity-95 truncate">
+            {FACILITY_NAME}
+          </span>
         </div>
-        <div className="flex items-center gap-3 text-sm">
+        <div className="flex items-center gap-2 md:gap-3 text-sm shrink-0">
           {isDemoMode && (
             <select
               value={profile?.id ?? ''}
               onChange={(e) => switchDemoProfile(e.target.value)}
-              className="bg-white/10 text-white text-xs rounded-full px-3 py-1.5 border border-white/10 focus:outline-none focus:ring-1 focus:ring-white/30"
+              className="bg-white/10 text-white text-xs rounded-full px-2 md:px-3 py-1.5 border border-white/10 focus:outline-none focus:ring-1 focus:ring-white/30 max-w-[9rem] md:max-w-none"
             >
               {demoProfiles.map((p) => (
                 <option key={p.id} value={p.id} className="text-neutral-900">
@@ -91,10 +211,10 @@ export default function AppShell() {
             </select>
           )}
           <div className="flex items-center gap-2">
-            <span className="w-7 h-7 rounded-full bg-white/15 flex items-center justify-center text-xs font-semibold">
+            <span className="w-7 h-7 rounded-full bg-white/15 flex items-center justify-center text-xs font-semibold shrink-0">
               {initials(profile?.name)}
             </span>
-            <span className="hidden sm:inline text-neutral-200">{profile?.name ?? 'Guest'}</span>
+            <span className="hidden lg:inline text-neutral-200">{profile?.name ?? 'Guest'}</span>
           </div>
           {!isDemoMode && (
             <button
@@ -108,40 +228,21 @@ export default function AppShell() {
         </div>
       </header>
       <div className="flex">
-        <nav className="w-60 shrink-0 border-r border-neutral-200/70 bg-white min-h-[calc(100vh-56px)] px-3 py-6">
-          {groups.map((group, i) => (
-            <div key={group.label} className={i === 0 ? '' : 'mt-6'}>
-              <p className="px-3 mb-2 text-[11px] font-semibold uppercase tracking-wide text-neutral-400">
-                {group.label}
-              </p>
-              {group.links.map((link) => {
-                const Icon = link.icon
-                return (
-                  <NavLink
-                    key={link.to}
-                    to={link.to}
-                    className={({ isActive }) =>
-                      `flex items-center gap-2.5 rounded-xl px-3 py-2 text-sm font-medium mb-0.5 transition-colors ${
-                        isActive
-                          ? 'bg-neutral-900 text-white'
-                          : 'text-neutral-600 hover:bg-neutral-100'
-                      }`
-                    }
-                  >
-                    <Icon size={16} strokeWidth={2} />
-                    {link.label}
-                  </NavLink>
-                )
-              })}
-            </div>
-          ))}
+        <nav className="hidden md:block w-60 shrink-0 border-r border-neutral-200/70 bg-white min-h-[calc(100vh-56px)] px-3 py-6">
+          <SidebarLinks groups={groups} />
         </nav>
-        <main className="flex-1 p-8">
+        <main className="flex-1 p-4 md:p-8 pb-24 md:pb-8">
           <div className="max-w-6xl mx-auto">
             <Outlet />
           </div>
         </main>
       </div>
+
+      <MobileTabBar role={role} onMore={() => setMoreOpen(true)} />
+      {moreOpen && (
+        <NavSheet title="More" groups={[{ label: 'Growth', links: athleteMoreLinks }]} onClose={() => setMoreOpen(false)} />
+      )}
+      {drawerOpen && <NavSheet title={FACILITY_NAME} groups={groups} onClose={() => setDrawerOpen(false)} />}
     </div>
   )
 }

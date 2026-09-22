@@ -39,7 +39,7 @@ export default function ExerciseLogger({ exercise, athleteId, trendLogs, onLogge
     e.preventDefault()
     setSaving(true)
     const row = {
-      exercise_id: exercise.id,
+      drill_id: exercise.id,
       athlete_id: athleteId,
       date: today(),
       notes: notes || null,

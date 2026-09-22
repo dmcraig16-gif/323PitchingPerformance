@@ -10,6 +10,7 @@ import CommandSessionList from '../../components/CommandSessionList.jsx'
 import ReadinessGauge from '../../components/ReadinessGauge.jsx'
 
 const TONE_HEX = { green: '#34c759', yellow: '#ff9f0a', red: '#ff3b30' }
+const today = () => new Date().toISOString().slice(0, 10)
 
 function Card({ title, children, action }) {
   return (
@@ -241,6 +242,8 @@ function CommandTab({ athleteId, coachProfileId, pitches }) {
 function ProgramsTab({ athleteId, coachId, assignedPrograms, setAssignedPrograms }) {
   const [coachPrograms, setCoachPrograms] = useState([])
   const [assigning, setAssigning] = useState('')
+  const [startDate, setStartDate] = useState(today())
+  const [saving, setSaving] = useState(false)
 
   useEffect(() => {
     if (!coachId) return
@@ -251,9 +254,11 @@ function ProgramsTab({ athleteId, coachId, assignedPrograms, setAssignedPrograms
 
   async function handleAssign() {
     if (!assigning) return
-    await db.assignProgram(assigning, athleteId)
+    setSaving(true)
+    await db.assignProgram(assigning, athleteId, startDate)
     setAssignedPrograms(await db.listAssignedPrograms(athleteId))
     setAssigning('')
+    setSaving(false)
   }
 
   return (
@@ -275,11 +280,11 @@ function ProgramsTab({ athleteId, coachId, assignedPrograms, setAssignedPrograms
           ))}
         </ul>
       )}
-      <div className="flex gap-2">
+      <div className="flex flex-wrap gap-2">
         <select
           value={assigning}
           onChange={(e) => setAssigning(e.target.value)}
-          className="flex-1 border rounded-xl px-2 py-1.5 text-sm"
+          className="flex-1 min-w-[160px] border rounded-xl px-2 py-1.5 text-sm"
         >
           <option value="">Assign a program…</option>
           {unassignedPrograms.map((p) => (
@@ -288,12 +293,18 @@ function ProgramsTab({ athleteId, coachId, assignedPrograms, setAssignedPrograms
             </option>
           ))}
         </select>
+        <input
+          type="date"
+          value={startDate}
+          onChange={(e) => setStartDate(e.target.value)}
+          className="border rounded-xl px-2 py-1.5 text-sm"
+        />
         <button
           onClick={handleAssign}
-          disabled={!assigning}
+          disabled={!assigning || saving}
           className="bg-accent text-white hover:bg-accent-600 transition-colors rounded-xl px-4 py-1.5 text-sm font-medium disabled:opacity-40"
         >
-          Assign
+          {saving ? 'Scheduling…' : 'Assign'}
         </button>
       </div>
       <Link to="/coach/programs" className="text-xs text-accent hover:text-accent-700 font-medium mt-4 inline-block">

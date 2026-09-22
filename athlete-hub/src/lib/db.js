@@ -191,7 +191,13 @@ export async function insertCommandPitch(row) {
   return local.insert('command_pitches', row)
 }
 
-// ---------- programs / workouts / exercises ----------
+// ---------- programs (templates) ----------
+//
+// A program is a pure template: no dates anywhere. It's built out of 12
+// weeks (created automatically alongside the program), sessions inside a
+// week (ordered by day_number), and drills inside a session. See
+// generateAthleteSessions() below for how assigning a program turns this
+// into an athlete's actual dated schedule.
 
 export async function listProgramsForCoach(coachId) {
   if (isSupabaseConfigured) {
@@ -202,21 +208,120 @@ export async function listProgramsForCoach(coachId) {
 }
 
 export async function createProgram(row) {
+  let program
   if (isSupabaseConfigured) {
     const { data, error } = await supabase.from('programs').insert(row).select().single()
     if (error) throw error
-    return data
+    program = data
+  } else {
+    program = local.insert('programs', row)
   }
-  return local.insert('programs', row)
+
+  const weekRows = Array.from({ length: 12 }, (_, i) => ({ program_id: program.id, week_number: i + 1 }))
+  if (isSupabaseConfigured) {
+    const { error } = await supabase.from('program_weeks').insert(weekRows)
+    if (error) throw error
+  } else {
+    weekRows.forEach((w) => local.insert('program_weeks', w))
+  }
+
+  return program
 }
 
-export async function listAssignedPrograms(athleteId) {
-  const assignments = isSupabaseConfigured
-    ? (
-        await supabase.from('program_assignments').select('*').eq('athlete_id', athleteId)
-      ).data ?? []
-    : local.getAll('program_assignments').filter((a) => a.athlete_id === athleteId)
+export async function listProgramWeeks(programId) {
+  if (isSupabaseConfigured) {
+    const { data } = await supabase
+      .from('program_weeks')
+      .select('*')
+      .eq('program_id', programId)
+      .order('week_number')
+    return data ?? []
+  }
+  return local
+    .getAll('program_weeks')
+    .filter((w) => w.program_id === programId)
+    .sort((a, b) => a.week_number - b.week_number)
+}
 
+export async function listTemplateSessions(weekId) {
+  if (isSupabaseConfigured) {
+    const { data } = await supabase
+      .from('template_sessions')
+      .select('*')
+      .eq('week_id', weekId)
+      .order('day_number')
+    return data ?? []
+  }
+  return local
+    .getAll('template_sessions')
+    .filter((s) => s.week_id === weekId)
+    .sort((a, b) => a.day_number - b.day_number)
+}
+
+export async function createTemplateSession(row) {
+  if (isSupabaseConfigured) {
+    const { data, error } = await supabase.from('template_sessions').insert(row).select().single()
+    if (error) throw error
+    return data
+  }
+  return local.insert('template_sessions', row)
+}
+
+export async function deleteTemplateSession(id) {
+  if (isSupabaseConfigured) {
+    const { error } = await supabase.from('template_sessions').delete().eq('id', id)
+    if (error) throw error
+    return
+  }
+  local.remove('template_sessions', id)
+}
+
+export async function listTemplateDrills(sessionId) {
+  if (isSupabaseConfigured) {
+    const { data } = await supabase
+      .from('template_drills')
+      .select('*')
+      .eq('session_id', sessionId)
+      .order('order_index')
+    return data ?? []
+  }
+  return local
+    .getAll('template_drills')
+    .filter((d) => d.session_id === sessionId)
+    .sort((a, b) => a.order_index - b.order_index)
+}
+
+export async function createTemplateDrill(row) {
+  if (isSupabaseConfigured) {
+    const { data, error } = await supabase.from('template_drills').insert(row).select().single()
+    if (error) throw error
+    return data
+  }
+  return local.insert('template_drills', row)
+}
+
+export async function updateTemplateDrill(id, patch) {
+  if (isSupabaseConfigured) {
+    const { data, error } = await supabase.from('template_drills').update(patch).eq('id', id).select().single()
+    if (error) throw error
+    return data
+  }
+  return local.update('template_drills', id, patch)
+}
+
+export async function deleteTemplateDrill(id) {
+  if (isSupabaseConfigured) {
+    const { error } = await supabase.from('template_drills').delete().eq('id', id)
+    if (error) throw error
+    return
+  }
+  local.remove('template_drills', id)
+}
+
+// ---------- assignments (where dates enter) ----------
+
+export async function listAssignedPrograms(athleteId) {
+  const assignments = await listAssignmentsForAthlete(athleteId)
   const programs = await Promise.all(
     assignments.map(async (a) => {
       if (isSupabaseConfigured) {
@@ -229,14 +334,12 @@ export async function listAssignedPrograms(athleteId) {
   return programs.filter(Boolean)
 }
 
-export async function assignProgram(programId, athleteId) {
-  const row = { program_id: programId, athlete_id: athleteId, start_date: today() }
+export async function listAssignmentsForAthlete(athleteId) {
   if (isSupabaseConfigured) {
-    const { data, error } = await supabase.from('program_assignments').insert(row).select().single()
-    if (error) throw error
-    return data
+    const { data } = await supabase.from('program_assignments').select('*').eq('athlete_id', athleteId)
+    return data ?? []
   }
-  return local.insert('program_assignments', row)
+  return local.getAll('program_assignments').filter((a) => a.athlete_id === athleteId)
 }
 
 export async function listAssignmentsForProgram(programId) {
@@ -250,52 +353,144 @@ export async function listAssignmentsForProgram(programId) {
   return local.getAll('program_assignments').filter((a) => a.program_id === programId)
 }
 
-export async function listWorkouts(programId) {
+// Assigns a program to an athlete starting on startDate, then snapshots
+// the template's current shape into dated, athlete-owned rows
+// (athlete_sessions/athlete_drills) — see generateAthleteSessions.
+export async function assignProgram(programId, athleteId, startDate) {
+  const row = { program_id: programId, athlete_id: athleteId, start_date: startDate || today() }
+  const assignment = isSupabaseConfigured
+    ? await (async () => {
+        const { data, error } = await supabase.from('program_assignments').insert(row).select().single()
+        if (error) throw error
+        return data
+      })()
+    : local.insert('program_assignments', row)
+
+  await generateAthleteSessions(assignment)
+  return assignment
+}
+
+// date = start_date + (week_number - 1) * 7 + (day_number - 1) days —
+// day_number 1 lands on start_date's weekday, day_number 2 the day after,
+// week 2 day 1 exactly 7 days after start_date, and so on.
+function sessionDate(startDate, weekNumber, dayNumber) {
+  const d = new Date(`${startDate}T00:00:00`)
+  d.setDate(d.getDate() + (weekNumber - 1) * 7 + (dayNumber - 1))
+  return d.toISOString().slice(0, 10)
+}
+
+async function generateAthleteSessions(assignment) {
+  const weeks = await listProgramWeeks(assignment.program_id)
+  for (const week of weeks) {
+    const templateSessions = await listTemplateSessions(week.id)
+    for (const ts of templateSessions) {
+      const athleteSession = await createAthleteSession({
+        assignment_id: assignment.id,
+        athlete_id: assignment.athlete_id,
+        template_session_id: ts.id,
+        week_number: week.week_number,
+        day_number: ts.day_number,
+        date: sessionDate(assignment.start_date, week.week_number, ts.day_number),
+        name: ts.name,
+        notes: ts.notes,
+        order_index: ts.order_index,
+      })
+      const templateDrills = await listTemplateDrills(ts.id)
+      for (const td of templateDrills) {
+        await createAthleteDrill({
+          athlete_session_id: athleteSession.id,
+          template_drill_id: td.id,
+          library_exercise_id: td.library_exercise_id,
+          name: td.name,
+          type: td.type,
+          description: td.description,
+          intent: td.intent,
+          sets: td.sets,
+          reps: td.reps,
+          target_value: td.target_value,
+          target_unit: td.target_unit,
+          youtube_url: td.youtube_url,
+          order_index: td.order_index,
+        })
+      }
+    }
+  }
+}
+
+// ---------- athlete_sessions / athlete_drills (the dated schedule) ----------
+
+export async function listAthleteSessions(athleteId) {
   if (isSupabaseConfigured) {
     const { data } = await supabase
-      .from('workouts')
+      .from('athlete_sessions')
       .select('*')
-      .eq('program_id', programId)
+      .eq('athlete_id', athleteId)
+      .order('date')
+    return data ?? []
+  }
+  return local
+    .getAll('athlete_sessions')
+    .filter((s) => s.athlete_id === athleteId)
+    .sort((a, b) => a.date.localeCompare(b.date) || a.order_index - b.order_index)
+}
+
+async function createAthleteSession(row) {
+  if (isSupabaseConfigured) {
+    const { data, error } = await supabase.from('athlete_sessions').insert(row).select().single()
+    if (error) throw error
+    return data
+  }
+  return local.insert('athlete_sessions', row)
+}
+
+export async function updateAthleteSession(id, patch) {
+  if (isSupabaseConfigured) {
+    const { data, error } = await supabase.from('athlete_sessions').update(patch).eq('id', id).select().single()
+    if (error) throw error
+    return data
+  }
+  return local.update('athlete_sessions', id, patch)
+}
+
+// The injury scenario: shift one session (and, by default, every session
+// scheduled on or after it) by deltaDays without touching the template or
+// any other athlete. Returns the updated sessions.
+export async function shiftAthleteSessions(athleteId, fromDate, deltaDays, { onlyThisOne = false } = {}) {
+  const sessions = await listAthleteSessions(athleteId)
+  const toShift = onlyThisOne
+    ? sessions.filter((s) => s.date === fromDate)
+    : sessions.filter((s) => s.date >= fromDate)
+  const updated = []
+  for (const s of toShift) {
+    const d = new Date(`${s.date}T00:00:00`)
+    d.setDate(d.getDate() + deltaDays)
+    updated.push(await updateAthleteSession(s.id, { date: d.toISOString().slice(0, 10) }))
+  }
+  return updated
+}
+
+export async function listAthleteDrills(athleteSessionId) {
+  if (isSupabaseConfigured) {
+    const { data } = await supabase
+      .from('athlete_drills')
+      .select('*')
+      .eq('athlete_session_id', athleteSessionId)
       .order('order_index')
     return data ?? []
   }
   return local
-    .getAll('workouts')
-    .filter((w) => w.program_id === programId)
+    .getAll('athlete_drills')
+    .filter((d) => d.athlete_session_id === athleteSessionId)
     .sort((a, b) => a.order_index - b.order_index)
 }
 
-export async function createWorkout(row) {
+async function createAthleteDrill(row) {
   if (isSupabaseConfigured) {
-    const { data, error } = await supabase.from('workouts').insert(row).select().single()
+    const { data, error } = await supabase.from('athlete_drills').insert(row).select().single()
     if (error) throw error
     return data
   }
-  return local.insert('workouts', row)
-}
-
-export async function listExercises(workoutId) {
-  if (isSupabaseConfigured) {
-    const { data } = await supabase
-      .from('exercises')
-      .select('*')
-      .eq('workout_id', workoutId)
-      .order('order_index')
-    return data ?? []
-  }
-  return local
-    .getAll('exercises')
-    .filter((e) => e.workout_id === workoutId)
-    .sort((a, b) => a.order_index - b.order_index)
-}
-
-export async function createExercise(row) {
-  if (isSupabaseConfigured) {
-    const { data, error } = await supabase.from('exercises').insert(row).select().single()
-    if (error) throw error
-    return data
-  }
-  return local.insert('exercises', row)
+  return local.insert('athlete_drills', row)
 }
 
 // ---------- exercise library (Exercise Builder) ----------
@@ -348,9 +543,10 @@ export async function deleteLibraryExercise(id) {
 }
 
 // One row per time an athlete logs a result: weight+reps for a lifting
-// exercise, velocity for a throwing one. `row` should already carry
-// exercise_id/athlete_id/date plus whichever of weight/reps_completed/
-// velocity/notes apply.
+// drill, velocity for a throwing one. `row` should already carry
+// drill_id/athlete_id/date plus whichever of weight/reps_completed/
+// velocity/notes apply. drill_id points at an athlete_drills row (the
+// dated, athlete-owned copy) — never at the template.
 export async function logExerciseResult(row) {
   const full = { date: today(), ...row }
   if (isSupabaseConfigured) {
@@ -361,48 +557,21 @@ export async function logExerciseResult(row) {
   return local.insert('exercise_logs', full)
 }
 
-// Every logged result for one workout-instance exercise, oldest first —
-// used to trend a specific exercise over time.
-export async function listExerciseLogsForExercise(exerciseId) {
+// Every logged result for one athlete_drills row, oldest first — used to
+// trend a specific drill over time.
+export async function listExerciseLogsForDrill(drillId) {
   if (isSupabaseConfigured) {
     const { data } = await supabase
       .from('exercise_logs')
       .select('*')
-      .eq('exercise_id', exerciseId)
+      .eq('drill_id', drillId)
       .order('date', { ascending: true })
     return data ?? []
   }
   return local
     .getAll('exercise_logs')
-    .filter((l) => l.exercise_id === exerciseId)
+    .filter((l) => l.drill_id === drillId)
     .sort((a, b) => a.date.localeCompare(b.date))
-}
-
-export async function updateExercise(id, patch) {
-  if (isSupabaseConfigured) {
-    const { data, error } = await supabase.from('exercises').update(patch).eq('id', id).select().single()
-    if (error) throw error
-    return data
-  }
-  return local.update('exercises', id, patch)
-}
-
-export async function deleteExercise(id) {
-  if (isSupabaseConfigured) {
-    const { error } = await supabase.from('exercises').delete().eq('id', id)
-    if (error) throw error
-    return
-  }
-  local.remove('exercises', id)
-}
-
-export async function deleteWorkout(id) {
-  if (isSupabaseConfigured) {
-    const { error } = await supabase.from('workouts').delete().eq('id', id)
-    if (error) throw error
-    return
-  }
-  local.remove('workouts', id)
 }
 
 // ---------- journal (freeform notes) ----------
