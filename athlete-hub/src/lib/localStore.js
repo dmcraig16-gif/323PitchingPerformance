@@ -69,13 +69,13 @@ export function ensureSeedData() {
     'profiles',
     'programs',
     'program_weeks',
-    'template_sessions',
-    'template_drills',
+    'template_workouts',
+    'template_items',
     'program_assignments',
-    'athlete_sessions',
-    'athlete_drills',
-    'exercise_library',
-    'exercise_logs',
+    'assigned_workouts',
+    'assigned_items',
+    'item_library',
+    'item_logs',
     'daily_checkins',
     'command_sessions',
     'command_pitches',
@@ -115,301 +115,236 @@ export function ensureSeedData() {
     email: 'sam@example.com',
   })
 
-  const trapBarDeadlift = insert('exercise_library', {
+  const trapBarDeadlift = insert('item_library', {
     coach_id: coach.id,
+    type: 'lifting',
     name: 'Trap Bar Deadlift',
-    type: 'strength',
-    description: 'Focus on floor speed. Reset each rep.',
+    cues: 'Focus on floor speed. Reset each rep.',
+    target_sets: [{ reps: 3, load: 275 }, { reps: 3, load: 295 }, { reps: 3, load: 315 }],
+    rest_seconds: 180,
+    tempo: '1-1-X',
   })
-  const rfeSplitSquat = insert('exercise_library', {
+  const rfeSplitSquat = insert('item_library', {
     coach_id: coach.id,
+    type: 'lifting',
     name: 'Rear Foot Elevated Split Squat',
-    type: 'strength',
-    description: 'Control the eccentric, drive through midfoot.',
+    cues: 'Control the eccentric, drive through midfoot.',
+    target_sets: [{ reps: 8, load: null }, { reps: 8, load: null }, { reps: 8, load: null }],
+    rest_seconds: 90,
+    tempo: '2-1-1',
   })
-  const medBallRotational = insert('exercise_library', {
+  const medBallRotational = insert('item_library', {
     coach_id: coach.id,
+    type: 'lifting',
     name: 'Med Ball Rotational Throw',
-    type: 'power',
-    description: 'Full extension, let the hips lead.',
+    cues: 'Full extension, let the hips lead.',
+    target_sets: [{ reps: 5, load: null }, { reps: 5, load: null }, { reps: 5, load: null }],
+    rest_seconds: 60,
   })
-  const bandPullApart = insert('exercise_library', {
+  const fastballCorners = insert('item_library', {
     coach_id: coach.id,
-    name: 'Band Pull-Apart',
-    type: 'arm-care',
-    description: '3x20, slow and controlled through the full range.',
-  })
-  const fastballCorners = insert('exercise_library', {
-    coach_id: coach.id,
+    type: 'throwing',
     name: '4-Seam to Glove Side Corners',
-    type: 'throwing',
-    description: '15 pitches, target both glove-side corners at 90% intent.',
+    cues: 'Target both glove-side corners at 90% intent.',
+    ball_weight_oz: 5,
+    num_throws: 15,
+    intent_pct: 90,
   })
-  const longToss = insert('exercise_library', {
+  const longToss = insert('item_library', {
     coach_id: coach.id,
+    type: 'throwing',
     name: 'Long Toss',
-    type: 'throwing',
-    description: 'Build out on a crow-hop, work to max distance with good arc.',
+    cues: 'Build out on a crow-hop, work to max distance with good arc.',
+    ball_weight_oz: 5,
+    num_throws: 12,
+    intent_pct: 80,
+    distance_target: 180,
   })
-  insert('exercise_library', {
+  const foamRollTSpine = insert('item_library', {
     coach_id: coach.id,
-    name: 'Foam Roll T-Spine',
     type: 'mobility',
-    description: '2 minutes each side before lifting.',
+    name: 'Foam Roll T-Spine',
+    cues: 'Slow rolls, pause on tender spots.',
+    sets: 1,
+    duration_seconds: 120,
+    side: 'both',
+  })
+  const hipSwitch = insert('item_library', {
+    coach_id: coach.id,
+    type: 'mobility',
+    name: '90/90 Hip Switch',
+    cues: 'Chest tall, control the transition — no momentum.',
+    sets: 2,
+    reps: 8,
+    side: 'both',
+  })
+  const bandPullApart = insert('item_library', {
+    coach_id: coach.id,
+    type: 'movement_prep',
+    name: 'Band Pull-Apart',
+    cues: 'Slow and controlled through the full range.',
+    sets: 3,
+    reps: 20,
+    side: 'both',
+  })
+  const legSwings = insert('item_library', {
+    coach_id: coach.id,
+    type: 'movement_prep',
+    name: 'Leg Swings',
+    cues: 'Front-to-back and side-to-side, build range gradually.',
+    sets: 2,
+    reps: 10,
+    side: 'both',
   })
 
   // ---------- programs (templates) ----------
   //
-  // Pure templates, no dates — each gets 12 numbered weeks up front, same
-  // as createProgram() in db.js.
-
-  const liftingProgram = insert('programs', {
+  // A pure template, no dates — 12 numbered weeks created up front, same
+  // as createProgram() in db.js. Days can mix all four workout types
+  // freely (a program is no longer itself typed).
+  const program = insert('programs', {
     coach_id: coach.id,
-    name: 'In-Season Strength — Phase 2',
-    description: 'Two lower body days, one upper day, rotational power work.',
-    type: 'lifting',
+    name: 'In-Season Development — Phase 2',
+    description: 'Lower body strength, bullpen command, and daily movement prep/mobility.',
   })
+  const weeks = Array.from({ length: 12 }, (_, i) => insert('program_weeks', { program_id: program.id, week_number: i + 1 }))
+  const [week1, week2, week3] = weeks
 
-  const throwingProgram = insert('programs', {
-    coach_id: coach.id,
-    name: 'Bullpen Build-Up — Week 3',
-    description: 'Progressive intent bullpens with command focus.',
-    type: 'throwing',
-  })
-
-  const liftingWeeks = Array.from({ length: 12 }, (_, i) =>
-    insert('program_weeks', { program_id: liftingProgram.id, week_number: i + 1 }),
-  )
-  const throwingWeeks = Array.from({ length: 12 }, (_, i) =>
-    insert('program_weeks', { program_id: throwingProgram.id, week_number: i + 1 }),
-  )
-  const liftWeek1 = liftingWeeks[0]
-  const liftWeek2 = liftingWeeks[1]
-  const throwWeek1 = throwingWeeks[0]
-
-  const liftDay1 = insert('template_sessions', {
-    week_id: liftWeek1.id,
-    day_number: 1,
-    name: 'Lower Body — Heavy',
-    order_index: 0,
-  })
-  const liftDay1Drills = [
-    insert('template_drills', {
-      session_id: liftDay1.id,
-      library_exercise_id: trapBarDeadlift.id,
-      name: trapBarDeadlift.name,
-      type: trapBarDeadlift.type,
-      description: trapBarDeadlift.description,
-      intent: 'Build to a heavy triple, reset each rep',
-      sets: 4,
-      reps: 3,
-      target_value: 315,
-      target_unit: 'lb',
-      order_index: 0,
-    }),
-    insert('template_drills', {
-      session_id: liftDay1.id,
-      library_exercise_id: rfeSplitSquat.id,
-      name: rfeSplitSquat.name,
-      type: rfeSplitSquat.type,
-      description: rfeSplitSquat.description,
-      intent: 'Control the eccentric, drive through midfoot',
-      sets: 3,
-      reps: 8,
-      order_index: 1,
-    }),
-    insert('template_drills', {
-      session_id: liftDay1.id,
-      library_exercise_id: medBallRotational.id,
-      name: medBallRotational.name,
-      type: medBallRotational.type,
-      description: medBallRotational.description,
-      intent: 'Full extension, let the hips lead',
-      sets: 3,
-      reps: 5,
-      order_index: 2,
-    }),
-    insert('template_drills', {
-      session_id: liftDay1.id,
-      library_exercise_id: bandPullApart.id,
-      name: bandPullApart.name,
-      type: bandPullApart.type,
-      description: bandPullApart.description,
-      intent: 'Slow and controlled through the full range',
-      sets: 3,
-      reps: 20,
-      order_index: 3,
-    }),
+  const ITEM_FIELDS = [
+    'name', 'cues', 'youtube_url',
+    'ball_weight_oz', 'num_throws', 'intent_pct', 'distance_target',
+    'target_sets', 'rest_seconds', 'tempo',
+    'sets', 'reps', 'duration_seconds', 'side',
   ]
 
-  const liftDay2 = insert('template_sessions', {
-    week_id: liftWeek2.id,
-    day_number: 1,
-    name: 'Lower Body — Heavy',
-    order_index: 0,
-  })
-  const liftDay2Drills = [
-    insert('template_drills', {
-      session_id: liftDay2.id,
-      library_exercise_id: trapBarDeadlift.id,
-      name: trapBarDeadlift.name,
-      type: trapBarDeadlift.type,
-      description: trapBarDeadlift.description,
-      intent: 'Add 10lb from last week if bar speed stayed crisp',
-      sets: 4,
-      reps: 3,
-      target_value: 325,
-      target_unit: 'lb',
-      order_index: 0,
-    }),
-  ]
+  // Seeds a template workout + its items from library entries, letting a
+  // per-week call override fields (e.g. a heavier target_sets next week)
+  // without touching the library entry itself — same copy-at-add-time
+  // snapshot createTemplateItem()/generateAssignedWorkouts() use for real.
+  function seedTemplateWorkout(week, dayNumber, type, title, orderIndex, libraryItems) {
+    const workout = insert('template_workouts', { week_id: week.id, day_number: dayNumber, type, title, order_index: orderIndex })
+    const items = libraryItems.map(([libraryItem, overrides], i) => {
+      const row = { workout_id: workout.id, library_item_id: libraryItem.id, order_index: i }
+      for (const f of ITEM_FIELDS) row[f] = overrides?.[f] !== undefined ? overrides[f] : libraryItem[f]
+      return insert('template_items', row)
+    })
+    return { workout, items }
+  }
 
-  const throwDay1 = insert('template_sessions', {
-    week_id: throwWeek1.id,
-    day_number: 2,
-    name: 'Bullpen — Fastball Command',
-    order_index: 0,
-  })
-  const throwDay1Drills = [
-    insert('template_drills', {
-      session_id: throwDay1.id,
-      library_exercise_id: fastballCorners.id,
-      name: fastballCorners.name,
-      type: fastballCorners.type,
-      description: fastballCorners.description,
-      intent: '90% intent, live at both knees',
-      sets: 3,
-      reps: 5,
-      target_value: 92,
-      target_unit: 'mph',
-      order_index: 0,
-    }),
-    insert('template_drills', {
-      session_id: throwDay1.id,
-      library_exercise_id: longToss.id,
-      name: longToss.name,
-      type: longToss.type,
-      description: longToss.description,
-      intent: 'Crow-hop, work the arc out to max distance',
-      sets: 1,
-      reps: 12,
-      target_value: 180,
-      target_unit: 'ft',
-      order_index: 1,
-    }),
-  ]
+  const week1MovementPrep = seedTemplateWorkout(week1, 1, 'movement_prep', 'Movement Prep', 0, [[bandPullApart], [legSwings]])
+  const week1Lift = seedTemplateWorkout(week1, 1, 'lifting', 'Lower Body — Heavy', 1, [[trapBarDeadlift], [rfeSplitSquat], [medBallRotational]])
+  const week1Bullpen = seedTemplateWorkout(week1, 2, 'throwing', 'Bullpen — Fastball Command', 0, [[fastballCorners], [longToss]])
+  const week1Mobility = seedTemplateWorkout(week1, 3, 'mobility', 'Recovery Mobility', 0, [[foamRollTSpine], [hipSwitch]])
+
+  const week2Lift = seedTemplateWorkout(week2, 1, 'lifting', 'Lower Body — Heavy', 0, [
+    [trapBarDeadlift, { target_sets: [{ reps: 3, load: 285 }, { reps: 3, load: 305 }, { reps: 3, load: 325 }] }],
+    [rfeSplitSquat],
+    [medBallRotational],
+  ])
+
+  const week3MovementPrep = seedTemplateWorkout(week3, 1, 'movement_prep', 'Movement Prep', 0, [[bandPullApart], [legSwings]])
+  const week3Lift = seedTemplateWorkout(week3, 1, 'lifting', 'Lower Body — Heavy', 1, [
+    [trapBarDeadlift, { target_sets: [{ reps: 3, load: 295 }, { reps: 3, load: 315 }, { reps: 3, load: 335 }] }],
+    [rfeSplitSquat],
+    [medBallRotational],
+  ])
+  seedTemplateWorkout(week3, 2, 'throwing', 'Bullpen — Fastball Command', 0, [[fastballCorners], [longToss]])
 
   // ---------- assignments (where dates enter) ----------
   //
-  // Assign every athlete starting today, so week 1 day 1 lands on "today"
-  // in the demo — the same date math generateAthleteSessions() in db.js
-  // runs for a real assignment.
-  const todayStr = new Date().toISOString().slice(0, 10)
+  // Start two weeks ago so weeks 1-2 land in the past (with logged
+  // history below) and week 3 day 1 lands on "today" — the same date
+  // math generateAssignedWorkouts() in db.js runs for a real assignment.
+  const today = new Date()
+  const startDate = new Date(today)
+  startDate.setDate(startDate.getDate() - 14)
+  const startDateStr = startDate.toISOString().slice(0, 10)
 
-  function seedSessionDate(startDate, weekNumber, dayNumber) {
-    const d = new Date(`${startDate}T00:00:00`)
+  function seedWorkoutDate(weekNumber, dayNumber) {
+    const d = new Date(`${startDateStr}T00:00:00`)
     d.setDate(d.getDate() + (weekNumber - 1) * 7 + (dayNumber - 1))
     return d.toISOString().slice(0, 10)
   }
 
-  const jakeLiftAssignment = insert('program_assignments', {
-    program_id: liftingProgram.id,
-    athlete_id: jake.id,
-    start_date: todayStr,
-  })
-  const jakeThrowAssignment = insert('program_assignments', {
-    program_id: throwingProgram.id,
-    athlete_id: jake.id,
-    start_date: todayStr,
-  })
-  const mariaLiftAssignment = insert('program_assignments', {
-    program_id: liftingProgram.id,
-    athlete_id: maria.id,
-    start_date: todayStr,
-  })
+  const jakeAssignment = insert('program_assignments', { program_id: program.id, athlete_id: jake.id, start_date: startDateStr })
+  const mariaAssignment = insert('program_assignments', { program_id: program.id, athlete_id: maria.id, start_date: startDateStr })
 
-  // ---------- athlete_sessions / athlete_drills (the dated schedule) ----------
+  // ---------- assigned_workouts / assigned_items (the dated schedule) ----------
   //
   // Snapshot each assignment's template into dated, athlete-owned rows —
-  // mirrors generateAthleteSessions() in db.js.
-  function seedAthleteSession(assignment, week, templateSession, templateDrills) {
-    const athleteSession = insert('athlete_sessions', {
+  // mirrors generateAssignedWorkouts() in db.js.
+  function seedAssignedWorkout(assignment, week, templateWorkout, templateItems, status = 'pending') {
+    const assignedWorkout = insert('assigned_workouts', {
       assignment_id: assignment.id,
       athlete_id: assignment.athlete_id,
-      template_session_id: templateSession.id,
+      template_workout_id: templateWorkout.id,
       week_number: week.week_number,
-      day_number: templateSession.day_number,
-      date: seedSessionDate(assignment.start_date, week.week_number, templateSession.day_number),
-      name: templateSession.name,
-      notes: templateSession.notes ?? null,
-      order_index: templateSession.order_index,
+      day_number: templateWorkout.day_number,
+      date: seedWorkoutDate(week.week_number, templateWorkout.day_number),
+      type: templateWorkout.type,
+      title: templateWorkout.title,
+      notes: templateWorkout.notes ?? null,
+      order_index: templateWorkout.order_index,
+      status,
     })
-    const athleteDrills = templateDrills.map((td) =>
-      insert('athlete_drills', {
-        athlete_session_id: athleteSession.id,
-        template_drill_id: td.id,
-        library_exercise_id: td.library_exercise_id,
-        name: td.name,
-        type: td.type,
-        description: td.description,
-        intent: td.intent,
-        sets: td.sets,
-        reps: td.reps,
-        target_value: td.target_value,
-        target_unit: td.target_unit,
-        youtube_url: td.youtube_url,
-        order_index: td.order_index,
-      }),
-    )
-    return { athleteSession, athleteDrills }
+    const assignedItems = templateItems.map((ti) => {
+      const row = { assigned_workout_id: assignedWorkout.id, template_item_id: ti.id, library_item_id: ti.library_item_id, order_index: ti.order_index }
+      for (const f of ITEM_FIELDS) row[f] = ti[f]
+      return insert('assigned_items', row)
+    })
+    return { assignedWorkout, assignedItems }
   }
 
-  const jakeLiftWeek1 = seedAthleteSession(jakeLiftAssignment, liftWeek1, liftDay1, liftDay1Drills)
-  seedAthleteSession(jakeLiftAssignment, liftWeek2, liftDay2, liftDay2Drills)
-  const jakeThrowWeek1 = seedAthleteSession(jakeThrowAssignment, throwWeek1, throwDay1, throwDay1Drills)
-  seedAthleteSession(mariaLiftAssignment, liftWeek1, liftDay1, liftDay1Drills)
+  const jakeW1MovementPrep = seedAssignedWorkout(jakeAssignment, week1, week1MovementPrep.workout, week1MovementPrep.items, 'completed')
+  const jakeW1Lift = seedAssignedWorkout(jakeAssignment, week1, week1Lift.workout, week1Lift.items, 'completed')
+  const jakeW1Bullpen = seedAssignedWorkout(jakeAssignment, week1, week1Bullpen.workout, week1Bullpen.items, 'partial')
+  const jakeW1Mobility = seedAssignedWorkout(jakeAssignment, week1, week1Mobility.workout, week1Mobility.items, 'completed')
+  const jakeW2Lift = seedAssignedWorkout(jakeAssignment, week2, week2Lift.workout, week2Lift.items, 'completed')
+  seedAssignedWorkout(jakeAssignment, week3, week3MovementPrep.workout, week3MovementPrep.items)
+  seedAssignedWorkout(jakeAssignment, week3, week3Lift.workout, week3Lift.items)
 
-  const jakeDeadliftDrill = jakeLiftWeek1.athleteDrills[0]
-  const jakeFastballDrill = jakeThrowWeek1.athleteDrills[0]
-  const jakeLongTossDrill = jakeThrowWeek1.athleteDrills[1]
+  seedAssignedWorkout(mariaAssignment, week1, week1MovementPrep.workout, week1MovementPrep.items)
+  seedAssignedWorkout(mariaAssignment, week1, week1Lift.workout, week1Lift.items)
+  seedAssignedWorkout(mariaAssignment, week3, week3MovementPrep.workout, week3MovementPrep.items)
+  seedAssignedWorkout(mariaAssignment, week3, week3Lift.workout, week3Lift.items)
 
-  // A few weeks of logged results so My Program's weight/velocity trends
-  // have something to show right away.
-  const today = new Date()
-  const deadliftProgression = [275, 285, 285, 295, 305]
-  deadliftProgression.forEach((weight, i) => {
-    const d = new Date(today)
-    d.setDate(d.getDate() - (deadliftProgression.length - i) * 4)
-    insert('exercise_logs', {
-      drill_id: jakeDeadliftDrill.id,
-      athlete_id: jake.id,
-      date: d.toISOString().slice(0, 10),
-      weight,
-      reps_completed: 3,
+  // ---------- item_logs (one row per logged set) ----------
+  //
+  // Logged history for jake's completed/partial workouts above, so the
+  // calendar's status dots and My Program's trend views have something
+  // real to show. Today's (week 3) workouts are deliberately left
+  // unlogged — that's what the athlete interacts with live in the demo.
+  function seedSetLogs(assignedWorkout, assignedItem, sets) {
+    sets.forEach((fields, i) => {
+      insert('item_logs', {
+        assigned_item_id: assignedItem.id,
+        athlete_id: assignedWorkout.athlete_id,
+        date: assignedWorkout.date,
+        set_index: fields.set_index ?? i,
+        ...fields,
+      })
     })
-  })
-  const velocityProgression = [88.4, 89.1, 89.8, 90.2]
-  velocityProgression.forEach((velocity, i) => {
-    const d = new Date(today)
-    d.setDate(d.getDate() - (velocityProgression.length - i) * 3)
-    insert('exercise_logs', {
-      drill_id: jakeFastballDrill.id,
-      athlete_id: jake.id,
-      date: d.toISOString().slice(0, 10),
-      velocity,
-    })
-  })
-  const distanceProgression = [165, 172, 175, 180]
-  distanceProgression.forEach((distance_ft, i) => {
-    const d = new Date(today)
-    d.setDate(d.getDate() - (distanceProgression.length - i) * 5)
-    insert('exercise_logs', {
-      drill_id: jakeLongTossDrill.id,
-      athlete_id: jake.id,
-      date: d.toISOString().slice(0, 10),
-      distance_ft,
-    })
-  })
+  }
+
+  // Movement prep (week 1): both items, all sets completed.
+  seedSetLogs(jakeW1MovementPrep.assignedWorkout, jakeW1MovementPrep.assignedItems[0], [{ completed: true }, { completed: true }, { completed: true }])
+  seedSetLogs(jakeW1MovementPrep.assignedWorkout, jakeW1MovementPrep.assignedItems[1], [{ completed: true }, { completed: true }])
+
+  // Lifting (weeks 1 & 2): every prescribed set logged at/near target.
+  function seedLiftLogs(assignedWorkout, assignedItem) {
+    const targets = assignedItem.target_sets ?? []
+    seedSetLogs(assignedWorkout, assignedItem, targets.map((t) => ({ actual_reps: t.reps, actual_weight: t.load })))
+  }
+  jakeW1Lift.assignedItems.forEach((it) => seedLiftLogs(jakeW1Lift.assignedWorkout, it))
+  jakeW2Lift.assignedItems.forEach((it) => seedLiftLogs(jakeW2Lift.assignedWorkout, it))
+
+  // Bullpen (week 1): only Fastball Corners logged — Long Toss left open,
+  // so this workout demonstrates the "partial" status.
+  seedSetLogs(jakeW1Bullpen.assignedWorkout, jakeW1Bullpen.assignedItems[0], [{ set_index: null, throws_completed: 15, velocity: 91.4 }])
+
+  // Mobility (week 1): both items, all sets completed.
+  seedSetLogs(jakeW1Mobility.assignedWorkout, jakeW1Mobility.assignedItems[0], [{ completed: true }])
+  seedSetLogs(jakeW1Mobility.assignedWorkout, jakeW1Mobility.assignedItems[1], [{ completed: true }, { completed: true }])
 
   for (let i = 6; i >= 0; i--) {
     const d = new Date(today)

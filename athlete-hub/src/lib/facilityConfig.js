@@ -14,10 +14,28 @@ export const FACILITY_NAME = '3:23'
 export const LOGO_CIRCLE = '/logo-circle.png'
 export const LOGO_SQUARE = '/logo-square.png'
 
-// Program "categories" coaches can build programming under. Add another
-// entry (e.g. arm care, mobility, recovery) and it shows up automatically
-// in the Program Builder's type selector and every athlete-facing program
-// list/badge.
+// The four workout types — each drives a distinct prescription shape and
+// logging UI (see item_library/template_items/assigned_items in the
+// schema: throwing logs throws+velo, lifting logs per-set reps/weight,
+// mobility/movement_prep log per-set completion). A program's days can
+// freely mix all four; type lives on the workout, not the program.
+export const WORKOUT_TYPES = [
+  { value: 'throwing', label: 'Throwing Program', badgeClass: 'bg-orange-100 text-orange-700' },
+  { value: 'lifting', label: 'Lifting', badgeClass: 'bg-blue-100 text-blue-700' },
+  { value: 'mobility', label: 'Mobility', badgeClass: 'bg-emerald-100 text-emerald-700' },
+  { value: 'movement_prep', label: 'Movement Prep', badgeClass: 'bg-violet-100 text-violet-700' },
+]
+
+export function workoutTypeMeta(value) {
+  return WORKOUT_TYPES.find((t) => t.value === value) ?? { label: value, badgeClass: 'bg-neutral-100 text-neutral-700' }
+}
+
+// --- Superseded by WORKOUT_TYPES/workoutTypeMeta above, as of the
+// calendar/per-set-logging rebuild (Programming 2.0). Left in place only
+// because ProgramBuilder.jsx/MyProgram.jsx/ExerciseBuilder.jsx/
+// ExerciseLogger.jsx/AthleteDetail.jsx still reference them and haven't
+// been rewritten yet (stages 2/4/5) — remove once those are gone. ---
+
 export const PROGRAM_TYPES = [
   { value: 'lifting', label: 'Lifting', badgeClass: 'bg-blue-100 text-blue-700' },
   { value: 'throwing', label: 'Throwing', badgeClass: 'bg-orange-100 text-orange-700' },

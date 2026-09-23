@@ -20,7 +20,6 @@ create table programs (
   coach_id uuid not null references profiles(id) on delete cascade,
   name text not null,
   description text,
-  type text not null default 'lifting' check (type in ('lifting', 'throwing')),
   created_at timestamptz not null default now()
 );
 
@@ -28,13 +27,16 @@ create table programs (
 -- Programming: template vs. assignment
 --
 -- A program is a reusable template — no dates anywhere in it. It's built
--- out of weeks (numbered 1-12), sessions inside a week (ordered by
--- day_number), and drills inside a session (sets/reps/intent/video).
--- Editing a template never touches an athlete who's already running it,
--- because assigning a program *copies* its current shape into
--- athlete-owned, dated rows (athlete_sessions/athlete_drills) — see
--- below. That copy is what an athlete actually sees and logs against, and
--- what a coach reschedules if someone gets hurt in week three.
+-- out of weeks (numbered 1-12), workouts inside a week (day_number 1-7 —
+-- multiple workouts can share a day_number, which is how a "day" holds
+-- more than one workout without needing its own table), and items inside
+-- a workout (a throwing drill, lifting exercise, or mobility/movement-prep
+-- move, shaped by the workout's type). Editing a template never touches
+-- an athlete who's already running it, because assigning a program
+-- *copies* its current shape into athlete-owned, dated rows
+-- (assigned_workouts/assigned_items) — see below. That copy is what an
+-- athlete actually sees, logs against, and what a coach reschedules if
+-- someone gets hurt in week three.
 -- ---------------------------------------------------------------------
 
 create table program_assignments (
@@ -54,106 +56,152 @@ create table program_weeks (
   unique (program_id, week_number)
 );
 
-create table template_sessions (
+-- One of four types — the type drives which prescription columns on
+-- template_items/assigned_items are meaningful and which logging UI the
+-- athlete gets (see item_library below). order_index orders workouts
+-- within a shared day_number.
+create table template_workouts (
   id uuid primary key default gen_random_uuid(),
   week_id uuid not null references program_weeks(id) on delete cascade,
   day_number int not null check (day_number between 1 and 7),
-  name text not null,
+  type text not null check (type in ('throwing', 'lifting', 'mobility', 'movement_prep')),
+  title text not null,
   notes text,
   order_index int not null default 0
 );
 
--- Reusable exercise library — the "Exercise Builder". Coaches define an
--- exercise once (type, description, demo video) and reuse it across any
--- number of drills, instead of retyping it every time. This is the
--- catalog; a "drill" below is one prescribed use of a library entry.
-create table exercise_library (
+-- Reusable item library — the "Item Library". Coaches define an item once
+-- (type, cues, demo video, and its type-specific prescription defaults)
+-- and reuse it across any number of workouts instead of retyping it every
+-- time. This is the catalog; a "template item" below is one prescribed
+-- use of a library entry inside one workout.
+--
+-- Columns below the shared set are nullable and used per-type only:
+--   throwing:            ball_weight_oz, num_throws, intent_pct, distance_target
+--   lifting:              target_sets, rest_seconds, tempo
+--   mobility/movement_prep: sets, reps, duration_seconds, side
+--
+-- target_sets is a jsonb array of {reps, load}, one entry per set, since
+-- a lifting prescription's reps/load can differ set to set (a pyramid, a
+-- wave-loaded scheme) — the only field that doesn't fit a plain column.
+create table item_library (
   id uuid primary key default gen_random_uuid(),
   coach_id uuid not null references profiles(id) on delete cascade,
+  type text not null check (type in ('throwing', 'lifting', 'mobility', 'movement_prep')),
   name text not null,
-  type text not null,
-  description text,
-  video_url text,
+  cues text,
+  youtube_url text,
+  ball_weight_oz numeric,
+  num_throws int,
+  intent_pct int,
+  distance_target numeric,
+  target_sets jsonb,
+  rest_seconds int,
+  tempo text,
+  sets int,
+  reps int,
+  duration_seconds int,
+  side text check (side in ('left', 'right', 'both')),
   created_at timestamptz not null default now()
 );
 
--- A drill inside a template session. name/description/type/youtube_url
--- are copied from the library entry at add-time (so a template is a
--- snapshot, not silently altered by later library edits);
--- library_exercise_id keeps the link back for trend grouping. `intent` is
--- the prescribed effort/purpose ("80% intent", "max effort", "technical
--- work") — distinct from `description`'s general coaching cue.
-create table template_drills (
+-- An item inside a template workout — same nullable-by-type column shape
+-- as item_library (minus coach_id/type; type is inherited from the
+-- parent workout). Every field is copied from the library entry at
+-- add-time (so a template is a snapshot, not silently altered by later
+-- library edits); library_item_id keeps the link back for reuse/trend
+-- grouping.
+create table template_items (
   id uuid primary key default gen_random_uuid(),
-  session_id uuid not null references template_sessions(id) on delete cascade,
-  library_exercise_id uuid references exercise_library(id) on delete set null,
+  workout_id uuid not null references template_workouts(id) on delete cascade,
+  library_item_id uuid references item_library(id) on delete set null,
   name text not null,
-  type text,
-  description text,
-  intent text,
+  cues text,
+  youtube_url text,
+  ball_weight_oz numeric,
+  num_throws int,
+  intent_pct int,
+  distance_target numeric,
+  target_sets jsonb,
+  rest_seconds int,
+  tempo text,
   sets int,
   reps int,
-  target_value numeric,
-  target_unit text,
-  youtube_url text,
+  duration_seconds int,
+  side text check (side in ('left', 'right', 'both')),
   order_index int not null default 0
 );
 
--- The assignment side: one row per dated session an athlete actually has
--- on their calendar. Generated by copying template_sessions when a
+-- The assignment side: one row per dated workout an athlete actually has
+-- on their calendar. Generated by copying template_workouts when a
 -- program is assigned (start_date + (week_number-1)*7 + (day_number-1)
 -- days); `date` is then independently editable per athlete — shifting one
 -- athlete's week 3 after an injury never touches the template or anyone
--- else's schedule. template_session_id is kept for traceability only.
-create table athlete_sessions (
+-- else's schedule. template_workout_id is kept for traceability only.
+--
+-- `status` is denormalized — recomputed whenever a log is written against
+-- one of this workout's items (distinct logged items vs. total items) —
+-- so the calendar's month view can paint every day's dots from one flat
+-- query instead of joining items/logs for every day on screen. "Missed"
+-- is *not* stored: it's derived at render time as date < today and
+-- status = 'pending', so it can never go stale the way a stored value
+-- could once "today" moves on.
+create table assigned_workouts (
   id uuid primary key default gen_random_uuid(),
   assignment_id uuid not null references program_assignments(id) on delete cascade,
   athlete_id uuid not null references profiles(id) on delete cascade,
-  template_session_id uuid references template_sessions(id) on delete set null,
+  template_workout_id uuid references template_workouts(id) on delete set null,
   week_number int not null,
   day_number int not null,
   date date not null,
-  name text not null,
+  type text not null check (type in ('throwing', 'lifting', 'mobility', 'movement_prep')),
+  title text not null,
   notes text,
-  order_index int not null default 0
+  order_index int not null default 0,
+  status text not null default 'pending' check (status in ('pending', 'partial', 'completed'))
 );
 
--- The dated, athlete-owned copy of a template_drill — what the athlete
--- actually sees and logs results against. template_drill_id/
--- library_exercise_id are kept for traceability and trend grouping.
-create table athlete_drills (
+-- The dated, athlete-owned copy of a template_item — what the athlete
+-- actually sees and logs results against. template_item_id/
+-- library_item_id are kept for traceability and trend grouping.
+create table assigned_items (
   id uuid primary key default gen_random_uuid(),
-  athlete_session_id uuid not null references athlete_sessions(id) on delete cascade,
-  template_drill_id uuid references template_drills(id) on delete set null,
-  library_exercise_id uuid references exercise_library(id) on delete set null,
+  assigned_workout_id uuid not null references assigned_workouts(id) on delete cascade,
+  template_item_id uuid references template_items(id) on delete set null,
+  library_item_id uuid references item_library(id) on delete set null,
   name text not null,
-  type text,
-  description text,
-  intent text,
+  cues text,
+  youtube_url text,
+  ball_weight_oz numeric,
+  num_throws int,
+  intent_pct int,
+  distance_target numeric,
+  target_sets jsonb,
+  rest_seconds int,
+  tempo text,
   sets int,
   reps int,
-  target_value numeric,
-  target_unit text,
-  youtube_url text,
+  duration_seconds int,
+  side text check (side in ('left', 'right', 'both')),
   order_index int not null default 0
 );
 
--- One row per time an athlete logs a result for a prescribed drill.
--- Lifting drills log weight + reps_completed; throwing drills log
--- velocity. Grouping logs by athlete_drills.library_exercise_id (when
--- set) shows the trend for "this exercise" across every session that
--- reused it, not just one.
-create table exercise_logs (
+-- One row per logged set. Throwing logs once per item (set_index null);
+-- Lifting and Mobility/Movement Prep log once per prescribed set
+-- (set_index 0, 1, 2…). Which columns matter follows the parent item's
+-- type, same nullable-by-type convention as assigned_items itself.
+create table item_logs (
   id uuid primary key default gen_random_uuid(),
-  drill_id uuid not null references athlete_drills(id) on delete cascade,
+  assigned_item_id uuid not null references assigned_items(id) on delete cascade,
   athlete_id uuid not null references profiles(id) on delete cascade,
   date date not null default current_date,
-  sets_completed int,
-  reps_completed int,
-  weight numeric,
+  set_index int,
+  throws_completed int,
   velocity numeric,
-  distance_ft numeric,
-  notes text,
+  actual_reps int,
+  actual_weight numeric,
+  completed boolean,
+  note text,
   created_at timestamptz not null default now()
 );
 
@@ -296,12 +344,12 @@ alter table profiles enable row level security;
 alter table programs enable row level security;
 alter table program_assignments enable row level security;
 alter table program_weeks enable row level security;
-alter table template_sessions enable row level security;
-alter table exercise_library enable row level security;
-alter table template_drills enable row level security;
-alter table athlete_sessions enable row level security;
-alter table athlete_drills enable row level security;
-alter table exercise_logs enable row level security;
+alter table template_workouts enable row level security;
+alter table item_library enable row level security;
+alter table template_items enable row level security;
+alter table assigned_workouts enable row level security;
+alter table assigned_items enable row level security;
+alter table item_logs enable row level security;
 alter table journal_prompts enable row level security;
 alter table journal_entries enable row level security;
 alter table devotionals enable row level security;
@@ -359,65 +407,65 @@ create policy "assignments_athlete_view" on program_assignments for select using
   athlete_id = current_profile_id()
 );
 
--- program_weeks / template_sessions / template_drills: template content
+-- program_weeks / template_workouts / template_items: template content
 -- follows program ownership. Athletes never read the template directly —
--- they only ever see the dated copy in athlete_sessions/athlete_drills —
+-- they only ever see the dated copy in assigned_workouts/assigned_items —
 -- so there's no athlete-view policy on any of these three.
 create policy "program_weeks_coach_owns" on program_weeks for all using (
   program_id in (select id from programs where coach_id = current_profile_id())
 );
 
-create policy "template_sessions_coach_owns" on template_sessions for all using (
+create policy "template_workouts_coach_owns" on template_workouts for all using (
   week_id in (
     select w.id from program_weeks w join programs p on p.id = w.program_id
     where p.coach_id = current_profile_id()
   )
 );
 
--- exercise_library: coach-owned only — athletes never query it directly,
--- they see drills through the athlete_sessions/athlete_drills assigned to them
-create policy "exercise_library_coach_owns" on exercise_library for all using (
+-- item_library: coach-owned only — athletes never query it directly,
+-- they see items through the assigned_workouts/assigned_items assigned to them
+create policy "item_library_coach_owns" on item_library for all using (
   coach_id = current_profile_id()
 );
 
-create policy "template_drills_coach_owns" on template_drills for all using (
-  session_id in (
-    select s.id from template_sessions s
-    join program_weeks w on w.id = s.week_id
-    join programs p on p.id = w.program_id
+create policy "template_items_coach_owns" on template_items for all using (
+  workout_id in (
+    select w.id from template_workouts w
+    join program_weeks pw on pw.id = w.week_id
+    join programs p on p.id = pw.program_id
     where p.coach_id = current_profile_id()
   )
 );
 
--- athlete_sessions / athlete_drills: the dated, athlete-owned copy.
+-- assigned_workouts / assigned_items: the dated, athlete-owned copy.
 -- Athletes read their own; coaches can read AND write (rescheduling a
--- session, or building/adjusting one, from the athlete's profile) for
+-- workout, or building/adjusting one, from the athlete's profile) for
 -- their assigned athletes. Generation (assigning a program) runs as the
 -- coach, inserting rows with athlete_id set to the assignee, so it's
 -- covered by the same "coach manages their athletes" policy.
-create policy "athlete_sessions_athlete_own" on athlete_sessions for all using (
+create policy "assigned_workouts_athlete_own" on assigned_workouts for all using (
   athlete_id = current_profile_id()
 );
-create policy "athlete_sessions_coach_manage" on athlete_sessions for all using (
+create policy "assigned_workouts_coach_manage" on assigned_workouts for all using (
   athlete_id in (select id from profiles where coach_id = current_profile_id())
 );
 
-create policy "athlete_drills_athlete_own" on athlete_drills for all using (
-  athlete_session_id in (select id from athlete_sessions where athlete_id = current_profile_id())
+create policy "assigned_items_athlete_own" on assigned_items for all using (
+  assigned_workout_id in (select id from assigned_workouts where athlete_id = current_profile_id())
 );
-create policy "athlete_drills_coach_manage" on athlete_drills for all using (
-  athlete_session_id in (
-    select s.id from athlete_sessions s
-    join profiles p on p.id = s.athlete_id
+create policy "assigned_items_coach_manage" on assigned_items for all using (
+  assigned_workout_id in (
+    select w.id from assigned_workouts w
+    join profiles p on p.id = w.athlete_id
     where p.coach_id = current_profile_id()
   )
 );
 
--- exercise_logs: athlete owns; coach can view logs of their athletes
-create policy "exercise_logs_athlete_own" on exercise_logs for all using (
+-- item_logs: athlete owns; coach can view logs of their athletes
+create policy "item_logs_athlete_own" on item_logs for all using (
   athlete_id = current_profile_id()
 );
-create policy "exercise_logs_coach_view" on exercise_logs for select using (
+create policy "item_logs_coach_view" on item_logs for select using (
   athlete_id in (select id from profiles where coach_id = current_profile_id())
 );
 

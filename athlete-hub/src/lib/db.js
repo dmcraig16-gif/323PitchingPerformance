@@ -194,10 +194,11 @@ export async function insertCommandPitch(row) {
 // ---------- programs (templates) ----------
 //
 // A program is a pure template: no dates anywhere. It's built out of 12
-// weeks (created automatically alongside the program), sessions inside a
-// week (ordered by day_number), and drills inside a session. See
-// generateAthleteSessions() below for how assigning a program turns this
-// into an athlete's actual dated schedule.
+// weeks (created automatically alongside the program), workouts inside a
+// week (day_number 1-7 — multiple workouts can share a day_number, which
+// is how a "day" holds more than one workout), and items inside a
+// workout. See generateAssignedWorkouts() below for how assigning a
+// program turns this into an athlete's actual dated schedule.
 
 export async function listProgramsForCoach(coachId) {
   if (isSupabaseConfigured) {
@@ -243,79 +244,89 @@ export async function listProgramWeeks(programId) {
     .sort((a, b) => a.week_number - b.week_number)
 }
 
-export async function listTemplateSessions(weekId) {
+export async function listTemplateWorkouts(weekId) {
   if (isSupabaseConfigured) {
     const { data } = await supabase
-      .from('template_sessions')
+      .from('template_workouts')
       .select('*')
       .eq('week_id', weekId)
       .order('day_number')
-    return data ?? []
-  }
-  return local
-    .getAll('template_sessions')
-    .filter((s) => s.week_id === weekId)
-    .sort((a, b) => a.day_number - b.day_number)
-}
-
-export async function createTemplateSession(row) {
-  if (isSupabaseConfigured) {
-    const { data, error } = await supabase.from('template_sessions').insert(row).select().single()
-    if (error) throw error
-    return data
-  }
-  return local.insert('template_sessions', row)
-}
-
-export async function deleteTemplateSession(id) {
-  if (isSupabaseConfigured) {
-    const { error } = await supabase.from('template_sessions').delete().eq('id', id)
-    if (error) throw error
-    return
-  }
-  local.remove('template_sessions', id)
-}
-
-export async function listTemplateDrills(sessionId) {
-  if (isSupabaseConfigured) {
-    const { data } = await supabase
-      .from('template_drills')
-      .select('*')
-      .eq('session_id', sessionId)
       .order('order_index')
     return data ?? []
   }
   return local
-    .getAll('template_drills')
-    .filter((d) => d.session_id === sessionId)
-    .sort((a, b) => a.order_index - b.order_index)
+    .getAll('template_workouts')
+    .filter((w) => w.week_id === weekId)
+    .sort((a, b) => a.day_number - b.day_number || a.order_index - b.order_index)
 }
 
-export async function createTemplateDrill(row) {
+export async function createTemplateWorkout(row) {
   if (isSupabaseConfigured) {
-    const { data, error } = await supabase.from('template_drills').insert(row).select().single()
+    const { data, error } = await supabase.from('template_workouts').insert(row).select().single()
     if (error) throw error
     return data
   }
-  return local.insert('template_drills', row)
+  return local.insert('template_workouts', row)
 }
 
-export async function updateTemplateDrill(id, patch) {
+export async function updateTemplateWorkout(id, patch) {
   if (isSupabaseConfigured) {
-    const { data, error } = await supabase.from('template_drills').update(patch).eq('id', id).select().single()
+    const { data, error } = await supabase.from('template_workouts').update(patch).eq('id', id).select().single()
     if (error) throw error
     return data
   }
-  return local.update('template_drills', id, patch)
+  return local.update('template_workouts', id, patch)
 }
 
-export async function deleteTemplateDrill(id) {
+export async function deleteTemplateWorkout(id) {
   if (isSupabaseConfigured) {
-    const { error } = await supabase.from('template_drills').delete().eq('id', id)
+    const { error } = await supabase.from('template_workouts').delete().eq('id', id)
     if (error) throw error
     return
   }
-  local.remove('template_drills', id)
+  local.remove('template_workouts', id)
+}
+
+export async function listTemplateItems(workoutId) {
+  if (isSupabaseConfigured) {
+    const { data } = await supabase
+      .from('template_items')
+      .select('*')
+      .eq('workout_id', workoutId)
+      .order('order_index')
+    return data ?? []
+  }
+  return local
+    .getAll('template_items')
+    .filter((it) => it.workout_id === workoutId)
+    .sort((a, b) => a.order_index - b.order_index)
+}
+
+export async function createTemplateItem(row) {
+  if (isSupabaseConfigured) {
+    const { data, error } = await supabase.from('template_items').insert(row).select().single()
+    if (error) throw error
+    return data
+  }
+  return local.insert('template_items', row)
+}
+
+export async function updateTemplateItem(id, patch) {
+  if (isSupabaseConfigured) {
+    const { data, error } = await supabase.from('template_items').update(patch).eq('id', id).select().single()
+    if (error) throw error
+    return data
+  }
+  return local.update('template_items', id, patch)
+}
+
+export async function deleteTemplateItem(id) {
+  if (isSupabaseConfigured) {
+    const { error } = await supabase.from('template_items').delete().eq('id', id)
+    if (error) throw error
+    return
+  }
+  local.remove('template_items', id)
 }
 
 // ---------- assignments (where dates enter) ----------
@@ -355,7 +366,7 @@ export async function listAssignmentsForProgram(programId) {
 
 // Assigns a program to an athlete starting on startDate, then snapshots
 // the template's current shape into dated, athlete-owned rows
-// (athlete_sessions/athlete_drills) — see generateAthleteSessions.
+// (assigned_workouts/assigned_items) — see generateAssignedWorkouts.
 export async function assignProgram(programId, athleteId, startDate) {
   const row = { program_id: programId, athlete_id: athleteId, start_date: startDate || today() }
   const assignment = isSupabaseConfigured
@@ -366,163 +377,173 @@ export async function assignProgram(programId, athleteId, startDate) {
       })()
     : local.insert('program_assignments', row)
 
-  await generateAthleteSessions(assignment)
+  await generateAssignedWorkouts(assignment)
   return assignment
 }
 
 // date = start_date + (week_number - 1) * 7 + (day_number - 1) days —
 // day_number 1 lands on start_date's weekday, day_number 2 the day after,
 // week 2 day 1 exactly 7 days after start_date, and so on.
-function sessionDate(startDate, weekNumber, dayNumber) {
+function workoutDate(startDate, weekNumber, dayNumber) {
   const d = new Date(`${startDate}T00:00:00`)
   d.setDate(d.getDate() + (weekNumber - 1) * 7 + (dayNumber - 1))
   return d.toISOString().slice(0, 10)
 }
 
-async function generateAthleteSessions(assignment) {
+// Every field a template item/workout carries that should be copied
+// verbatim into its assigned counterpart — the full nullable-by-type
+// prescription shape shared by item_library/template_items/assigned_items.
+const ITEM_FIELDS = [
+  'name', 'cues', 'youtube_url',
+  'ball_weight_oz', 'num_throws', 'intent_pct', 'distance_target',
+  'target_sets', 'rest_seconds', 'tempo',
+  'sets', 'reps', 'duration_seconds', 'side',
+]
+
+async function generateAssignedWorkouts(assignment) {
   const weeks = await listProgramWeeks(assignment.program_id)
   for (const week of weeks) {
-    const templateSessions = await listTemplateSessions(week.id)
-    for (const ts of templateSessions) {
-      const athleteSession = await createAthleteSession({
+    const templateWorkouts = await listTemplateWorkouts(week.id)
+    for (const tw of templateWorkouts) {
+      const assignedWorkout = await createAssignedWorkout({
         assignment_id: assignment.id,
         athlete_id: assignment.athlete_id,
-        template_session_id: ts.id,
+        template_workout_id: tw.id,
         week_number: week.week_number,
-        day_number: ts.day_number,
-        date: sessionDate(assignment.start_date, week.week_number, ts.day_number),
-        name: ts.name,
-        notes: ts.notes,
-        order_index: ts.order_index,
+        day_number: tw.day_number,
+        date: workoutDate(assignment.start_date, week.week_number, tw.day_number),
+        type: tw.type,
+        title: tw.title,
+        notes: tw.notes,
+        order_index: tw.order_index,
       })
-      const templateDrills = await listTemplateDrills(ts.id)
-      for (const td of templateDrills) {
-        await createAthleteDrill({
-          athlete_session_id: athleteSession.id,
-          template_drill_id: td.id,
-          library_exercise_id: td.library_exercise_id,
-          name: td.name,
-          type: td.type,
-          description: td.description,
-          intent: td.intent,
-          sets: td.sets,
-          reps: td.reps,
-          target_value: td.target_value,
-          target_unit: td.target_unit,
-          youtube_url: td.youtube_url,
-          order_index: td.order_index,
-        })
+      const templateItems = await listTemplateItems(tw.id)
+      for (const ti of templateItems) {
+        const itemRow = { assigned_workout_id: assignedWorkout.id, template_item_id: ti.id, library_item_id: ti.library_item_id, order_index: ti.order_index }
+        for (const field of ITEM_FIELDS) itemRow[field] = ti[field]
+        await createAssignedItem(itemRow)
       }
     }
   }
 }
 
-// ---------- athlete_sessions / athlete_drills (the dated schedule) ----------
+// ---------- assigned_workouts / assigned_items (the dated schedule) ----------
 
-export async function listAthleteSessions(athleteId) {
+export async function listAssignedWorkouts(athleteId) {
   if (isSupabaseConfigured) {
     const { data } = await supabase
-      .from('athlete_sessions')
+      .from('assigned_workouts')
       .select('*')
       .eq('athlete_id', athleteId)
       .order('date')
     return data ?? []
   }
   return local
-    .getAll('athlete_sessions')
-    .filter((s) => s.athlete_id === athleteId)
+    .getAll('assigned_workouts')
+    .filter((w) => w.athlete_id === athleteId)
     .sort((a, b) => a.date.localeCompare(b.date) || a.order_index - b.order_index)
 }
 
-async function createAthleteSession(row) {
+async function createAssignedWorkout(row) {
   if (isSupabaseConfigured) {
-    const { data, error } = await supabase.from('athlete_sessions').insert(row).select().single()
+    const { data, error } = await supabase.from('assigned_workouts').insert(row).select().single()
     if (error) throw error
     return data
   }
-  return local.insert('athlete_sessions', row)
+  return local.insert('assigned_workouts', row)
 }
 
-export async function updateAthleteSession(id, patch) {
+export async function updateAssignedWorkout(id, patch) {
   if (isSupabaseConfigured) {
-    const { data, error } = await supabase.from('athlete_sessions').update(patch).eq('id', id).select().single()
+    const { data, error } = await supabase.from('assigned_workouts').update(patch).eq('id', id).select().single()
     if (error) throw error
     return data
   }
-  return local.update('athlete_sessions', id, patch)
+  return local.update('assigned_workouts', id, patch)
 }
 
-// The injury scenario: shift one session (and, by default, every session
+// The injury scenario: shift one workout (and, by default, every workout
 // scheduled on or after it) by deltaDays without touching the template or
-// any other athlete. Returns the updated sessions.
-export async function shiftAthleteSessions(athleteId, fromDate, deltaDays, { onlyThisOne = false } = {}) {
-  const sessions = await listAthleteSessions(athleteId)
+// any other athlete. Returns the updated workouts.
+export async function shiftAssignedWorkouts(athleteId, fromDate, deltaDays, { onlyThisOne = false } = {}) {
+  const workouts = await listAssignedWorkouts(athleteId)
   const toShift = onlyThisOne
-    ? sessions.filter((s) => s.date === fromDate)
-    : sessions.filter((s) => s.date >= fromDate)
+    ? workouts.filter((w) => w.date === fromDate)
+    : workouts.filter((w) => w.date >= fromDate)
   const updated = []
-  for (const s of toShift) {
-    const d = new Date(`${s.date}T00:00:00`)
+  for (const w of toShift) {
+    const d = new Date(`${w.date}T00:00:00`)
     d.setDate(d.getDate() + deltaDays)
-    updated.push(await updateAthleteSession(s.id, { date: d.toISOString().slice(0, 10) }))
+    updated.push(await updateAssignedWorkout(w.id, { date: d.toISOString().slice(0, 10) }))
   }
   return updated
 }
 
-export async function listAthleteDrills(athleteSessionId) {
+export async function listAssignedItems(assignedWorkoutId) {
   if (isSupabaseConfigured) {
     const { data } = await supabase
-      .from('athlete_drills')
+      .from('assigned_items')
       .select('*')
-      .eq('athlete_session_id', athleteSessionId)
+      .eq('assigned_workout_id', assignedWorkoutId)
       .order('order_index')
     return data ?? []
   }
   return local
-    .getAll('athlete_drills')
-    .filter((d) => d.athlete_session_id === athleteSessionId)
+    .getAll('assigned_items')
+    .filter((it) => it.assigned_workout_id === assignedWorkoutId)
     .sort((a, b) => a.order_index - b.order_index)
 }
 
-async function createAthleteDrill(row) {
+async function createAssignedItem(row) {
   if (isSupabaseConfigured) {
-    const { data, error } = await supabase.from('athlete_drills').insert(row).select().single()
+    const { data, error } = await supabase.from('assigned_items').insert(row).select().single()
     if (error) throw error
     return data
   }
-  return local.insert('athlete_drills', row)
+  return local.insert('assigned_items', row)
 }
 
-// ---------- exercise library (Exercise Builder) ----------
+// Lets a coach adjust one athlete's assigned item (e.g. bump next week's
+// load) without touching the template or any other athlete.
+export async function updateAssignedItem(id, patch) {
+  if (isSupabaseConfigured) {
+    const { data, error } = await supabase.from('assigned_items').update(patch).eq('id', id).select().single()
+    if (error) throw error
+    return data
+  }
+  return local.update('assigned_items', id, patch)
+}
 
-export async function listExerciseLibrary(coachId) {
+// ---------- item library ----------
+
+export async function listItemLibrary(coachId) {
   if (isSupabaseConfigured) {
     const { data } = await supabase
-      .from('exercise_library')
+      .from('item_library')
       .select('*')
       .eq('coach_id', coachId)
       .order('name')
     return data ?? []
   }
   return local
-    .getAll('exercise_library')
-    .filter((e) => e.coach_id === coachId)
+    .getAll('item_library')
+    .filter((it) => it.coach_id === coachId)
     .sort((a, b) => a.name.localeCompare(b.name))
 }
 
-export async function createLibraryExercise(row) {
+export async function createLibraryItem(row) {
   if (isSupabaseConfigured) {
-    const { data, error } = await supabase.from('exercise_library').insert(row).select().single()
+    const { data, error } = await supabase.from('item_library').insert(row).select().single()
     if (error) throw error
     return data
   }
-  return local.insert('exercise_library', row)
+  return local.insert('item_library', row)
 }
 
-export async function updateLibraryExercise(id, patch) {
+export async function updateLibraryItem(id, patch) {
   if (isSupabaseConfigured) {
     const { data, error } = await supabase
-      .from('exercise_library')
+      .from('item_library')
       .update(patch)
       .eq('id', id)
       .select()
@@ -530,48 +551,71 @@ export async function updateLibraryExercise(id, patch) {
     if (error) throw error
     return data
   }
-  return local.update('exercise_library', id, patch)
+  return local.update('item_library', id, patch)
 }
 
-export async function deleteLibraryExercise(id) {
+export async function deleteLibraryItem(id) {
   if (isSupabaseConfigured) {
-    const { error } = await supabase.from('exercise_library').delete().eq('id', id)
+    const { error } = await supabase.from('item_library').delete().eq('id', id)
     if (error) throw error
     return
   }
-  local.remove('exercise_library', id)
+  local.remove('item_library', id)
 }
 
-// One row per time an athlete logs a result: weight+reps for a lifting
-// drill, velocity for a throwing one. `row` should already carry
-// drill_id/athlete_id/date plus whichever of weight/reps_completed/
-// velocity/notes apply. drill_id points at an athlete_drills row (the
-// dated, athlete-owned copy) — never at the template.
-export async function logExerciseResult(row) {
+// ---------- item logs (one row per logged set) ----------
+//
+// Throwing logs once per item (set_index null); Lifting and Mobility/
+// Movement Prep log once per prescribed set (set_index 0, 1, 2…). `row`
+// should carry assigned_item_id/assigned_workout_id/athlete_id/date plus
+// whichever type fields apply. assigned_item_id points at an
+// assigned_items row (the dated, athlete-owned copy) — never the
+// template. assigned_workout_id drives the parent workout's status
+// recompute and isn't stored on the log row itself.
+export async function logItemSet({ assigned_workout_id, ...row }) {
   const full = { date: today(), ...row }
-  if (isSupabaseConfigured) {
-    const { data, error } = await supabase.from('exercise_logs').insert(full).select().single()
-    if (error) throw error
-    return data
-  }
-  return local.insert('exercise_logs', full)
+  const saved = isSupabaseConfigured
+    ? await (async () => {
+        const { data, error } = await supabase.from('item_logs').insert(full).select().single()
+        if (error) throw error
+        return data
+      })()
+    : local.insert('item_logs', full)
+
+  if (assigned_workout_id) await recomputeWorkoutStatus(assigned_workout_id)
+  return saved
 }
 
-// Every logged result for one athlete_drills row, oldest first — used to
-// trend a specific drill over time.
-export async function listExerciseLogsForDrill(drillId) {
+// Every logged set for one assigned_items row, oldest first — used to
+// trend a specific item over time and to prefill "already logged" state.
+export async function listLogsForItem(assignedItemId) {
   if (isSupabaseConfigured) {
     const { data } = await supabase
-      .from('exercise_logs')
+      .from('item_logs')
       .select('*')
-      .eq('drill_id', drillId)
+      .eq('assigned_item_id', assignedItemId)
       .order('date', { ascending: true })
     return data ?? []
   }
   return local
-    .getAll('exercise_logs')
-    .filter((l) => l.drill_id === drillId)
+    .getAll('item_logs')
+    .filter((l) => l.assigned_item_id === assignedItemId)
     .sort((a, b) => a.date.localeCompare(b.date))
+}
+
+// Recomputes a workout's denormalized status from its items' logs — every
+// item with at least one log vs. the total item count — so the calendar
+// can paint completed/partial/pending dots from a flat query instead of
+// joining items/logs for every day on screen.
+async function recomputeWorkoutStatus(assignedWorkoutId) {
+  const items = await listAssignedItems(assignedWorkoutId)
+  if (items.length === 0) return
+  const loggedFlags = await Promise.all(
+    items.map((it) => listLogsForItem(it.id).then((logs) => logs.length > 0)),
+  )
+  const loggedCount = loggedFlags.filter(Boolean).length
+  const status = loggedCount === 0 ? 'pending' : loggedCount === items.length ? 'completed' : 'partial'
+  await updateAssignedWorkout(assignedWorkoutId, { status })
 }
 
 // ---------- journal (freeform notes) ----------
