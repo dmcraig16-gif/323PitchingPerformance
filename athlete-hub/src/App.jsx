@@ -6,7 +6,8 @@ import Landing from './pages/Landing.jsx'
 import AppShell from './components/AppShell.jsx'
 import AthleteDashboard from './pages/athlete/Dashboard.jsx'
 import CheckIn from './pages/athlete/CheckIn.jsx'
-import MyProgram from './pages/athlete/MyProgram.jsx'
+import Calendar from './pages/athlete/Calendar.jsx'
+import WorkoutView from './pages/athlete/WorkoutView.jsx'
 import CommandTraining from './pages/athlete/CommandTraining.jsx'
 import CommandSession from './pages/athlete/CommandSession.jsx'
 import Journal from './pages/athlete/Journal.jsx'
@@ -43,7 +44,8 @@ export default function App() {
         <Route index element={<Landing />} />
         <Route path="dashboard" element={<AthleteDashboard />} />
         <Route path="check-in" element={<CheckIn />} />
-        <Route path="program" element={<MyProgram />} />
+        <Route path="program" element={<Calendar />} />
+        <Route path="program/:workoutId" element={<WorkoutView />} />
         <Route path="command" element={<CommandTraining />} />
         <Route path="command/:sessionId" element={<CommandSession />} />
         <Route path="journal" element={<Journal />} />

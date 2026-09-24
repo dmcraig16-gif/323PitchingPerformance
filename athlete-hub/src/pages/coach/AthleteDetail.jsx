@@ -5,10 +5,10 @@ import { useAuth } from '../../lib/useAuth.js'
 import * as db from '../../lib/db.js'
 import { bandFor } from '../../lib/readiness.js'
 import { summarizeByPitchType, trendBySession, round1 } from '../../lib/commandMetrics.js'
-import { programTypeMeta } from '../../lib/facilityConfig.js'
 import CommandSessionList from '../../components/CommandSessionList.jsx'
 import ReadinessGauge from '../../components/ReadinessGauge.jsx'
 import MissDirectionSummary from '../../components/MissDirectionSummary.jsx'
+import AthleteCalendar from '../../components/calendar/AthleteCalendar.jsx'
 
 const TONE_HEX = { green: '#34c759', yellow: '#ff9f0a', red: '#ff3b30' }
 const today = () => new Date().toISOString().slice(0, 10)
@@ -69,12 +69,7 @@ function OverviewTab({ latestCheckin, band, commandSummary, assignedPrograms, on
         ) : (
           <ul className="text-sm space-y-1">
             {assignedPrograms.map((p) => (
-              <li key={p.id} className="flex items-center justify-between">
-                <span>{p.name}</span>
-                <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${programTypeMeta(p.type).badgeClass}`}>
-                  {programTypeMeta(p.type).label}
-                </span>
-              </li>
+              <li key={p.id}>{p.name}</li>
             ))}
           </ul>
         )}
@@ -267,55 +262,58 @@ function ProgramsTab({ athleteId, coachId, assignedPrograms, setAssignedPrograms
   }
 
   return (
-    <Card title="Assigned programs">
-      {assignedPrograms.length === 0 ? (
-        <p className="text-sm text-neutral-500 mb-4">No programs assigned yet.</p>
-      ) : (
-        <ul className="text-sm space-y-2 mb-4">
-          {assignedPrograms.map((p) => (
-            <li key={p.id} className="flex items-center justify-between border-b border-neutral-50 pb-2">
-              <div>
+    <div className="space-y-5">
+      <Card title="Assigned programs">
+        {assignedPrograms.length === 0 ? (
+          <p className="text-sm text-neutral-500 mb-4">No programs assigned yet.</p>
+        ) : (
+          <ul className="text-sm space-y-2 mb-4">
+            {assignedPrograms.map((p) => (
+              <li key={p.id} className="border-b border-neutral-50 pb-2">
                 <p className="font-medium">{p.name}</p>
                 {p.description && <p className="text-xs text-neutral-400">{p.description}</p>}
-              </div>
-              <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${programTypeMeta(p.type).badgeClass}`}>
-                {programTypeMeta(p.type).label}
-              </span>
-            </li>
-          ))}
-        </ul>
+              </li>
+            ))}
+          </ul>
+        )}
+        <div className="flex flex-wrap gap-2">
+          <select
+            value={assigning}
+            onChange={(e) => setAssigning(e.target.value)}
+            className="flex-1 min-w-[160px] border rounded-xl px-2 py-1.5 text-sm"
+          >
+            <option value="">Assign a program…</option>
+            {unassignedPrograms.map((p) => (
+              <option key={p.id} value={p.id}>
+                {p.name}
+              </option>
+            ))}
+          </select>
+          <input
+            type="date"
+            value={startDate}
+            onChange={(e) => setStartDate(e.target.value)}
+            className="border rounded-xl px-2 py-1.5 text-sm"
+          />
+          <button
+            onClick={handleAssign}
+            disabled={!assigning || saving}
+            className="bg-accent text-white hover:bg-accent-600 transition-colors rounded-xl px-4 py-1.5 text-sm font-medium disabled:opacity-40"
+          >
+            {saving ? 'Scheduling…' : 'Assign'}
+          </button>
+        </div>
+        <Link to="/coach/programs" className="text-xs text-accent hover:text-accent-700 font-medium mt-4 inline-block">
+          Build a new program →
+        </Link>
+      </Card>
+
+      {assignedPrograms.length > 0 && (
+        <Card title="Calendar">
+          <AthleteCalendar athleteId={athleteId} interactive={false} />
+        </Card>
       )}
-      <div className="flex flex-wrap gap-2">
-        <select
-          value={assigning}
-          onChange={(e) => setAssigning(e.target.value)}
-          className="flex-1 min-w-[160px] border rounded-xl px-2 py-1.5 text-sm"
-        >
-          <option value="">Assign a program…</option>
-          {unassignedPrograms.map((p) => (
-            <option key={p.id} value={p.id}>
-              {p.name} ({programTypeMeta(p.type).label})
-            </option>
-          ))}
-        </select>
-        <input
-          type="date"
-          value={startDate}
-          onChange={(e) => setStartDate(e.target.value)}
-          className="border rounded-xl px-2 py-1.5 text-sm"
-        />
-        <button
-          onClick={handleAssign}
-          disabled={!assigning || saving}
-          className="bg-accent text-white hover:bg-accent-600 transition-colors rounded-xl px-4 py-1.5 text-sm font-medium disabled:opacity-40"
-        >
-          {saving ? 'Scheduling…' : 'Assign'}
-        </button>
-      </div>
-      <Link to="/coach/programs" className="text-xs text-accent hover:text-accent-700 font-medium mt-4 inline-block">
-        Build a new program →
-      </Link>
-    </Card>
+    </div>
   )
 }
 

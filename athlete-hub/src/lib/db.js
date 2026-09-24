@@ -445,6 +445,14 @@ export async function listAssignedWorkouts(athleteId) {
     .sort((a, b) => a.date.localeCompare(b.date) || a.order_index - b.order_index)
 }
 
+export async function getAssignedWorkout(id) {
+  if (isSupabaseConfigured) {
+    const { data } = await supabase.from('assigned_workouts').select('*').eq('id', id).single()
+    return data ?? null
+  }
+  return local.getAll('assigned_workouts').find((w) => w.id === id) ?? null
+}
+
 async function createAssignedWorkout(row) {
   if (isSupabaseConfigured) {
     const { data, error } = await supabase.from('assigned_workouts').insert(row).select().single()
@@ -573,15 +581,31 @@ export async function deleteLibraryItem(id) {
 // assigned_items row (the dated, athlete-owned copy) — never the
 // template. assigned_workout_id drives the parent workout's status
 // recompute and isn't stored on the log row itself.
-export async function logItemSet({ assigned_workout_id, ...row }) {
-  const full = { date: today(), ...row }
+//
+// One logical "set" can have more than one field saved independently as
+// the athlete blurs each input (reps, then weight, ...), so this upserts
+// by (assigned_item_id, set_index, date) rather than always inserting —
+// otherwise each field-level save would fragment into its own row and
+// clobber visibility into the others logged for that same set today.
+export async function logItemSet({ assigned_workout_id, assigned_item_id, set_index = null, ...row }) {
+  const date = row.date ?? today()
+  const full = { assigned_item_id, set_index, date, ...row }
   const saved = isSupabaseConfigured
     ? await (async () => {
-        const { data, error } = await supabase.from('item_logs').insert(full).select().single()
+        let query = supabase.from('item_logs').select('id').eq('assigned_item_id', assigned_item_id).eq('date', date)
+        query = set_index === null ? query.is('set_index', null) : query.eq('set_index', set_index)
+        const { data: existing } = await query.maybeSingle()
+        const { data, error } = existing
+          ? await supabase.from('item_logs').update(full).eq('id', existing.id).select().single()
+          : await supabase.from('item_logs').insert(full).select().single()
         if (error) throw error
         return data
       })()
-    : local.insert('item_logs', full)
+    : local.upsert(
+        'item_logs',
+        full,
+        (r) => r.assigned_item_id === assigned_item_id && r.set_index === set_index && r.date === date,
+      )
 
   if (assigned_workout_id) await recomputeWorkoutStatus(assigned_workout_id)
   return saved

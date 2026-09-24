@@ -200,6 +200,7 @@ create table item_logs (
   velocity numeric,
   actual_reps int,
   actual_weight numeric,
+  actual_duration_seconds numeric,
   completed boolean,
   note text,
   created_at timestamptz not null default now()

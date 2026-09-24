@@ -3,7 +3,7 @@ import { NavLink, Outlet } from 'react-router-dom'
 import {
   Home,
   ClipboardCheck,
-  Dumbbell,
+  Calendar,
   Target,
   BookOpen,
   Sunrise,
@@ -30,7 +30,7 @@ const athleteGroups = [
   {
     label: 'Training',
     links: [
-      { to: '/program', label: 'My Program', icon: Dumbbell },
+      { to: '/program', label: 'Calendar', icon: Calendar },
       { to: '/command', label: 'Command Tracker', icon: Target },
     ],
   },
@@ -62,7 +62,7 @@ const coachGroup = {
 const athletePrimaryLinks = [
   { to: '/dashboard', label: 'Home', icon: Home },
   { to: '/check-in', label: 'Readiness', icon: ClipboardCheck },
-  { to: '/program', label: 'Program', icon: Dumbbell },
+  { to: '/program', label: 'Calendar', icon: Calendar },
   { to: '/command', label: 'Command', icon: Target },
 ]
 const athleteMoreLinks = athleteGroups[2].links

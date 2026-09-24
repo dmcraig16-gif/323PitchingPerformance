@@ -30,54 +30,30 @@ export function workoutTypeMeta(value) {
   return WORKOUT_TYPES.find((t) => t.value === value) ?? { label: value, badgeClass: 'bg-neutral-100 text-neutral-700' }
 }
 
-// --- Superseded by WORKOUT_TYPES/workoutTypeMeta above, as of the
-// calendar/per-set-logging rebuild (Programming 2.0). Left in place only
-// because ProgramBuilder.jsx/MyProgram.jsx/ExerciseBuilder.jsx/
-// ExerciseLogger.jsx/AthleteDetail.jsx still reference them and haven't
-// been rewritten yet (stages 2/4/5) — remove once those are gone. ---
+// A workout's calendar/dot color follows its denormalized status, except
+// "missed" — that's never stored (it would go stale the moment "today"
+// moves on), so it's derived here at render time from the stored status
+// plus how the date compares to today.
+export function deriveWorkoutStatus(workout, todayISO) {
+  if (workout.status === 'completed' || workout.status === 'partial') return workout.status
+  return workout.date < todayISO ? 'missed' : 'pending'
+}
 
-export const PROGRAM_TYPES = [
-  { value: 'lifting', label: 'Lifting', badgeClass: 'bg-blue-100 text-blue-700' },
-  { value: 'throwing', label: 'Throwing', badgeClass: 'bg-orange-100 text-orange-700' },
-]
-
-export function programTypeMeta(value) {
-  return PROGRAM_TYPES.find((t) => t.value === value) ?? { label: value, badgeClass: 'bg-neutral-100 text-neutral-700' }
+export function workoutStatusMeta(status) {
+  switch (status) {
+    case 'completed':
+      return { label: 'Completed', dotClass: 'bg-emerald-500', badgeClass: 'bg-emerald-100 text-emerald-700' }
+    case 'partial':
+      return { label: 'In progress', dotClass: 'bg-amber-500', badgeClass: 'bg-amber-100 text-amber-700' }
+    case 'missed':
+      return { label: 'Missed', dotClass: 'bg-rose-400', badgeClass: 'bg-rose-100 text-rose-700' }
+    default:
+      return { label: 'Upcoming', dotClass: 'bg-neutral-300', badgeClass: 'bg-neutral-100 text-neutral-500' }
+  }
 }
 
 // Pitch types offered in Command Tracker's pitch-type selector.
 export const PITCH_TYPES = ['Fastball', 'Sinker', 'Cutter', 'Slider', 'Curveball', 'Changeup', 'Splitter']
-
-// Exercise categories offered in the Exercise Builder. Add another entry
-// and it shows up automatically in the exercise-type selector and every
-// exercise badge across the Workout Builder and athlete program view.
-export const EXERCISE_TYPES = [
-  { value: 'strength', label: 'Strength', badgeClass: 'bg-blue-100 text-blue-700' },
-  { value: 'power', label: 'Power / Plyometric', badgeClass: 'bg-violet-100 text-violet-700' },
-  { value: 'throwing', label: 'Throwing', badgeClass: 'bg-orange-100 text-orange-700' },
-  { value: 'arm-care', label: 'Arm Care', badgeClass: 'bg-teal-100 text-teal-700' },
-  { value: 'mobility', label: 'Mobility', badgeClass: 'bg-emerald-100 text-emerald-700' },
-  { value: 'conditioning', label: 'Conditioning', badgeClass: 'bg-rose-100 text-rose-700' },
-  { value: 'recovery', label: 'Recovery', badgeClass: 'bg-neutral-100 text-neutral-700' },
-]
-
-export function exerciseTypeMeta(value) {
-  return EXERCISE_TYPES.find((t) => t.value === value) ?? { label: value, badgeClass: 'bg-neutral-100 text-neutral-700' }
-}
-
-// Exercise type whose workout logging captures velocity or distance
-// instead of weight/reps (Command Tracker's per-pitch velo is separate —
-// this is for logging a throwing drill's result inside a program).
-export const THROWING_EXERCISE_TYPE = 'throwing'
-
-// A throwing drill targets either velocity (radar-gun mph — a bullpen,
-// a plyo throw) or distance (long toss). The coach picks per drill via
-// its target_unit in Program Builder; My Program's logger then shows
-// whichever input matches.
-export const THROW_METRICS = [
-  { value: 'mph', label: 'Velocity', unit: 'mph' },
-  { value: 'ft', label: 'Distance', unit: 'ft' },
-]
 
 // Daily check-in sliders (1-5). `key` matches the field name in CheckIn's
 // form state. `low`/`high` anchor the slider ends; `weight` is this
