@@ -10,6 +10,7 @@ import Calendar from './pages/athlete/Calendar.jsx'
 import WorkoutView from './pages/athlete/WorkoutView.jsx'
 import CommandTraining from './pages/athlete/CommandTraining.jsx'
 import CommandSession from './pages/athlete/CommandSession.jsx'
+import Progress from './pages/athlete/Progress.jsx'
 import Journal from './pages/athlete/Journal.jsx'
 import Devotionals from './pages/athlete/Devotionals.jsx'
 import Habits from './pages/athlete/Habits.jsx'
@@ -48,6 +49,7 @@ export default function App() {
         <Route path="program/:workoutId" element={<WorkoutView />} />
         <Route path="command" element={<CommandTraining />} />
         <Route path="command/:sessionId" element={<CommandSession />} />
+        <Route path="progress" element={<Progress />} />
         <Route path="journal" element={<Journal />} />
         <Route path="devotionals" element={<Devotionals />} />
         <Route path="habits" element={<Habits />} />

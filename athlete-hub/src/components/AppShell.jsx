@@ -5,6 +5,7 @@ import {
   ClipboardCheck,
   Calendar,
   Target,
+  TrendingUp,
   BookOpen,
   Sunrise,
   Repeat2,
@@ -32,6 +33,7 @@ const athleteGroups = [
     links: [
       { to: '/program', label: 'Calendar', icon: Calendar },
       { to: '/command', label: 'Command Tracker', icon: Target },
+      { to: '/progress', label: 'Progress', icon: TrendingUp },
     ],
   },
   {
@@ -65,7 +67,15 @@ const athletePrimaryLinks = [
   { to: '/program', label: 'Calendar', icon: Calendar },
   { to: '/command', label: 'Command', icon: Target },
 ]
-const athleteMoreLinks = athleteGroups[2].links
+// Everything not thumb-reachable on the primary bar surfaces here,
+// grouped the same way the desktop sidebar groups it — Progress rides
+// along with Training's overflow since Calendar/Command already have
+// their own primary tabs.
+const primaryPaths = new Set(athletePrimaryLinks.map((l) => l.to))
+const athleteMoreGroups = [
+  { label: 'Training', links: athleteGroups[1].links.filter((l) => !primaryPaths.has(l.to)) },
+  { label: 'Growth', links: athleteGroups[2].links },
+]
 
 function initials(name) {
   if (!name) return '?'
@@ -240,7 +250,7 @@ export default function AppShell() {
 
       <MobileTabBar role={role} onMore={() => setMoreOpen(true)} />
       {moreOpen && (
-        <NavSheet title="More" groups={[{ label: 'Growth', links: athleteMoreLinks }]} onClose={() => setMoreOpen(false)} />
+        <NavSheet title="More" groups={athleteMoreGroups} onClose={() => setMoreOpen(false)} />
       )}
       {drawerOpen && <NavSheet title={FACILITY_NAME} groups={groups} onClose={() => setDrawerOpen(false)} />}
     </div>

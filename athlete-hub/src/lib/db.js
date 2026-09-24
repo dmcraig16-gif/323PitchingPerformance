@@ -628,6 +628,41 @@ export async function listLogsForItem(assignedItemId) {
     .sort((a, b) => a.date.localeCompare(b.date))
 }
 
+// Every logged set across an athlete's whole history, oldest first — the
+// Progress tab's source for body-weight/velocity/sleep and per-exercise
+// trend graphs. item_logs carries athlete_id/date directly, so this
+// doesn't need to join through assigned_items just to filter by athlete.
+export async function listItemLogsForAthlete(athleteId) {
+  if (isSupabaseConfigured) {
+    const { data } = await supabase
+      .from('item_logs')
+      .select('*')
+      .eq('athlete_id', athleteId)
+      .order('date', { ascending: true })
+    return data ?? []
+  }
+  return local
+    .getAll('item_logs')
+    .filter((l) => l.athlete_id === athleteId)
+    .sort((a, b) => a.date.localeCompare(b.date))
+}
+
+// Every assigned_items row across an athlete's whole history — paired
+// with listItemLogsForAthlete to know each log's exercise name/library
+// item/type (assigned_items has no athlete_id of its own, only via its
+// parent assigned_workouts, so this filters through that).
+export async function listAssignedItemsForAthlete(athleteId) {
+  const workouts = await listAssignedWorkouts(athleteId)
+  const workoutIds = workouts.map((w) => w.id)
+  if (workoutIds.length === 0) return []
+  if (isSupabaseConfigured) {
+    const { data } = await supabase.from('assigned_items').select('*').in('assigned_workout_id', workoutIds)
+    return data ?? []
+  }
+  const idSet = new Set(workoutIds)
+  return local.getAll('assigned_items').filter((it) => idSet.has(it.assigned_workout_id))
+}
+
 // Recomputes a workout's denormalized status from its items' logs — every
 // item with at least one log vs. the total item count — so the calendar
 // can paint completed/partial/pending dots from a flat query instead of
