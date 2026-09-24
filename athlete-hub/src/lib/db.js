@@ -705,6 +705,25 @@ export async function createJournalEntry(row) {
   return local.insert('journal_entries', full)
 }
 
+export async function updateJournalEntry(id, patch) {
+  if (isSupabaseConfigured) {
+    const { data, error } = await supabase.from('journal_entries').update(patch).eq('id', id).select().single()
+    if (error) throw error
+    return data
+  }
+  return local.update('journal_entries', id, patch)
+}
+
+// The Dashboard's quick-capture widget edits one entry per day in place
+// rather than appending a new row every time it's saved; the full
+// Journal page still supports multiple reflections a day via
+// createJournalEntry directly, unaffected. listJournalEntries already
+// sorts newest-first, so the first match for `date` is the latest.
+export async function getJournalEntryForDate(athleteId, date) {
+  const entries = await listJournalEntries(athleteId)
+  return entries.find((e) => e.date === date) ?? null
+}
+
 function today() {
   return new Date().toISOString().slice(0, 10)
 }
