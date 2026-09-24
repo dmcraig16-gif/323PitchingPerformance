@@ -7,7 +7,7 @@ import { bandFor } from '../../lib/readiness.js'
 import { summarizeByPitchType, trendBySession, round1 } from '../../lib/commandMetrics.js'
 import CommandSessionList from '../../components/CommandSessionList.jsx'
 import ReadinessGauge from '../../components/ReadinessGauge.jsx'
-import MissDirectionSummary from '../../components/MissDirectionSummary.jsx'
+import CommandDirectionPanel from '../../components/CommandDirectionPanel.jsx'
 import AthleteCalendar from '../../components/calendar/AthleteCalendar.jsx'
 
 const TONE_HEX = { green: '#34c759', yellow: '#ff9f0a', red: '#ff3b30' }
@@ -223,9 +223,7 @@ function CommandTab({ athleteId, coachProfileId, throws, pitches }) {
         </Card>
       </div>
 
-      <Card title="Miss direction (all-time)">
-        <MissDirectionSummary pitches={pitches} throws={throws} avgMissIn={commandSummary.overall.avgMissIn} />
-      </Card>
+      <CommandDirectionPanel pitches={pitches} throws={throws} />
 
       <div>
         <h3 className="text-sm font-semibold text-neutral-600 mb-2">Bullpen sessions</h3>

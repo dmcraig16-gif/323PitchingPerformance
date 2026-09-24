@@ -69,7 +69,7 @@ const CENTERED_THRESHOLD_IN = BASEBALL_DIAMETER_IN / 2
 // pitcher (`throws: 'L'`) since arm side is the opposite side of the
 // plate from a righty's. Returns null on either axis when the miss is
 // too small on that axis to call a direction (see CENTERED_THRESHOLD_IN).
-function missDirection(intended, actual, throws) {
+export function missDirection(intended, actual, throws) {
   const dxIn = (actual.x - intended.x) * 12
   const dyIn = (actual.y - intended.y) * 12
 
@@ -88,6 +88,10 @@ function missDirection(intended, actual, throws) {
   return { horizontal, vertical }
 }
 
+function missDirectionLabel({ horizontal, vertical }) {
+  return [vertical, horizontal].filter(Boolean).join(' & ') || 'Centered'
+}
+
 // Finds the most common miss direction across a set of pitches — not an
 // average (opposite misses would just cancel out), but which direction
 // bucket (e.g. "Arm-side & High") the pitcher actually misses toward most
@@ -98,12 +102,9 @@ export function summarizeMissDirection(pitches, throws = 'R') {
 
   const counts = new Map()
   for (const p of pitches) {
-    const { horizontal, vertical } = missDirection(
-      { x: p.intended_x, y: p.intended_y },
-      { x: p.actual_x, y: p.actual_y },
-      throws,
+    const label = missDirectionLabel(
+      missDirection({ x: p.intended_x, y: p.intended_y }, { x: p.actual_x, y: p.actual_y }, throws),
     )
-    const label = [vertical, horizontal].filter(Boolean).join(' & ') || 'Centered'
     counts.set(label, (counts.get(label) ?? 0) + 1)
   }
 
@@ -113,6 +114,83 @@ export function summarizeMissDirection(pitches, throws = 'R') {
 
   const top = breakdown[0]
   return { ...top, total: pitches.length, breakdown }
+}
+
+// summarizeMissDirection, grouped by pitch type — "which way do my
+// sliders miss vs. my fastballs" instead of one blended tendency.
+export function summarizeMissDirectionByPitchType(pitches, throws = 'R') {
+  const groups = new Map()
+  for (const p of pitches) {
+    const key = p.pitch_type || 'Unknown'
+    if (!groups.has(key)) groups.set(key, [])
+    groups.get(key).push(p)
+  }
+  return [...groups.entries()]
+    .map(([pitchType, rows]) => ({ pitchType, count: rows.length, direction: summarizeMissDirection(rows, throws) }))
+    .sort((a, b) => b.count - a.count)
+}
+
+// Buckets miss-direction counts per session, oldest first, so a stacked
+// bar chart can show whether a tendency (e.g. leaking arm-side) is
+// improving or worsening over time. Every row carries a count for every
+// direction label that occurs anywhere in `pitches` (0 where a session
+// had none) so the chart's series stay consistent across sessions.
+export function missDirectionTrendBySession(pitches, throws = 'R') {
+  const bySession = new Map()
+  for (const p of pitches) {
+    if (!bySession.has(p.session_date)) bySession.set(p.session_date, [])
+    bySession.get(p.session_date).push(p)
+  }
+
+  const perSession = [...bySession.entries()]
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([date, rows]) => {
+      const counts = new Map()
+      for (const p of rows) {
+        const label = missDirectionLabel(
+          missDirection({ x: p.intended_x, y: p.intended_y }, { x: p.actual_x, y: p.actual_y }, throws),
+        )
+        counts.set(label, (counts.get(label) ?? 0) + 1)
+      }
+      return { date, counts }
+    })
+
+  const labels = [...new Set(perSession.flatMap(({ counts }) => [...counts.keys()]))]
+
+  return {
+    labels,
+    rows: perSession.map(({ date, counts }) => {
+      const row = { date }
+      for (const label of labels) row[label] = counts.get(label) ?? 0
+      return row
+    }),
+  }
+}
+
+// Buckets actual pitch locations into a 5x5 grid centered on `zone` —
+// the middle 3x3 is the strike zone itself (each cell one-third of the
+// zone's width/height, matching the target picker's own 3x3 guide
+// lines), the outer ring is "just off the zone" in each of the 8
+// directions. A pitch far outside the grid still counts in the nearest
+// edge cell rather than being dropped, so cell counts always sum to
+// pitches.length. Returns a 5x5 array of counts, row 0 = top.
+export function zoneHeatmap(pitches, zone) {
+  const cellW = (zone.right - zone.left) / 3
+  const cellH = (zone.top - zone.bottom) / 3
+  const gridLeft = zone.left - cellW
+  const gridBottom = zone.bottom - cellH
+
+  const counts = Array.from({ length: 5 }, () => Array(5).fill(0))
+  for (const p of pitches) {
+    const col = clampInt(Math.floor((p.actual_x - gridLeft) / cellW), 0, 4)
+    const rowFromBottom = clampInt(Math.floor((p.actual_y - gridBottom) / cellH), 0, 4)
+    counts[4 - rowFromBottom][col] += 1
+  }
+  return counts
+}
+
+function clampInt(v, min, max) {
+  return Math.min(max, Math.max(min, v))
 }
 
 // Groups pitches by pitch_type and returns count / avg miss distance /

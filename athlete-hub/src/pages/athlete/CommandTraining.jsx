@@ -1,18 +1,8 @@
 import { useEffect, useState } from 'react'
 import { useAuth } from '../../lib/useAuth.js'
 import * as db from '../../lib/db.js'
-import { summarizeByPitchType } from '../../lib/commandMetrics.js'
 import CommandSessionList from '../../components/CommandSessionList.jsx'
-import MissDirectionSummary from '../../components/MissDirectionSummary.jsx'
-
-function Card({ title, children }) {
-  return (
-    <div className="bg-white rounded-2xl shadow-card p-5 mb-5">
-      <h2 className="font-semibold mb-3">{title}</h2>
-      {children}
-    </div>
-  )
-}
+import CommandDirectionPanel from '../../components/CommandDirectionPanel.jsx'
 
 export default function CommandTraining() {
   const { profile } = useAuth()
@@ -22,8 +12,6 @@ export default function CommandTraining() {
     if (!profile?.id) return
     db.listCommandPitches(profile.id).then(setPitches)
   }, [profile?.id])
-
-  const avgMissIn = summarizeByPitchType(pitches).overall.avgMissIn
 
   return (
     <div>
@@ -35,11 +23,7 @@ export default function CommandTraining() {
       </p>
       {profile && (
         <>
-          {pitches.length > 0 && (
-            <Card title="Miss direction (all-time)">
-              <MissDirectionSummary pitches={pitches} throws={profile.throws} avgMissIn={avgMissIn} />
-            </Card>
-          )}
+          <CommandDirectionPanel pitches={pitches} throws={profile.throws} />
           <CommandSessionList athleteId={profile.id} loggedByProfileId={profile.id} basePath="/command" />
         </>
       )}
