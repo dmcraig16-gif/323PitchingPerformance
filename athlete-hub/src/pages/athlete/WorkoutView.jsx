@@ -5,6 +5,7 @@ import * as db from '../../lib/db.js'
 import { useAuth } from '../../lib/useAuth.js'
 import { formatFullDate, parseISODate, toISODate } from '../../lib/calendarDates.js'
 import { deriveWorkoutStatus, workoutStatusMeta, workoutTypeMeta } from '../../lib/facilityConfig.js'
+import LoadingState from '../../components/LoadingState.jsx'
 
 // A prescribed-but-not-yet-logged summary line, so the target stays
 // visible even once the athlete's actual entry differs from it.
@@ -188,7 +189,7 @@ export default function WorkoutView() {
     db.getAssignedWorkout(workoutId).then(setWorkout)
   }
 
-  if (!profile || workout === null || items === null) return <p className="text-sm text-neutral-400">Loading…</p>
+  if (!profile || workout === null || items === null) return <LoadingState />
   if (!workout) return <p className="text-sm text-neutral-500">Workout not found.</p>
 
   const status = deriveWorkoutStatus(workout, toISODate(new Date()))

@@ -4,6 +4,7 @@ import { useAuth } from '../../lib/useAuth.js'
 import * as db from '../../lib/db.js'
 import { BAND_STYLES, bandFor } from '../../lib/readiness.js'
 import { summarizeByPitchType, round1 } from '../../lib/commandMetrics.js'
+import LoadingState from '../../components/LoadingState.jsx'
 
 const today = () => new Date().toISOString().slice(0, 10)
 
@@ -119,7 +120,7 @@ export default function Roster() {
       {profile?.id && <UnassignedPanel coachId={profile.id} onClaimed={refresh} />}
       <div className="bg-white rounded-2xl shadow-card p-5">
         {athletes === null ? (
-          <p className="text-sm text-neutral-400">Loading…</p>
+          <LoadingState />
         ) : athletes.length === 0 ? (
           <p className="text-sm text-neutral-500">No athletes assigned yet.</p>
         ) : (

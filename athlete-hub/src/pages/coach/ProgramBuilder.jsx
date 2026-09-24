@@ -7,6 +7,7 @@ import { GripVertical } from 'lucide-react'
 import { useAuth } from '../../lib/useAuth.js'
 import * as db from '../../lib/db.js'
 import { WORKOUT_TYPES, workoutTypeMeta } from '../../lib/facilityConfig.js'
+import LoadingState from '../../components/LoadingState.jsx'
 
 const today = () => new Date().toISOString().slice(0, 10)
 const numOrNull = (v) => (v === '' || v === null || v === undefined ? null : Number(v))
@@ -363,7 +364,7 @@ function WorkoutCard({ workout, coachId, onDuplicated, onDeleted }) {
       </div>
 
       {items === null ? (
-        <p className="text-xs text-neutral-400">Loading…</p>
+        <LoadingState size="xs" />
       ) : (
         <>
           {items.length > 0 && (
@@ -454,7 +455,7 @@ function WeekPanel({ week, coachId }) {
     db.listTemplateWorkouts(week.id).then(setWorkouts)
   }, [week.id])
 
-  if (workouts === null) return <p className="text-xs text-neutral-400">Loading…</p>
+  if (workouts === null) return <LoadingState size="xs" />
 
   const dayWorkouts = workouts.filter((w) => w.day_number === selectedDay)
 
@@ -606,7 +607,7 @@ export default function ProgramBuilder() {
         onCreated={(p) => setPrograms((prev) => [...(prev ?? []), p])}
       />
       {programs === null ? (
-        <p className="text-sm text-neutral-400">Loading…</p>
+        <LoadingState />
       ) : programs.length === 0 ? (
         <p className="text-sm text-neutral-500">No programs yet — create one above.</p>
       ) : (

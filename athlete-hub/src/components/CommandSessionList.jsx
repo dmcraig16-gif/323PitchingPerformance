@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import * as db from '../lib/db.js'
 import { summarizeByPitchType, round1 } from '../lib/commandMetrics.js'
+import LoadingState from './LoadingState.jsx'
 
 const today = () => new Date().toISOString().slice(0, 10)
 
@@ -96,7 +97,7 @@ export default function CommandSessionList({ athleteId, loggedByProfileId, baseP
 
       <div className="bg-white rounded-2xl shadow-card p-5">
         {sessions === null ? (
-          <p className="text-sm text-neutral-400">Loading…</p>
+          <LoadingState />
         ) : sessions.length === 0 ? (
           <p className="text-sm text-neutral-500">No bullpen sessions logged yet.</p>
         ) : (

@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Navigate } from 'react-router-dom'
 import { useAuth } from '../lib/useAuth.js'
 import * as db from '../lib/db.js'
+import LoadingState from '../components/LoadingState.jsx'
 
 const today = () => new Date().toISOString().slice(0, 10)
 
@@ -23,7 +24,7 @@ export default function Landing() {
   if (!profile) {
     return (
       <div className="flex items-center justify-center py-24">
-        <p className="text-sm text-neutral-400">Loading…</p>
+        <LoadingState />
       </div>
     )
   }
@@ -33,7 +34,7 @@ export default function Landing() {
   if (!athleteTarget) {
     return (
       <div className="flex items-center justify-center py-24">
-        <p className="text-sm text-neutral-400">Loading…</p>
+        <LoadingState />
       </div>
     )
   }

@@ -5,6 +5,7 @@ import { startOfMonth, toISODate } from '../../lib/calendarDates.js'
 import WeekStrip from './WeekStrip.jsx'
 import MonthView from './MonthView.jsx'
 import DayView from './DayView.jsx'
+import LoadingState from '../LoadingState.jsx'
 
 // The whole calendar screen: a persistent week strip pinned above the
 // selected day's workouts, with the month grid available as a bottom
@@ -36,7 +37,7 @@ export default function AthleteCalendar({ athleteId, interactive = true, basePat
 
   const dayWorkouts = workoutsByDate.get(toISODate(selectedDate)) ?? []
 
-  if (workouts === null) return <p className="text-sm text-neutral-400">Loading…</p>
+  if (workouts === null) return <LoadingState />
 
   return (
     <div>

@@ -9,6 +9,7 @@ import CommandSessionList from '../../components/CommandSessionList.jsx'
 import ReadinessGauge from '../../components/ReadinessGauge.jsx'
 import CommandDirectionPanel from '../../components/CommandDirectionPanel.jsx'
 import AthleteCalendar from '../../components/calendar/AthleteCalendar.jsx'
+import LoadingState from '../../components/LoadingState.jsx'
 
 const TONE_HEX = { green: '#34c759', yellow: '#ff9f0a', red: '#ff3b30' }
 const today = () => new Date().toISOString().slice(0, 10)
@@ -335,7 +336,7 @@ export default function AthleteDetail() {
   const band = latestCheckin ? bandFor(latestCheckin.readiness_score) : null
   const commandSummary = useMemo(() => summarizeByPitchType(pitches), [pitches])
 
-  if (!athlete) return <p className="text-sm text-neutral-400">Loading…</p>
+  if (!athlete) return <LoadingState />
 
   return (
     <div>

@@ -4,6 +4,7 @@ import * as db from '../../lib/db.js'
 import { WORKOUT_TYPES, workoutTypeMeta } from '../../lib/facilityConfig.js'
 import { parseYoutubeUrl } from '../../lib/youtube.js'
 import YouTubeEmbed from '../../components/YouTubeEmbed.jsx'
+import LoadingState from '../../components/LoadingState.jsx'
 
 const numOrNull = (v) => (v === '' || v === null || v === undefined ? null : Number(v))
 
@@ -511,7 +512,7 @@ export default function ItemLibrary() {
       </div>
 
       {items === null ? (
-        <p className="text-sm text-neutral-400">Loading…</p>
+        <LoadingState />
       ) : visible.length === 0 ? (
         <div className="bg-white rounded-2xl shadow-card p-6">
           <p className="text-sm text-neutral-500">No items here yet.</p>

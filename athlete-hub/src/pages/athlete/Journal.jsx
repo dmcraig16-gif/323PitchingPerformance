@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useAuth } from '../../lib/useAuth.js'
 import * as db from '../../lib/db.js'
+import LoadingState from '../../components/LoadingState.jsx'
 
 export default function Journal() {
   const { profile } = useAuth()
@@ -51,7 +52,7 @@ export default function Journal() {
         </form>
 
         {entries === null ? (
-          <p className="text-sm text-neutral-400">Loading…</p>
+          <LoadingState />
         ) : entries.length === 0 ? (
           <p className="text-sm text-neutral-400">No entries yet — your first one will show up here.</p>
         ) : (

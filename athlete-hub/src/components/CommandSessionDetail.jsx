@@ -6,6 +6,7 @@ import StrikeZoneTargetPicker from './StrikeZoneTargetPicker.jsx'
 import MissDirectionSummary from './MissDirectionSummary.jsx'
 import { summarizeByPitchType, round1, ZONE_LEVELS } from '../lib/commandMetrics.js'
 import { PITCH_TYPES } from '../lib/facilityConfig.js'
+import LoadingState from './LoadingState.jsx'
 
 function Card({ title, children }) {
   return (
@@ -70,7 +71,7 @@ export default function CommandSessionDetail({ sessionId, athleteId, basePath, b
   const summary = useMemo(() => summarizeByPitchType(pitches ?? []), [pitches])
   const zone = ZONE_LEVELS.find((l) => l.value === zoneLevel).zone
 
-  if (!session || pitches === null) return <p className="text-sm text-neutral-400">Loading…</p>
+  if (!session || pitches === null) return <LoadingState />
 
   return (
     <div>

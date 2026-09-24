@@ -238,8 +238,9 @@ export default function AppShell() {
         </div>
       </header>
       <div className="flex">
-        <nav className="hidden md:block w-60 shrink-0 border-r border-neutral-200/70 bg-white min-h-[calc(100vh-56px)] px-3 py-6">
+        <nav className="hidden md:flex md:flex-col md:justify-between w-60 shrink-0 border-r border-neutral-200/70 bg-white min-h-[calc(100vh-56px)] px-3 py-6">
           <SidebarLinks groups={groups} />
+          <img src={LOGO_CIRCLE} alt="" className="w-10 h-10 mx-auto opacity-[0.07] mb-2" />
         </nav>
         <main className="flex-1 p-4 md:p-8 pb-24 md:pb-8">
           <div className="max-w-6xl mx-auto">
