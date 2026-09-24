@@ -393,7 +393,7 @@ function workoutDate(startDate, weekNumber, dayNumber) {
 // Every field a template item/workout carries that should be copied
 // verbatim into its assigned counterpart — the full nullable-by-type
 // prescription shape shared by item_library/template_items/assigned_items.
-const ITEM_FIELDS = [
+export const ITEM_FIELDS = [
   'name', 'cues', 'youtube_url',
   'ball_weight_oz', 'num_throws', 'intent_pct', 'distance_target',
   'target_sets', 'rest_seconds', 'tempo',
@@ -416,6 +416,7 @@ async function generateAssignedWorkouts(assignment) {
         title: tw.title,
         notes: tw.notes,
         order_index: tw.order_index,
+        status: 'pending',
       })
       const templateItems = await listTemplateItems(tw.id)
       for (const ti of templateItems) {

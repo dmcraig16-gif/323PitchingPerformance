@@ -50,7 +50,7 @@ const coachGroup = {
   links: [
     { to: '/coach/roster', label: 'Athletes', icon: Users },
     { to: '/coach/programs', label: 'Program Builder', icon: ClipboardList },
-    { to: '/coach/exercises', label: 'Exercise Builder', icon: Video },
+    { to: '/coach/exercises', label: 'Item Library', icon: Video },
     { to: '/coach/content', label: 'Content Library', icon: BookOpen },
   ],
 }
