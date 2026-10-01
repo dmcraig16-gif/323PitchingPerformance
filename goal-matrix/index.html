@@ -1,0 +1,585 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Pitcher's Goal Mandala</title>
+<style>
+  :root{
+    --navy:#132a4e;
+    --navy-dark:#0c1c36;
+    --gold:#f4c542;
+    --gold-light:#fdeec0;
+    --gray-bg:#eef0f3;
+    --gray-border:#c7ccd4;
+    --dark-border:#1b2740;
+    --text:#1b2330;
+    --muted:#8a92a3;
+  }
+  *{ box-sizing:border-box; }
+  html,body{
+    margin:0; padding:0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    color:var(--text);
+    background:#f4f5f7;
+  }
+  .page{
+    max-width:1400px;
+    margin:0 auto;
+    padding:24px 20px 60px;
+  }
+  header.app-header{
+    text-align:center;
+    margin-bottom:18px;
+  }
+  header.app-header h1{
+    font-size:clamp(22px,3vw,32px);
+    margin:0 0 4px;
+    color:var(--navy-dark);
+    letter-spacing:.5px;
+  }
+  header.app-header p.sub{
+    margin:0;
+    color:var(--muted);
+    font-size:14px;
+  }
+
+  .instructions{
+    background:#fff;
+    border:1px solid var(--gray-border);
+    border-left:4px solid var(--navy);
+    border-radius:8px;
+    padding:14px 18px;
+    margin:18px 0;
+    font-size:14px;
+    line-height:1.5;
+  }
+  .instructions strong{ color:var(--navy-dark); }
+
+  .meta-row{
+    display:flex;
+    flex-wrap:wrap;
+    gap:12px;
+    margin:18px 0;
+  }
+  .meta-field{
+    flex:1 1 200px;
+    display:flex;
+    flex-direction:column;
+    gap:4px;
+  }
+  .meta-field label{
+    font-size:12px;
+    font-weight:600;
+    text-transform:uppercase;
+    letter-spacing:.06em;
+    color:var(--muted);
+  }
+  .meta-field input{
+    font-size:15px;
+    padding:9px 10px;
+    border:1px solid var(--gray-border);
+    border-radius:6px;
+    font-family:inherit;
+  }
+  .meta-field input:focus{ outline:2px solid var(--navy); outline-offset:1px; }
+
+  .toolbar{
+    display:flex;
+    flex-wrap:wrap;
+    gap:10px;
+    align-items:center;
+    margin:14px 0 22px;
+  }
+  button{
+    font-family:inherit;
+    font-size:14px;
+    font-weight:600;
+    padding:10px 16px;
+    border-radius:7px;
+    border:1px solid transparent;
+    cursor:pointer;
+    transition:filter .15s ease, transform .05s ease;
+  }
+  button:active{ transform:translateY(1px); }
+  .btn-primary{ background:var(--navy); color:#fff; }
+  .btn-primary:hover{ filter:brightness(1.15); }
+  .btn-secondary{ background:#fff; color:var(--navy); border-color:var(--navy); }
+  .btn-secondary:hover{ background:#eef1f7; }
+  .btn-danger{ background:#fff; color:#b3261e; border-color:#e3b2ae; }
+  .btn-danger:hover{ background:#fdeceb; }
+  #saveStatus{
+    font-size:13px;
+    color:var(--muted);
+    margin-left:auto;
+  }
+  #saveStatus.saved{ color:#1e8e3e; }
+
+  .grid-scroll{
+    overflow-x:auto;
+    padding-bottom:6px;
+  }
+  .mandala{
+    display:grid;
+    grid-template-columns:repeat(9, minmax(90px,1fr));
+    grid-template-rows:repeat(9, minmax(58px,1fr));
+    width:100%;
+    min-width:900px;
+    border:3px solid var(--dark-border);
+    background:#fff;
+  }
+  .cell{
+    position:relative;
+    border:1px solid var(--gray-border);
+    display:flex;
+  }
+  .cell.block-top{ border-top:3px solid var(--dark-border); }
+  .cell.block-left{ border-left:3px solid var(--dark-border); }
+  .cell.block-right{ border-right:3px solid var(--dark-border); }
+  .cell.block-bottom{ border-bottom:3px solid var(--dark-border); }
+
+  .cell textarea{
+    width:100%;
+    height:100%;
+    border:none;
+    resize:none;
+    background:transparent;
+    font-family:inherit;
+    font-size:clamp(10px,1.05vw,13px);
+    line-height:1.25;
+    padding:6px 7px;
+    text-align:center;
+    color:var(--text);
+  }
+  .cell textarea:focus{
+    outline:2px solid var(--navy);
+    outline-offset:-2px;
+    background:#fff;
+    position:relative;
+    z-index:2;
+  }
+  .cell textarea::placeholder{
+    color:var(--muted);
+    font-style:italic;
+  }
+
+  .cell.goal{ background:var(--gold); }
+  .cell.goal textarea{
+    font-weight:800;
+    font-size:clamp(11px,1.3vw,16px);
+    color:var(--navy-dark);
+  }
+
+  .cell.theme{ background:var(--gray-bg); }
+  .cell.theme textarea{
+    font-weight:700;
+    font-size:clamp(10px,1.1vw,14px);
+    color:var(--navy-dark);
+  }
+
+  .cell.mirror{ background:var(--gray-bg); align-items:center; justify-content:center; }
+  .cell.mirror .mirror-text{
+    width:100%;
+    padding:6px 7px;
+    text-align:center;
+    font-weight:700;
+    font-size:clamp(10px,1.1vw,14px);
+    color:var(--navy-dark);
+  }
+  .cell.mirror .mirror-text.empty{
+    color:var(--muted);
+    font-style:italic;
+    font-weight:500;
+  }
+
+  .center-block-tint .cell:not(.goal):not(.theme){ background:var(--gold-light); }
+
+  .print-only{ display:none; }
+
+  footer.note{
+    margin-top:22px;
+    font-size:12.5px;
+    color:var(--muted);
+    text-align:center;
+    line-height:1.6;
+  }
+
+  /* ---------- PRINT / PDF ---------- */
+  @media print{
+    @page{ size: landscape; margin: 10mm; }
+    html,body{ background:#fff; }
+    .page{ max-width:none; padding:0; margin:0; }
+    .no-print{ display:none !important; }
+    .print-only{ display:block !important; }
+    header.app-header{ margin-bottom:0; }
+    header.app-header h1{ font-size:18px; margin:0; }
+    header.app-header p.sub{ display:none; }
+    .print-meta{
+      display:flex; justify-content:center; gap:28px;
+      font-size:11px; margin:2px 0 6px; color:#333;
+    }
+    .print-meta span b{ color:#000; }
+    .grid-scroll{ overflow:visible; padding:0; }
+    .mandala{
+      min-width:0;
+      width:100%;
+      height: 160mm;
+      page-break-inside:avoid;
+    }
+    .cell textarea{
+      font-size:8pt !important;
+      line-height:1.1;
+      color:#000 !important;
+      padding:2px 3px;
+    }
+    .cell.goal textarea{ font-size:9.5pt !important; }
+    .cell.theme textarea, .cell.mirror .mirror-text{ font-size:8.3pt !important; }
+    .cell.mirror .mirror-text.empty{ color:#999 !important; }
+    footer.note{ margin-top:5px; font-size:8.5px; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <header class="app-header">
+    <h1>Pitcher's Goal Mandala</h1>
+    <p class="sub">A 9×9 goal-setting chart in the style used by Shohei Ohtani as a high schooler</p>
+  </header>
+
+  <div class="print-meta print-only">
+    <span><b id="pmName">—</b> &nbsp;(Athlete)</span>
+    <span><b id="pmDate">—</b> &nbsp;(Date)</span>
+    <span><b id="pmSeason">—</b></span>
+  </div>
+
+  <div class="instructions no-print">
+    <strong>How to use this:</strong> The center box is your <strong>ultimate goal</strong>.
+    The 8 gray boxes around it are the key <strong>areas</strong> you'll need to improve to reach it
+    (e.g. body, control, velocity, mindset). Each of those 8 areas then becomes the center of its
+    own mini-grid, surrounded by 8 <strong>specific, actionable steps</strong> you can actually work on.
+    Type an area's name once and it will automatically fill in both places. Your work is saved
+    automatically in this browser — when you're done, click <strong>Download PDF</strong> and choose
+    "Save as PDF" in the print dialog to create a file you can send to your coach.
+  </div>
+
+  <div class="meta-row no-print">
+    <div class="meta-field">
+      <label for="athleteName">Athlete Name</label>
+      <input id="athleteName" type="text" placeholder="e.g. Jordan Smith" />
+    </div>
+    <div class="meta-field">
+      <label for="athleteDate">Date</label>
+      <input id="athleteDate" type="text" placeholder="e.g. Oct 2026" />
+    </div>
+    <div class="meta-field">
+      <label for="athleteSeason">Season / Target</label>
+      <input id="athleteSeason" type="text" placeholder="e.g. 2027 Varsity Season" />
+    </div>
+  </div>
+
+  <div class="toolbar no-print">
+    <button class="btn-primary" id="downloadBtn">Download PDF</button>
+    <button class="btn-secondary" id="exportBtn">Export Data (.json)</button>
+    <button class="btn-secondary" id="importBtn">Import Data (.json)</button>
+    <input type="file" id="importFile" accept="application/json" style="display:none" />
+    <button class="btn-danger" id="resetBtn">Reset All</button>
+    <span id="saveStatus">Changes save automatically</span>
+  </div>
+
+  <div class="grid-scroll">
+    <div class="mandala" id="mandala"></div>
+  </div>
+
+  <footer class="note">
+    Inspired by the "Mandala Chart" goal-setting method popularized by Shohei Ohtani in high school.
+    This tool is for personal goal planning only.
+  </footer>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  var STORAGE_KEY = "pitcherGoalMandala_v1";
+
+  var THEME_PLACEHOLDERS = {
+    "0,0": "Body",
+    "0,1": "Control",
+    "0,2": "Sharpness",
+    "1,0": "Mental Toughness",
+    "1,2": "Velocity / Speed",
+    "2,0": "Personality",
+    "2,1": "Karma",
+    "2,2": "Pitch Variance"
+  };
+
+  var GOAL_PLACEHOLDER = "e.g. Get Drafted / Earn a College Scholarship / Make Varsity";
+
+  // 3x3 placeholder text per outer block, keyed the same as THEME_PLACEHOLDERS.
+  // null marks the center slot (mirrors the theme value).
+  var BLOCK_PLACEHOLDERS = {
+    "0,0": [
+      ["Body Care Routine", "Take Supplements", "Leg Press 90kg"],
+      ["Flexibility", null, "Squat 130kg"],
+      ["Build Stamina", "Range of Motion", "Eat Enough to Fuel Training"]
+    ],
+    "0,1": [
+      ["Improve Ankle Mobility", "Core Strength", "Maintain Body Axis"],
+      ["Consistent Release Point", null, "Remove Insecurities"],
+      ["Lower Body Strength", "Don't Open Up Early", "Control Mental State"]
+    ],
+    "0,2": [
+      ["Create Angle of Delivery", "Throw \"Downhill\"", "Wrist Strength"],
+      ["Don't Overthrow", null, "Lead with Lower Body"],
+      ["Release the Ball Out Front", "Increase Spin Rate", "Range of Motion"]
+    ],
+    "1,0": [
+      ["Set Clear Goals", "Don't Let Bad Plays Linger", "Calm Mind, Burning Heart"],
+      ["Thrive on Adversity", null, "Stay Present, Don't Get Ahead of Yourself"],
+      ["Don't Make Waves", "Dedication to Winning", "Be Considerate to Teammates"]
+    ],
+    "1,2": [
+      ["Rotate Along Body Axis", "Lower Body Strength", "Add Lean Body Weight"],
+      ["Core Strength", null, "Shoulder Strength"],
+      ["Range of Motion", "Long Toss / Catch Liners", "Throw More to Build Arm Strength"]
+    ],
+    "2,0": [
+      ["Manage Your Emotions", "Likability", "Planning"],
+      ["Consideration for Others", null, "Thankfulness"],
+      ["Politeness", "Reliability", "Persistence"]
+    ],
+    "2,1": [
+      ["Greet People", "Pick Up Trash", "Keep Your Space Clean"],
+      ["Take Care of Equipment", null, "Show Respect to Umpires"],
+      ["Be Positive", "Be Someone People Want to Support", "Read Books"]
+    ],
+    "2,2": [
+      ["Throw More Bullpens", "Perfect a Changeup", "Sharpen Your Slider"],
+      ["Develop a Slow Curveball", null, "Pitches to Finish Hitters"],
+      ["Same Arm Action, Every Pitch", "Strike/Ball Count Control", "Deceptive Delivery"]
+    ]
+  };
+
+  var OUTER_POS = ["0,0","0,1","0,2","1,0","1,2","2,0","2,1","2,2"];
+
+  var values = {};        // "r-c" -> string, for every editable (non-mirror) textarea
+  var themeInputs = {};   // "lr,lc" -> textarea element (the 8 theme cells in the center block)
+  var mirrorEls = {};     // "br,bc" -> div.mirror-text element (the 8 mirrors in outer blocks)
+  var saveTimer = null;
+
+  function key(r,c){ return r + "-" + c; }
+
+  function buildGrid(){
+    var mandala = document.getElementById("mandala");
+    mandala.innerHTML = "";
+
+    for (var r = 0; r < 9; r++){
+      for (var c = 0; c < 9; c++){
+        var br = Math.floor(r/3), bc = Math.floor(c/3);
+        var lr = r % 3, lc = c % 3;
+
+        var cell = document.createElement("div");
+        cell.className = "cell";
+        if (r % 3 === 0) cell.classList.add("block-top");
+        if (c % 3 === 0) cell.classList.add("block-left");
+        if (r % 3 === 2) cell.classList.add("block-bottom");
+        if (c % 3 === 2) cell.classList.add("block-right");
+
+        if (br === 1 && bc === 1){
+          // center 3x3 block: goal + 8 theme cells
+          cell.parentNeedsTint = true;
+          if (lr === 1 && lc === 1){
+            cell.classList.add("goal");
+            var goalTa = makeTextarea(key(r,c), GOAL_PLACEHOLDER, 2);
+            cell.appendChild(goalTa);
+          } else {
+            var posKey = lr + "," + lc;
+            cell.classList.add("theme");
+            var themeTa = makeTextarea(key(r,c), THEME_PLACEHOLDERS[posKey] || "", 2);
+            themeInputs[posKey] = themeTa;
+            cell.appendChild(themeTa);
+          }
+        } else if (lr === 1 && lc === 1){
+          // mirror cell: shows the theme value for this block
+          var blockKey = br + "," + bc;
+          cell.classList.add("mirror");
+          var mirrorDiv = document.createElement("div");
+          mirrorDiv.className = "mirror-text empty";
+          mirrorDiv.textContent = THEME_PLACEHOLDERS[blockKey] || "";
+          mirrorEls[blockKey] = mirrorDiv;
+          cell.appendChild(mirrorDiv);
+        } else {
+          var blockKey2 = br + "," + bc;
+          var grid3 = BLOCK_PLACEHOLDERS[blockKey2];
+          var ph = (grid3 && grid3[lr] && grid3[lr][lc]) ? grid3[lr][lc] : "";
+          var actionTa = makeTextarea(key(r,c), ph, 3);
+          cell.appendChild(actionTa);
+        }
+
+        mandala.appendChild(cell);
+      }
+    }
+
+    // wire theme -> mirror sync
+    OUTER_POS.forEach(function(posKey){
+      var ta = themeInputs[posKey];
+      var mirror = mirrorEls[posKey];
+      if (!ta || !mirror) return;
+      var sync = function(){
+        var v = ta.value.trim();
+        if (v){
+          mirror.textContent = v;
+          mirror.classList.remove("empty");
+        } else {
+          mirror.textContent = THEME_PLACEHOLDERS[posKey] || "";
+          mirror.classList.add("empty");
+        }
+      };
+      ta.addEventListener("input", sync);
+      sync();
+    });
+
+    document.getElementById("mandala").classList.add("center-block-tint");
+  }
+
+  function makeTextarea(k, placeholder, rows){
+    var ta = document.createElement("textarea");
+    ta.rows = rows || 3;
+    ta.placeholder = placeholder;
+    ta.setAttribute("data-key", k);
+    ta.value = values[k] || "";
+    ta.addEventListener("input", function(){
+      values[k] = ta.value;
+      scheduleSave();
+    });
+    return ta;
+  }
+
+  function scheduleSave(){
+    var status = document.getElementById("saveStatus");
+    status.textContent = "Saving…";
+    status.classList.remove("saved");
+    clearTimeout(saveTimer);
+    saveTimer = setTimeout(function(){
+      saveToStorage();
+      status.textContent = "All changes saved";
+      status.classList.add("saved");
+    }, 500);
+  }
+
+  function collectState(){
+    return {
+      meta: {
+        name: document.getElementById("athleteName").value,
+        date: document.getElementById("athleteDate").value,
+        season: document.getElementById("athleteSeason").value
+      },
+      values: values
+    };
+  }
+
+  function saveToStorage(){
+    try{
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(collectState()));
+    } catch(e){ /* storage unavailable - ignore */ }
+  }
+
+  function loadFromStorage(){
+    var raw = null;
+    try{ raw = localStorage.getItem(STORAGE_KEY); } catch(e){}
+    if (!raw) return;
+    try{
+      var data = JSON.parse(raw);
+      if (data && data.meta){
+        document.getElementById("athleteName").value = data.meta.name || "";
+        document.getElementById("athleteDate").value = data.meta.date || "";
+        document.getElementById("athleteSeason").value = data.meta.season || "";
+      }
+      values = (data && data.values && typeof data.values === "object") ? data.values : {};
+    } catch(e){ /* corrupt data - ignore */ }
+  }
+
+  function applyState(data){
+    if (!data) return;
+    if (data.meta){
+      document.getElementById("athleteName").value = data.meta.name || "";
+      document.getElementById("athleteDate").value = data.meta.date || "";
+      document.getElementById("athleteSeason").value = data.meta.season || "";
+    }
+    values = (data.values && typeof data.values === "object") ? data.values : {};
+    buildGrid();
+    syncPrintMeta();
+  }
+
+  function syncPrintMeta(){
+    document.getElementById("pmName").textContent = document.getElementById("athleteName").value || "—";
+    document.getElementById("pmDate").textContent = document.getElementById("athleteDate").value || "—";
+    document.getElementById("pmSeason").textContent = document.getElementById("athleteSeason").value || "Goal Mandala";
+  }
+
+  ["athleteName","athleteDate","athleteSeason"].forEach(function(id){
+    document.getElementById(id).addEventListener("input", function(){
+      syncPrintMeta();
+      scheduleSave();
+    });
+  });
+
+  document.getElementById("downloadBtn").addEventListener("click", function(){
+    syncPrintMeta();
+    window.print();
+  });
+
+  document.getElementById("exportBtn").addEventListener("click", function(){
+    var data = collectState();
+    var blob = new Blob([JSON.stringify(data, null, 2)], {type:"application/json"});
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement("a");
+    var namePart = (data.meta.name || "goal-mandala").trim().replace(/\s+/g,"-").toLowerCase();
+    a.href = url;
+    a.download = namePart + "-mandala.json";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  });
+
+  document.getElementById("importBtn").addEventListener("click", function(){
+    document.getElementById("importFile").click();
+  });
+
+  document.getElementById("importFile").addEventListener("change", function(e){
+    var file = e.target.files && e.target.files[0];
+    if (!file) return;
+    var reader = new FileReader();
+    reader.onload = function(){
+      try{
+        var data = JSON.parse(reader.result);
+        applyState(data);
+        saveToStorage();
+      } catch(err){
+        alert("That file couldn't be read. Make sure it's a .json export from this page.");
+      }
+    };
+    reader.readAsText(file);
+    e.target.value = "";
+  });
+
+  document.getElementById("resetBtn").addEventListener("click", function(){
+    if (!confirm("This will clear every box on the chart. Are you sure?")) return;
+    values = {};
+    document.getElementById("athleteName").value = "";
+    document.getElementById("athleteDate").value = "";
+    document.getElementById("athleteSeason").value = "";
+    buildGrid();
+    syncPrintMeta();
+    saveToStorage();
+  });
+
+  loadFromStorage();
+  buildGrid();
+  syncPrintMeta();
+})();
+</script>
+</body>
+</html>
