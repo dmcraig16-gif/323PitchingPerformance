@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>3:23 Goal Mandala</title>
+<title>3:23 Goal Matrix</title>
 <link rel="icon" type="image/png" href="assets/logo.png" />
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -302,7 +302,7 @@
 
   <header class="app-header">
     <img class="brand-logo" src="assets/logo.png" alt="3:23 logo" />
-    <h1>Goal Mandala</h1>
+    <h1>Goal Matrix</h1>
     <p class="sub">A Pitcher&rsquo;s Goal-Setting Worksheet</p>
   </header>
 
@@ -521,7 +521,7 @@
   function syncPrintMeta(){
     document.getElementById("pmName").textContent = document.getElementById("athleteName").value || "—";
     document.getElementById("pmDate").textContent = document.getElementById("athleteDate").value || "—";
-    document.getElementById("pmSeason").textContent = document.getElementById("athleteSeason").value || "Goal Mandala";
+    document.getElementById("pmSeason").textContent = document.getElementById("athleteSeason").value || "Goal Matrix";
   }
 
   ["athleteName","athleteDate","athleteSeason"].forEach(function(id){
@@ -541,9 +541,9 @@
     var blob = new Blob([JSON.stringify(data, null, 2)], {type:"application/json"});
     var url = URL.createObjectURL(blob);
     var a = document.createElement("a");
-    var namePart = (data.meta.name || "goal-mandala").trim().replace(/\s+/g,"-").toLowerCase();
+    var namePart = (data.meta.name || "goal-matrix").trim().replace(/\s+/g,"-").toLowerCase();
     a.href = url;
-    a.download = namePart + "-mandala.json";
+    a.download = namePart + "-matrix.json";
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
