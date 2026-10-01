@@ -297,27 +297,40 @@
 
   /* ---------- PRINT / PDF ---------- */
   @media print{
-    @page{ size: landscape; margin: 10mm; }
-    html,body{ background:#fff; }
-    .page{ max-width:none; padding:0; margin:0; }
-    .card{ box-shadow:none; border-radius:0; padding:0; }
+    @page{ size: letter landscape; margin: 10mm; }
+    html,body{ background:#fff; height:100%; }
+    .page{
+      max-width:none; padding:0; margin:0;
+      height:100%;
+      display:flex; flex-direction:column;
+    }
+    .card{
+      box-shadow:none; border-radius:0; padding:0;
+      flex:1 1 auto; min-height:0;
+      display:flex; flex-direction:column;
+    }
     .no-print{ display:none !important; }
     .print-only{ display:block !important; }
-    header.app-header{ margin-bottom:0; }
-    header.app-header img.brand-logo{ width:46px; margin-bottom:2px; }
-    header.app-header h1{ font-size:17px; margin:0; }
-    header.app-header p.sub{ margin-top:1px; font-size:9px; letter-spacing:.18em; }
+    header.app-header{ margin-bottom:0; flex:0 0 auto; }
+    header.app-header img.brand-logo{ width:52px; margin-bottom:2px; }
+    header.app-header h1{ font-size:19px; margin:0; }
+    header.app-header p.sub{ margin-top:1px; font-size:9.5px; letter-spacing:.18em; }
     .print-meta{
       display:flex; justify-content:center; gap:28px;
-      font-size:10px; margin:4px 0 6px; color:#333;
+      font-size:11px; margin:5px 0 7px; color:#333;
+      flex:0 0 auto;
     }
     .print-meta span b{ color:#000; }
-    .hairline{ margin:5px 0 7px; }
-    .grid-scroll{ overflow:visible; padding:0; }
+    .hairline{ margin:6px 0 8px; flex:0 0 auto; }
+    .grid-scroll{
+      overflow:visible; padding:0;
+      flex:1 1 auto; min-height:0;
+      display:flex;
+    }
     .mandala{
       min-width:0;
       width:100%;
-      height: 135mm;
+      height:100%;
       page-break-inside:avoid;
       border-radius:0;
     }
@@ -325,16 +338,16 @@
     .cell.goal{ background:var(--blue) !important; }
     .cell.theme, .cell.mirror{ background:var(--blue-tint) !important; }
     .cell textarea{
-      font-size:8pt !important;
-      line-height:1.1;
+      font-size:9.5pt !important;
+      line-height:1.2;
       color:#000 !important;
-      padding:2px 3px;
+      padding:3px 4px;
     }
-    .cell.goal textarea{ font-size:9.5pt !important; color:#fff !important; }
-    .cell.theme textarea, .cell.mirror .mirror-text{ font-size:8.3pt !important; color:var(--navy) !important; }
+    .cell.goal textarea{ font-size:12pt !important; color:#fff !important; }
+    .cell.theme textarea, .cell.mirror .mirror-text{ font-size:10pt !important; color:var(--navy) !important; }
     .cell.mirror .mirror-text.empty{ color:#7f8fa6 !important; }
-    footer.note{ margin-top:4px; font-size:8px; gap:3px; }
-    footer.note img{ width:18px; }
+    footer.note{ margin-top:6px; font-size:9px; gap:4px; flex:0 0 auto; }
+    footer.note img{ width:20px; }
   }
 </style>
 </head>
