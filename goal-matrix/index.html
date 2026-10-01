@@ -311,17 +311,41 @@
     }
     .no-print{ display:none !important; }
     .print-only{ display:block !important; }
-    header.app-header{ margin-bottom:0; flex:0 0 auto; }
-    header.app-header img.brand-logo{ width:52px; margin-bottom:2px; }
-    header.app-header h1{ font-size:19px; margin:0; }
-    header.app-header p.sub{ margin-top:1px; font-size:9.5px; letter-spacing:.18em; }
-    .print-meta{
-      display:flex; justify-content:center; gap:28px;
-      font-size:11px; margin:5px 0 7px; color:#333;
+    .print-header{
+      text-align:center;
       flex:0 0 auto;
     }
-    .print-meta span b{ color:#000; }
-    .hairline{ margin:6px 0 8px; flex:0 0 auto; }
+    .print-header .print-logo{
+      width:48px;
+      height:auto;
+      margin:0 auto 6px;
+      display:block;
+    }
+    .print-header .print-name{
+      font-family:'Oswald', 'Inter', sans-serif;
+      font-weight:700;
+      text-transform:uppercase;
+      font-size:26pt;
+      letter-spacing:.01em;
+      color:var(--navy);
+      line-height:1.1;
+    }
+    .print-header .print-year{
+      font-size:13pt;
+      font-weight:600;
+      color:var(--navy);
+      margin-top:2px;
+    }
+    .print-header .print-year:empty{ display:none; }
+    .print-header .print-verse{
+      font-size:9.5pt;
+      font-weight:700;
+      letter-spacing:.2em;
+      text-transform:uppercase;
+      color:var(--red);
+      margin-top:5px;
+    }
+    .hairline{ margin:7px 0 9px; flex:0 0 auto; }
     .grid-scroll{
       overflow:visible; padding:0;
       flex:1 1 auto; min-height:0;
@@ -355,16 +379,17 @@
 <div class="page">
 <div class="card">
 
-  <header class="app-header">
+  <header class="app-header no-print">
     <img class="brand-logo" src="assets/logo.png" alt="3:23 logo" />
     <h1>Goal Matrix</h1>
     <p class="sub">A Pitcher&rsquo;s Goal-Setting Worksheet</p>
   </header>
 
-  <div class="print-meta print-only">
-    <span><b id="pmName">&mdash;</b> &nbsp;(Athlete)</span>
-    <span><b id="pmDate">&mdash;</b> &nbsp;(Date)</span>
-    <span><b id="pmSeason">&mdash;</b></span>
+  <div class="print-header print-only">
+    <img class="print-logo" src="assets/logo.png" alt="3:23 logo" />
+    <div class="print-name" id="printName">Goal Matrix</div>
+    <div class="print-year" id="printYear"></div>
+    <div class="print-verse">Colossians 3:23</div>
   </div>
 
   <hr class="hairline" />
@@ -390,8 +415,8 @@
       <input id="athleteDate" type="text" placeholder="MM/DD/YYYY" />
     </div>
     <div class="meta-field">
-      <label for="athleteSeason">Season / Target</label>
-      <input id="athleteSeason" type="text" placeholder="e.g. 2027 Varsity Season" />
+      <label for="athleteYear">Year</label>
+      <input id="athleteYear" type="text" placeholder="e.g. 2027" />
     </div>
   </div>
 
@@ -419,7 +444,7 @@
     <div class="mandala" id="mandala"></div>
   </div>
 
-  <footer class="note">
+  <footer class="note no-print">
     <img src="assets/logo.png" alt="3:23" />
     Inspired by the Harada Method (Mandala Chart) goal-setting framework popularized by Shohei Ohtani in high school.
     This tool is for personal goal planning only.
@@ -432,7 +457,7 @@
 (function(){
   "use strict";
 
-  var STORAGE_KEY = "pitcherGoalMandala_v2";
+  var STORAGE_KEY = "pitcherGoalMandala_v3";
 
   var GOAL_PLACEHOLDER = "What's your one goal?";
   var THEME_PLACEHOLDER = "What's a supporting pillar?";
@@ -546,7 +571,7 @@
       meta: {
         name: document.getElementById("athleteName").value,
         date: document.getElementById("athleteDate").value,
-        season: document.getElementById("athleteSeason").value
+        year: document.getElementById("athleteYear").value
       },
       values: values
     };
@@ -567,7 +592,7 @@
       if (data && data.meta){
         document.getElementById("athleteName").value = data.meta.name || "";
         document.getElementById("athleteDate").value = data.meta.date || "";
-        document.getElementById("athleteSeason").value = data.meta.season || "";
+        document.getElementById("athleteYear").value = data.meta.year || "";
       }
       values = (data && data.values && typeof data.values === "object") ? data.values : {};
     } catch(e){ /* corrupt data - ignore */ }
@@ -578,7 +603,7 @@
     if (data.meta){
       document.getElementById("athleteName").value = data.meta.name || "";
       document.getElementById("athleteDate").value = data.meta.date || "";
-      document.getElementById("athleteSeason").value = data.meta.season || "";
+      document.getElementById("athleteYear").value = data.meta.year || "";
     }
     values = (data.values && typeof data.values === "object") ? data.values : {};
     buildGrid();
@@ -586,12 +611,11 @@
   }
 
   function syncPrintMeta(){
-    document.getElementById("pmName").textContent = document.getElementById("athleteName").value || "—";
-    document.getElementById("pmDate").textContent = document.getElementById("athleteDate").value || "—";
-    document.getElementById("pmSeason").textContent = document.getElementById("athleteSeason").value || "Goal Matrix";
+    document.getElementById("printName").textContent = document.getElementById("athleteName").value || "Goal Matrix";
+    document.getElementById("printYear").textContent = document.getElementById("athleteYear").value || "";
   }
 
-  ["athleteName","athleteDate","athleteSeason"].forEach(function(id){
+  ["athleteName","athleteDate","athleteYear"].forEach(function(id){
     document.getElementById(id).addEventListener("input", function(){
       syncPrintMeta();
       scheduleSave();
@@ -663,7 +687,7 @@
     values = {};
     document.getElementById("athleteName").value = "";
     document.getElementById("athleteDate").value = "";
-    document.getElementById("athleteSeason").value = "";
+    document.getElementById("athleteYear").value = "";
     buildGrid();
     syncPrintMeta();
     saveToStorage();
