@@ -154,6 +154,48 @@
   }
   #saveStatus.saved{ color:#1e8e3e; }
 
+  .info-wrap{ position:relative; display:inline-flex; }
+  .info-btn{
+    width:30px;
+    height:30px;
+    padding:0;
+    border-radius:50%;
+    background:#fff;
+    color:var(--navy);
+    border:1.5px solid var(--border);
+    font-weight:700;
+    font-size:14px;
+    line-height:1;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+  }
+  .info-btn:hover, .info-btn[aria-expanded="true"]{
+    background:var(--blue-pale);
+    border-color:var(--blue-mid);
+    color:var(--blue);
+  }
+  .info-popover{
+    display:none;
+    position:absolute;
+    top:calc(100% + 10px);
+    left:0;
+    width:280px;
+    background:#fff;
+    border:1px solid var(--border);
+    border-radius:12px;
+    box-shadow:0 18px 40px -16px rgba(3,46,100,.3);
+    padding:14px 16px;
+    font-size:13px;
+    line-height:1.5;
+    color:var(--text);
+    z-index:10;
+  }
+  .info-popover.open{ display:block; }
+  .info-popover .popover-title{ display:block; color:var(--navy); font-weight:700; margin-bottom:6px; }
+  .info-popover strong{ color:var(--navy); font-weight:700; }
+  .info-popover p{ margin:0; }
+
   .grid-scroll{
     overflow-x:auto;
     padding-bottom:6px;
@@ -344,6 +386,17 @@
     <button class="btn-secondary" id="exportBtn">Export Data (.json)</button>
     <button class="btn-secondary" id="importBtn">Import Data (.json)</button>
     <input type="file" id="importFile" accept="application/json" style="display:none" />
+    <div class="info-wrap">
+      <button type="button" class="info-btn" id="infoBtn" aria-expanded="false" aria-describedby="infoPopover">?</button>
+      <div class="info-popover" id="infoPopover" role="dialog">
+        <span class="popover-title">What are Export / Import for?</span>
+        <p>This page saves your work automatically, but only in this browser on this device. Click
+        <strong>Export Data</strong> to download everything you've typed as a small file you can keep,
+        email, or hand to a coach. Click <strong>Import Data</strong> to load one of those files back in
+        &mdash; useful if you switch devices, clear your browser, or want to pick up where someone else
+        left off.</p>
+      </div>
+    </div>
     <button class="btn-danger" id="resetBtn">Reset All</button>
     <span id="saveStatus">Changes save automatically</span>
   </div>
@@ -367,9 +420,9 @@
 
   var STORAGE_KEY = "pitcherGoalMandala_v2";
 
-  var GOAL_PLACEHOLDER = "Ultimate Goal";
-  var THEME_PLACEHOLDER = "Focus Area";
-  var ACTION_PLACEHOLDER = "Action Step";
+  var GOAL_PLACEHOLDER = "What's your ultimate goal?";
+  var THEME_PLACEHOLDER = "What's a key focus area?";
+  var ACTION_PLACEHOLDER = "What's one action step?";
 
   var OUTER_POS = ["0,0","0,1","0,2","1,0","1,2","2,0","2,1","2,2"];
 
@@ -535,6 +588,26 @@
     syncPrintMeta();
     window.print();
   });
+
+  (function(){
+    var infoBtn = document.getElementById("infoBtn");
+    var infoPopover = document.getElementById("infoPopover");
+    function closePopover(){
+      infoPopover.classList.remove("open");
+      infoBtn.setAttribute("aria-expanded", "false");
+    }
+    infoBtn.addEventListener("click", function(e){
+      e.stopPropagation();
+      var isOpen = infoPopover.classList.toggle("open");
+      infoBtn.setAttribute("aria-expanded", isOpen ? "true" : "false");
+    });
+    document.addEventListener("click", function(e){
+      if (!infoPopover.contains(e.target) && e.target !== infoBtn) closePopover();
+    });
+    document.addEventListener("keydown", function(e){
+      if (e.key === "Escape") closePopover();
+    });
+  })();
 
   document.getElementById("exportBtn").addEventListener("click", function(){
     var data = collectState();
