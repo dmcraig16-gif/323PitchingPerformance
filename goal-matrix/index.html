@@ -227,13 +227,16 @@
     height:100%;
     border:none;
     resize:none;
+    overflow:hidden;
     background:transparent;
     font-family:'Inter', sans-serif;
-    font-size:clamp(10px,1.05vw,13px);
+    font-size:calc(clamp(10px,1.05vw,13px) * var(--fit, 1));
     line-height:1.25;
     padding:6px 7px;
     text-align:center;
     color:var(--text);
+    overflow-wrap:break-word;
+    word-break:break-word;
   }
   .cell textarea:focus{
     outline:2px solid var(--blue);
@@ -253,7 +256,7 @@
     font-weight:600;
     text-transform:uppercase;
     letter-spacing:.03em;
-    font-size:clamp(11px,1.25vw,16px);
+    font-size:calc(clamp(11px,1.25vw,16px) * var(--fit, 1));
     color:#fff;
   }
   .cell.goal textarea::placeholder{ color:rgba(255,255,255,.8); font-style:normal; }
@@ -261,18 +264,25 @@
   .cell.theme{ background:var(--blue-tint); }
   .cell.theme textarea{
     font-weight:700;
-    font-size:clamp(10px,1.1vw,14px);
+    font-size:calc(clamp(10px,1.1vw,14px) * var(--fit, 1));
     color:var(--navy);
   }
 
-  .cell.mirror{ background:var(--blue-tint); align-items:center; justify-content:center; }
+  .cell.mirror{ background:var(--blue-tint); }
   .cell.mirror .mirror-text{
     width:100%;
+    height:100%;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    overflow:hidden;
     padding:6px 7px;
     text-align:center;
     font-weight:700;
-    font-size:clamp(10px,1.1vw,14px);
+    font-size:calc(clamp(10px,1.1vw,14px) * var(--fit, 1));
     color:var(--navy);
+    overflow-wrap:break-word;
+    word-break:break-word;
   }
   .cell.mirror .mirror-text.empty{
     color:#93a2b8;
@@ -295,84 +305,89 @@
   }
   footer.note img{ width:46px; height:auto; opacity:.85; }
 
-  /* ---------- PRINT / PDF ---------- */
+  /* ---------- PRINT / PDF ----------
+     These rules are gated by an html.print-layout class instead of
+     @media print, so JS can apply the exact print layout synchronously
+     (via beforeprint/afterprint) to measure real box sizes and compute
+     correct auto-fit font scales *before* the browser actually prints,
+     rather than approximating from the on-screen layout. */
   @media print{
     @page{ size: letter landscape; margin: 10mm; }
-    html,body{ background:#fff; height:100%; }
-    .page{
-      max-width:none; padding:0; margin:0;
-      height:100%;
-      display:flex; flex-direction:column;
-    }
-    .card{
-      box-shadow:none; border-radius:0; padding:0;
-      flex:1 1 auto; min-height:0;
-      display:flex; flex-direction:column;
-    }
-    .no-print{ display:none !important; }
-    .print-only{ display:block !important; }
-    .print-header{
-      text-align:center;
-      flex:0 0 auto;
-    }
-    .print-header .print-logo{
-      width:48px;
-      height:auto;
-      margin:0 auto 6px;
-      display:block;
-    }
-    .print-header .print-name{
-      font-family:'Oswald', 'Inter', sans-serif;
-      font-weight:700;
-      text-transform:uppercase;
-      font-size:26pt;
-      letter-spacing:.01em;
-      color:var(--navy);
-      line-height:1.1;
-    }
-    .print-header .print-year{
-      font-size:13pt;
-      font-weight:600;
-      color:var(--navy);
-      margin-top:2px;
-    }
-    .print-header .print-year:empty{ display:none; }
-    .print-header .print-verse{
-      font-size:9.5pt;
-      font-weight:700;
-      letter-spacing:.2em;
-      text-transform:uppercase;
-      color:var(--red);
-      margin-top:5px;
-    }
-    .hairline{ margin:7px 0 9px; flex:0 0 auto; }
-    .grid-scroll{
-      overflow:visible; padding:0;
-      flex:1 1 auto; min-height:0;
-      display:flex;
-    }
-    .mandala{
-      min-width:0;
-      width:100%;
-      height:100%;
-      page-break-inside:avoid;
-      border-radius:0;
-    }
-    .cell{ background:var(--blue-pale) !important; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
-    .cell.goal{ background:var(--blue) !important; }
-    .cell.theme, .cell.mirror{ background:var(--blue-tint) !important; }
-    .cell textarea{
-      font-size:9.5pt !important;
-      line-height:1.2;
-      color:#000 !important;
-      padding:3px 4px;
-    }
-    .cell.goal textarea{ font-size:12pt !important; color:#fff !important; }
-    .cell.theme textarea, .cell.mirror .mirror-text{ font-size:10pt !important; color:var(--navy) !important; }
-    .cell.mirror .mirror-text.empty{ color:#7f8fa6 !important; }
-    footer.note{ margin-top:6px; font-size:9px; gap:4px; flex:0 0 auto; }
-    footer.note img{ width:20px; }
   }
+  html.print-layout, html.print-layout body{ background:#fff; }
+  html.print-layout .page{
+    max-width:none; padding:0; margin:0 auto;
+    width:259.4mm; height:195.9mm;
+    display:flex; flex-direction:column;
+  }
+  html.print-layout .card{
+    box-shadow:none; border-radius:0; padding:0;
+    flex:1 1 auto; min-height:0;
+    display:flex; flex-direction:column;
+  }
+  html.print-layout .no-print{ display:none !important; }
+  html.print-layout .print-only{ display:block !important; }
+  html.print-layout .print-header{
+    text-align:center;
+    flex:0 0 auto;
+  }
+  html.print-layout .print-header .print-logo{
+    width:48px;
+    height:auto;
+    margin:0 auto 6px;
+    display:block;
+  }
+  html.print-layout .print-header .print-name{
+    font-family:'Oswald', 'Inter', sans-serif;
+    font-weight:700;
+    text-transform:uppercase;
+    font-size:26pt;
+    letter-spacing:.01em;
+    color:var(--navy);
+    line-height:1.1;
+  }
+  html.print-layout .print-header .print-year{
+    font-size:13pt;
+    font-weight:600;
+    color:var(--navy);
+    margin-top:2px;
+  }
+  html.print-layout .print-header .print-year:empty{ display:none; }
+  html.print-layout .print-header .print-verse{
+    font-size:9.5pt;
+    font-weight:700;
+    letter-spacing:.2em;
+    text-transform:uppercase;
+    color:var(--red);
+    margin-top:5px;
+  }
+  html.print-layout .hairline{ margin:7px 0 9px; flex:0 0 auto; }
+  html.print-layout .grid-scroll{
+    overflow:visible; padding:0;
+    flex:1 1 auto; min-height:0;
+    display:flex;
+  }
+  html.print-layout .mandala{
+    min-width:0;
+    width:100%;
+    height:100%;
+    page-break-inside:avoid;
+    border-radius:0;
+  }
+  html.print-layout .cell{ background:var(--blue-pale) !important; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+  html.print-layout .cell.goal{ background:var(--blue) !important; }
+  html.print-layout .cell.theme, html.print-layout .cell.mirror{ background:var(--blue-tint) !important; }
+  html.print-layout .cell textarea{
+    font-size:calc(9.5pt * var(--fit, 1)) !important;
+    line-height:1.2;
+    color:#000 !important;
+    padding:3px 4px;
+  }
+  html.print-layout .cell.goal textarea{ font-size:calc(12pt * var(--fit, 1)) !important; color:#fff !important; }
+  html.print-layout .cell.theme textarea, html.print-layout .cell.mirror .mirror-text{ font-size:calc(10pt * var(--fit, 1)) !important; color:var(--navy) !important; }
+  html.print-layout .cell.mirror .mirror-text.empty{ color:#7f8fa6 !important; }
+  html.print-layout footer.note{ margin-top:6px; font-size:9px; gap:4px; flex:0 0 auto; }
+  html.print-layout footer.note img{ width:20px; }
 </style>
 </head>
 <body>
@@ -472,6 +487,28 @@
 
   function key(r,c){ return r + "-" + c; }
 
+  // Shrinks an element's font size (via the --fit CSS custom property) in
+  // small steps until its content stops overflowing its own box, down to
+  // a minimum scale. Works for textareas and the read-only mirror divs.
+  function autofitBox(el){
+    if (!el || !el.isConnected) return;
+    var min = 0.5, step = 0.04, guard = 0;
+    var ratio = 1;
+    el.style.setProperty("--fit", ratio);
+    if (!el.clientHeight) return;
+    while (ratio > min && el.scrollHeight > el.clientHeight + 1 && guard < 20){
+      ratio = Math.max(min, ratio - step);
+      el.style.setProperty("--fit", ratio);
+      guard++;
+    }
+  }
+
+  function fitAllCells(){
+    var root = document.getElementById("mandala");
+    if (!root) return;
+    root.querySelectorAll("textarea, .mirror-text").forEach(autofitBox);
+  }
+
   function buildGrid(){
     var mandala = document.getElementById("mandala");
     mandala.innerHTML = "";
@@ -535,10 +572,14 @@
           mirror.textContent = THEME_PLACEHOLDER;
           mirror.classList.add("empty");
         }
+        autofitBox(mirror);
       };
       ta.addEventListener("input", sync);
       sync();
     });
+
+    // fit any pre-filled (restored) text once the grid has real layout
+    requestAnimationFrame(fitAllCells);
   }
 
   function makeTextarea(k, placeholder, rows){
@@ -549,6 +590,7 @@
     ta.value = values[k] || "";
     ta.addEventListener("input", function(){
       values[k] = ta.value;
+      autofitBox(ta);
       scheduleSave();
     });
     return ta;
@@ -626,6 +668,29 @@
     syncPrintMeta();
     window.print();
   });
+
+  // Applying html.print-layout synchronously (rather than relying on
+  // @media print) lets us measure the *real* print box sizes right here
+  // in script, before the browser's print pipeline ever renders anything
+  // — so auto-fit scaling is computed against the actual print layout,
+  // not approximated from the on-screen one. Covers both the Download
+  // PDF button and a manual Ctrl+P / browser print.
+  window.addEventListener("beforeprint", function(){
+    document.documentElement.classList.add("print-layout");
+    fitAllCells();
+  });
+  window.addEventListener("afterprint", function(){
+    document.documentElement.classList.remove("print-layout");
+    fitAllCells();
+  });
+
+  (function(){
+    var resizeTimer = null;
+    window.addEventListener("resize", function(){
+      clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(fitAllCells, 150);
+    });
+  })();
 
   (function(){
     var infoBtn = document.getElementById("infoBtn");
