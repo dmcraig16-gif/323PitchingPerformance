@@ -312,7 +312,10 @@
      correct auto-fit font scales *before* the browser actually prints,
      rather than approximating from the on-screen layout. */
   @media print{
-    @page{ size: letter landscape; margin: 10mm; }
+    /* Explicit swapped dimensions (width > height) are honored as a
+       landscape default by more browsers/print dialogs than the
+       `landscape` keyword alone. */
+    @page{ size: 11in 8.5in; margin: 10mm; }
   }
   html.print-layout, html.print-layout body{ background:#fff; }
   html.print-layout .page{
