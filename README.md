@@ -65,3 +65,5 @@ npm run preview
 Practice plans (with optional drill sheets) and lineup cards export as FCA-branded, printable PDFs. They're generated in the browser with jsPDF 2.5.2 + jspdf-autotable 3.8.4, bundled in `public/coach-guide/vendor/` (MIT licenses alongside). The badge is `fca-sports-idaho-clubs.png`, taken from the guide's cover.
 
 Plans, lineups and devos are saved in each coach's own browser (localStorage).
+
+On a phone, coaches can use Share → **Add to Home Screen** (iPhone) or the browser menu → **Install app / Add to Home screen** (Android) to open it full-screen like an app.
