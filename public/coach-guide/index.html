@@ -1,0 +1,2012 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>FCA Sports Way Coach Guide</title>
+<meta name="description" content="Practice planner, drill library and game-day tools from the FCA Sports Idaho Clubs coach guide.">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" href="icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="FCA Coach">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="theme-color" content="#E6E6E6" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#242422" media="(prefers-color-scheme: dark)">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Barlow:wght@400;500;600&family=Montserrat:wght@500;800&display=swap">
+<style>
+/* Layout: one column "clipboard" — sticky wordmark header, section tabs (bottom bar on phones),
+   practice plans read as a clock-time timeline like the printed templates. */
+:root {
+  --bg: #F4F4F1;
+  --surface: #FFFFFF;
+  --ink: #151515;
+  --muted: #5D5C56;
+  --line: #E0DFD8;
+  --gold: #FFC20E;
+  --on-gold: #151515;
+  --gold-soft: #FFF2C2;
+  --gold-text: #8A6300;
+  --good: #1D7547;
+  --bad: #B3261E;
+  --band: #E6E6E6;
+  --field: #DDE8D6;
+  --dirt: #EBDDC9;
+  --dirt-dark: #D9C6AA;
+  --font-display: "Montserrat", "Helvetica Neue", Arial, sans-serif;
+  --font-body: "Barlow", "Segoe UI", system-ui, sans-serif;
+  --font-label: "Barlow Condensed", "Arial Narrow", "Segoe UI", sans-serif;
+  --radius: 10px;
+  --nav-h: 64px;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #111110; --surface: #1C1C1A; --ink: #F1F0EA; --muted: #A4A399; --line: #302F2B;
+    --gold-soft: #3A3011; --gold-text: #FFC20E; --good: #61C58F; --bad: #F2877E; --band: #242422; --field: #26301F; --dirt: #3A3127; --dirt-dark: #4A3E30;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #111110; --surface: #1C1C1A; --ink: #F1F0EA; --muted: #A4A399; --line: #302F2B;
+  --gold-soft: #3A3011; --gold-text: #FFC20E; --good: #61C58F; --bad: #F2877E; --band: #242422; --field: #26301F; --dirt: #3A3127; --dirt-dark: #4A3E30;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0; background: var(--bg); color: var(--ink);
+  font: 400 16px/1.5 var(--font-body);
+  padding-bottom: calc(var(--nav-h) + env(safe-area-inset-bottom, 0px) + 24px);
+}
+button, input, select, textarea { font: inherit; color: inherit; }
+button { cursor: pointer; }
+:focus-visible { outline: 3px solid var(--gold); outline-offset: 2px; }
+h1, h2, h3 { text-wrap: balance; margin: 0; }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+[hidden] { display: none !important; }
+
+/* Header */
+.top {
+  position: sticky; top: env(safe-area-inset-top, 0px); z-index: 20;
+  background: var(--band); border-bottom: 1px solid var(--line);
+}
+.top-inner { max-width: 880px; margin: 0 auto; padding: 10px 16px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.badge { width: 44px; height: 44px; flex: none; }
+.mark { font-family: var(--font-display); font-size: 22px; letter-spacing: -0.01em; line-height: 1; white-space: nowrap; }
+.mark b { font-weight: 800; }
+.mark span { font-weight: 500; }
+.mark-sub { font-family: var(--font-label); font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; font-size: 13px; color: var(--muted); }
+.tabs { display: flex; gap: 4px; margin-left: auto; }
+.tab {
+  border: 0; background: none; padding: 8px 12px; border-radius: 999px;
+  font-family: var(--font-label); font-weight: 700; font-size: 16px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted);
+}
+.tab[aria-current="page"] { background: var(--gold); color: var(--on-gold); }
+.tab svg { display: none; }
+@media (max-width: 720px) {
+  .tabs {
+    position: fixed; left: 0; right: 0; bottom: 0; margin: 0; z-index: 30;
+    background: var(--surface); border-top: 1px solid var(--line);
+    padding: 6px 8px calc(6px + env(safe-area-inset-bottom, 0px));
+    justify-content: space-around;
+  }
+  .tab { display: flex; flex-direction: column; align-items: center; gap: 2px; font-size: 13px; padding: 6px 10px; border-radius: 12px; flex: 1; }
+  .tab svg { display: block; width: 22px; height: 22px; }
+}
+
+main { max-width: 880px; margin: 0 auto; padding: 20px 16px 0; display: grid; gap: 20px; }
+.view-head { display: grid; gap: 4px; }
+.eyebrow { font-family: var(--font-label); font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; font-size: 13px; color: var(--gold-text); }
+h1.title { font-family: var(--font-display); font-weight: 800; font-size: clamp(26px, 6vw, 36px); line-height: 1.1; letter-spacing: -0.02em; }
+.lede { color: var(--muted); max-width: 62ch; margin: 0; }
+h2.sec { font-family: var(--font-display); font-weight: 800; font-size: 20px; letter-spacing: -0.01em; }
+h3.sub { font-family: var(--font-label); font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; font-size: 15px; color: var(--muted); }
+
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 16px; display: grid; gap: 14px; min-width: 0; }
+.row { display: flex; flex-wrap: wrap; gap: 10px; align-items: end; }
+.field { display: grid; gap: 4px; flex: 1 1 140px; min-width: 0; }
+.field > span { font-family: var(--font-label); font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; font-size: 13px; color: var(--muted); }
+input[type="text"], input[type="date"], input[type="time"], input[type="number"], input[type="search"], select, textarea {
+  width: 100%; min-width: 0; border: 1px solid var(--line); background: var(--bg); border-radius: 8px; padding: 9px 10px; font-size: 16px;
+}
+textarea { resize: vertical; min-height: 80px; }
+
+.btn {
+  border: 1px solid var(--line); background: var(--surface); border-radius: 8px; padding: 9px 14px;
+  font-family: var(--font-label); font-weight: 700; font-size: 15px; text-transform: uppercase; letter-spacing: 0.05em; white-space: nowrap;
+}
+.btn:hover { border-color: var(--muted); }
+.btn.primary { background: var(--gold); border-color: var(--gold); color: var(--on-gold); }
+.btn.ghost { background: none; border-color: transparent; color: var(--muted); }
+.btn.danger { color: var(--bad); }
+.btn.sm { padding: 5px 10px; font-size: 13px; }
+.check-inline { display: inline-flex; align-items: center; gap: 6px; font-size: 15px; color: var(--muted); }
+.check-inline input { width: 18px; height: 18px; accent-color: var(--gold); }
+
+.seg { display: inline-flex; border: 1px solid var(--line); border-radius: 999px; padding: 3px; gap: 2px; background: var(--bg); flex-wrap: wrap; }
+.seg button { border: 0; background: none; border-radius: 999px; padding: 6px 14px; font-family: var(--font-label); font-weight: 700; font-size: 14px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); }
+.seg button[aria-pressed="true"] { background: var(--ink); color: var(--surface); }
+
+.chips { display: flex; flex-wrap: wrap; gap: 6px; list-style: none; margin: 0; padding: 0; }
+.chip {
+  display: inline-flex; align-items: center; gap: 6px; border: 1px solid var(--line); background: var(--bg);
+  border-radius: 999px; padding: 4px 6px 4px 12px; font-size: 14px; font-weight: 500;
+}
+.chip button { border: 0; background: none; padding: 0 4px; color: var(--muted); font-size: 16px; line-height: 1; }
+.chip .open { padding: 0; font-weight: 500; color: var(--ink); font-size: 14px; text-align: left; }
+.filter { border: 1px solid var(--line); background: var(--surface); border-radius: 999px; padding: 6px 12px; font-size: 14px; font-weight: 500; }
+.filter[aria-pressed="true"] { background: var(--gold); border-color: var(--gold); color: var(--on-gold); font-weight: 600; }
+
+/* Practice timeline */
+.timeline { list-style: none; margin: 0; padding: 0; display: grid; }
+.blk { display: grid; grid-template-columns: 74px 1fr; gap: 12px; padding: 12px 0; border-top: 1px solid var(--line); }
+.blk:first-child { border-top: 0; }
+.clock { font-family: var(--font-label); font-variant-numeric: tabular-nums; line-height: 1.15; padding-top: 6px; }
+.clock b { display: block; font-size: 20px; font-weight: 700; }
+.clock span { font-size: 14px; color: var(--muted); font-weight: 600; }
+.blk-main { display: grid; gap: 8px; min-width: 0; }
+.blk-head { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.blk-title { flex: 1 1 180px; font-weight: 600; }
+.mins { display: inline-flex; align-items: center; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; background: var(--bg); }
+.mins button { border: 0; background: none; width: 34px; height: 38px; font-size: 18px; color: var(--muted); }
+.mins input { width: 46px; border: 0; border-radius: 0; text-align: center; padding: 8px 0; background: none; font-variant-numeric: tabular-nums; -moz-appearance: textfield; }
+.mins input::-webkit-outer-spin-button, .mins input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+.mins small { padding-right: 6px; color: var(--muted); font-size: 13px; }
+.blk-actions { display: flex; gap: 4px; flex-wrap: wrap; }
+.blk.end .clock b { color: var(--gold-text); }
+.blk.prayer .blk-title { font-style: italic; }
+.summary { display: flex; gap: 16px; flex-wrap: wrap; align-items: center; font-family: var(--font-label); font-weight: 600; font-size: 15px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); }
+.summary b { color: var(--ink); font-size: 18px; font-variant-numeric: tabular-nums; }
+.templates { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 8px; }
+.tpl { text-align: left; border: 1px solid var(--line); background: var(--bg); border-radius: var(--radius); padding: 12px; display: grid; gap: 2px; }
+.tpl b { font-family: var(--font-display); font-weight: 800; font-size: 18px; }
+.tpl span { color: var(--muted); font-size: 14px; }
+.tpl:hover { border-color: var(--gold); }
+.callout { background: var(--gold-soft); border-radius: var(--radius); padding: 12px 14px; font-size: 15px; }
+
+/* Drill library */
+.lib-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 10px; }
+.card {
+  text-align: left; border: 1px solid var(--line); background: var(--surface); border-radius: var(--radius);
+  padding: 14px; display: grid; gap: 6px; align-content: start; min-width: 0;
+}
+.card:hover { border-color: var(--gold); }
+.card h3 { font-family: var(--font-body); font-weight: 600; font-size: 17px; line-height: 1.25; }
+.card p { margin: 0; color: var(--muted); font-size: 14px; }
+.meta { display: flex; gap: 8px; flex-wrap: wrap; font-family: var(--font-label); font-weight: 600; font-size: 13px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); }
+.tag { color: var(--gold-text); }
+.kind { border: 1px solid var(--line); border-radius: 4px; padding: 0 5px; }
+.empty { color: var(--muted); padding: 24px 0; text-align: center; }
+
+/* Content (drill bodies, signs, goals) */
+.prose { display: grid; gap: 12px; min-width: 0; }
+.prose ul, .prose ol { margin: 0; padding-left: 22px; display: grid; gap: 4px; }
+.prose li.subli { list-style: circle; margin-left: 18px; color: var(--muted); }
+.prose p { margin: 0; }
+.prose h4 { margin: 4px 0 0; font-family: var(--font-label); font-weight: 700; font-size: 15px; text-transform: uppercase; letter-spacing: 0.06em; }
+.focus { border-left: 4px solid var(--gold); padding: 4px 0 4px 12px; font-weight: 500; }
+.signs { width: 100%; border-collapse: collapse; font-size: 15px; }
+.signs th, .signs td { text-align: left; padding: 7px 8px; border-top: 1px solid var(--line); vertical-align: top; }
+.signs th { width: 56px; font-family: var(--font-label); font-size: 20px; font-variant-numeric: tabular-nums; color: var(--gold-text); }
+.table-wrap { overflow-x: auto; }
+.acronym { display: grid; gap: 10px; }
+.acronym div { display: grid; grid-template-columns: 44px 1fr; gap: 10px; align-items: start; }
+.acronym b { font-family: var(--font-display); font-weight: 800; font-size: 28px; line-height: 1; background: var(--gold); color: var(--on-gold); border-radius: 6px; text-align: center; padding: 6px 0; }
+.acronym strong { display: block; }
+.acronym span { color: var(--muted); font-size: 15px; }
+.two { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 14px; }
+
+/* Game day */
+.lineup { width: 100%; border-collapse: collapse; }
+.lineup td { padding: 4px 4px; border-top: 1px solid var(--line); }
+.lineup td:first-child { width: 32px; font-family: var(--font-label); font-weight: 700; font-size: 20px; text-align: center; font-variant-numeric: tabular-nums; }
+.lineup td:last-child { width: 84px; }
+.lineup input { padding: 7px 8px; }
+.pregame { list-style: none; margin: 0; padding: 0; display: grid; }
+.pregame li { display: grid; grid-template-columns: 74px 1fr; gap: 12px; padding: 8px 0; border-top: 1px solid var(--line); }
+.pregame li:first-child { border-top: 0; }
+.pregame strong { display: block; }
+.pregame span { color: var(--muted); font-size: 14px; }
+
+.counter { display: flex; align-items: center; gap: 10px; }
+.counter button { width: 44px; height: 44px; border-radius: 50%; border: 1px solid var(--line); background: var(--bg); font-size: 22px; line-height: 1; }
+.counter button.plus { background: var(--gold); border-color: var(--gold); color: var(--on-gold); }
+.big { font-family: var(--font-label); font-weight: 700; font-size: 44px; line-height: 1; font-variant-numeric: tabular-nums; min-width: 2ch; text-align: center; }
+.bar { height: 8px; background: var(--line); border-radius: 999px; overflow: hidden; }
+.bar i { display: block; height: 100%; background: var(--gold); border-radius: 999px; }
+.freebies { width: 100%; border-collapse: collapse; }
+.freebies th, .freebies td { padding: 6px 4px; border-top: 1px solid var(--line); text-align: center; }
+.freebies th:first-child, .freebies td:first-child { text-align: left; }
+.freebies thead th { border-top: 0; font-family: var(--font-label); text-transform: uppercase; letter-spacing: 0.06em; font-size: 13px; color: var(--muted); }
+.tap { display: inline-flex; align-items: center; gap: 6px; }
+.tap button { width: 34px; height: 34px; border-radius: 8px; border: 1px solid var(--line); background: var(--bg); font-size: 18px; line-height: 1; }
+.tap b { font-family: var(--font-label); font-size: 22px; min-width: 2ch; font-variant-numeric: tabular-nums; }
+.pill { display: inline-block; border-radius: 999px; padding: 3px 10px; font-family: var(--font-label); font-weight: 700; font-size: 14px; text-transform: uppercase; letter-spacing: 0.05em; }
+.pill.good { background: var(--good); color: var(--surface); }
+.pill.bad { background: var(--bad); color: var(--surface); }
+.pill.even { background: var(--line); color: var(--ink); }
+.arm { display: grid; gap: 8px; padding: 12px 0; border-top: 1px solid var(--line); }
+.arm:first-of-type { border-top: 0; }
+.arm-stats { display: flex; gap: 18px; flex-wrap: wrap; font-family: var(--font-label); font-weight: 600; text-transform: uppercase; font-size: 13px; letter-spacing: 0.05em; color: var(--muted); }
+.arm-stats b { display: block; font-size: 28px; color: var(--ink); font-variant-numeric: tabular-nums; line-height: 1.1; }
+.arm-stats .warn b { color: var(--bad); }
+.arm-stats .ok b { color: var(--good); }
+
+/* Lineup card */
+.roster { width: 100%; border-collapse: collapse; }
+.roster th { text-align: left; font-family: var(--font-label); font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; font-size: 13px; color: var(--muted); padding: 0 4px 4px; }
+.roster td { padding: 3px 4px; }
+.roster td:first-child { width: 64px; }
+.roster td:nth-child(3) { width: 34%; }
+.roster td:last-child { width: 40px; }
+.roster input { padding: 7px 8px; }
+.lcard { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; border: 2px solid var(--ink); }
+.lcard th { background: var(--ink); color: var(--surface); font-family: var(--font-label); font-weight: 700; font-size: 14px; text-transform: uppercase; letter-spacing: 0.05em; padding: 6px 4px; text-align: center; }
+.lcard th:nth-child(2) { text-align: left; }
+.lcard td { border-top: 1px solid var(--line); border-left: 1px solid var(--line); padding: 3px; text-align: center; }
+.lcard td.ord { font-family: var(--font-label); font-weight: 700; font-size: 18px; width: 34px; }
+.lcard td.nm { text-align: left; font-weight: 600; white-space: nowrap; padding: 3px 8px; min-width: 130px; }
+.lcard select { width: 54px; padding: 5px 2px; font-family: var(--font-label); font-weight: 700; font-size: 16px; text-align: center; border-radius: 6px; }
+.lcard select.bn { color: var(--muted); font-weight: 600; }
+.lcard select.clash { border-color: var(--bad); color: var(--bad); }
+.lcard tfoot td { font-family: var(--font-label); font-weight: 700; }
+.lcard .warnc { color: var(--bad); }
+.lcard .okc { color: var(--good); }
+.card-foot { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; }
+.boxes { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 14px; }
+.boxes span { display: inline-flex; align-items: center; gap: 6px; }
+.boxes i { width: 14px; height: 14px; border: 1.5px solid var(--ink); border-radius: 2px; }
+
+/* Devo template */
+.devo-flow { list-style: none; margin: 0; padding: 0; display: grid; gap: 14px; counter-reset: step; }
+.devo-flow > li { display: grid; grid-template-columns: 32px 1fr; gap: 10px; align-items: start; counter-increment: step; }
+.devo-flow > li::before { content: counter(step); font-family: var(--font-display); font-weight: 800; font-size: 15px; width: 28px; height: 28px; border-radius: 50%; background: var(--gold); color: var(--on-gold); display: grid; place-items: center; margin-top: 18px; }
+.devo-flow .field { gap: 6px; }
+
+/* Resources */
+.res-nav { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 64px); z-index: 10; background: var(--bg); padding: 10px 0 8px; flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; }
+.res-nav::-webkit-scrollbar { display: none; }
+.res-nav .filter { flex: none; }
+.res { display: grid; gap: 14px; scroll-margin-top: 130px; min-width: 0; }
+.res-h { font-family: var(--font-display); font-weight: 800; font-size: 24px; letter-spacing: -0.01em; text-transform: uppercase; padding-top: 12px; border-top: 3px solid var(--ink); }
+.res .row .res-h { flex: 1; }
+.mission { background: var(--gold); border-color: var(--gold); color: var(--on-gold); }
+.mission .eyebrow, .mission .lede { color: var(--on-gold); }
+.mission p:not(.lede) { margin: 0; font-family: var(--font-display); font-weight: 500; font-size: clamp(17px, 3.6vw, 21px); line-height: 1.4; max-width: 60ch; }
+.mission b { font-weight: 800; }
+.bunt-grid { display: grid; grid-template-columns: minmax(0, 380px) minmax(0, 1fr); gap: 20px; align-items: start; }
+@media (max-width: 640px) { .bunt-grid { grid-template-columns: minmax(0, 1fr); } }
+.field { width: 100%; max-width: 380px; height: auto; display: block; margin: 0 auto; }
+.f-grass { fill: var(--field); }
+.f-infield { fill: var(--dirt); }
+.f-line { stroke: var(--surface); stroke-width: 1.5; }
+.f-mound { fill: var(--dirt-dark); }
+.f-base { fill: var(--surface); stroke: var(--ink); stroke-width: 0.75; }
+.f-move { stroke: var(--ink); stroke-width: 2; stroke-dasharray: 4 3; }
+.f-arrowhead { fill: var(--ink); }
+.f-start { fill: var(--surface); stroke: var(--ink); stroke-width: 1.25; }
+.f-player circle { fill: var(--gold); stroke: var(--ink); stroke-width: 1.5; }
+.f-player text { font-family: var(--font-label); font-weight: 700; font-size: 10px; text-anchor: middle; fill: var(--on-gold); }
+.f-player.idle circle { fill: var(--surface); }
+.f-player.idle text { fill: var(--muted); }
+.assign th { width: 48px; font-size: 16px; }
+
+/* Team */
+.mandate { display: grid; gap: 10px; counter-reset: m; list-style: none; margin: 0; padding: 0; }
+.mandate li { display: grid; grid-template-columns: 34px 1fr; gap: 10px; }
+.mandate li b { font-family: var(--font-display); font-weight: 800; font-size: 24px; line-height: 1; color: var(--gold-text); }
+.check { display: flex; gap: 10px; align-items: flex-start; padding: 8px 0; border-top: 1px solid var(--line); cursor: pointer; }
+.check input { width: 22px; height: 22px; margin: 1px 0 0; accent-color: var(--gold); flex: none; }
+.check small { display: block; color: var(--muted); font-size: 14px; }
+.check.done span { text-decoration: line-through; color: var(--muted); }
+
+/* Dialog */
+dialog {
+  border: 0; padding: 0; border-radius: 14px; background: var(--surface); color: var(--ink);
+  width: min(640px, calc(100vw - 24px)); max-height: calc(100dvh - 48px); box-shadow: 0 20px 60px rgba(0,0,0,.35);
+}
+dialog::backdrop { background: rgba(10,10,10,.55); }
+.dlg { display: grid; grid-template-rows: auto 1fr auto; max-height: calc(100dvh - 48px); }
+.dlg-head { padding: 16px 16px 12px; border-bottom: 1px solid var(--line); display: grid; gap: 8px; }
+.dlg-head .close { position: absolute; top: 10px; right: 10px; }
+.dlg-body { padding: 16px; overflow-y: auto; display: grid; gap: 14px; align-content: start; }
+.dlg-foot { padding: 12px 16px calc(12px + env(safe-area-inset-bottom, 0px)); border-top: 1px solid var(--line); display: flex; gap: 8px; flex-wrap: wrap; align-items: end; }
+.pick-list { display: grid; gap: 6px; }
+.pick-item { text-align: left; border: 1px solid var(--line); background: var(--bg); border-radius: 8px; padding: 10px 12px; display: grid; gap: 2px; }
+.pick-item:hover { border-color: var(--gold); }
+.pick-item small { color: var(--muted); font-size: 13px; }
+
+.toast {
+  position: fixed; left: 50%; transform: translateX(-50%); z-index: 50;
+  bottom: calc(var(--nav-h) + env(safe-area-inset-bottom, 0px) + 16px);
+  background: var(--ink); color: var(--surface); padding: 10px 16px; border-radius: 999px; font-weight: 500; font-size: 15px;
+  max-width: calc(100vw - 32px);
+}
+@media (min-width: 721px) { .toast { bottom: 24px; } body { padding-bottom: 40px; } }
+.foot { color: var(--muted); font-size: 13px; text-align: center; padding: 8px 0 0; }
+
+@media (prefers-reduced-motion: no-preference) {
+  .toast { animation: rise .2s ease-out; }
+  @keyframes rise { from { transform: translate(-50%, 8px); opacity: 0; } }
+}
+@media print {
+  .top, .tabs, .toolbar, .blk-actions, .mins button, .no-print, .toast { display: none !important; }
+  body { background: #fff; color: #000; padding: 0; }
+  .panel { border: 0; padding: 0; }
+  input, select, textarea { border: 0 !important; background: none !important; padding: 0 !important; }
+}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="top-inner">
+    <img class="badge" src="fca-sports-idaho-clubs.png" alt="FCA Sports Idaho Clubs" width="44" height="44">
+    <div>
+      <div class="mark"><b>FCA</b> <span>SPORTS</span> <b>WAY</b></div>
+      <div class="mark-sub">FCA Coach Guide</div>
+    </div>
+    <nav class="tabs" aria-label="Sections">
+      <button class="tab" data-tab="practice"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4V2.5h6V4M9 10h6M9 14h6M9 18h3"/></svg>Practice</button>
+      <button class="tab" data-tab="drills"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M7 5.5c2 2 2 11 0 13M17 5.5c-2 2-2 11 0 13"/></svg>Drills</button>
+      <button class="tab" data-tab="game"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M12 3l8 8v9H4v-9z"/><path d="M9 20v-5h6v5"/></svg>Game Day</button>
+      <button class="tab" data-tab="devos"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M5 4.5A1.5 1.5 0 016.5 3H19v15H6.5A1.5 1.5 0 005 19.5z"/><path d="M5 19.5A1.5 1.5 0 006.5 21H19v-3M12 6.5v7M9.5 9h5"/></svg>Devos</button>
+      <button class="tab" data-tab="resources"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M3 6.5A1.5 1.5 0 014.5 5H9l2 2h8.5A1.5 1.5 0 0121 8.5v10a1.5 1.5 0 01-1.5 1.5h-15A1.5 1.5 0 013 18.5z"/><path d="M8 13h8M8 16.5h5"/></svg>Resources</button>
+    </nav>
+  </div>
+</header>
+
+<main id="app"></main>
+
+<dialog id="dlg" aria-labelledby="dlgTitle"></dialog>
+<div id="toast" class="toast" role="status" hidden></div>
+
+<script>
+/* =========================================================================
+   CONTENT — transcribed from the "FCA Sports Way — FCA Coach Guide" PDF.
+   Page numbers (p) refer to that guide.
+   ========================================================================= */
+
+const CATS = ['Warm-Up', 'Throwing', 'Pitching', 'Hitting', 'Infield', 'Outfield', 'Catching', 'Base Running', 'Speed'];
+const KINDS = { drill: 'Drill', routine: 'Routine', teach: 'Teaching points' };
+
+// b: body. Strings are list items, "> " prefix = sub-item, "## " prefix = sub-heading, "! " prefix = paragraph.
+const DRILLS = [
+  // ---------- Warm-Up ----------
+  { id: 'dynamic-warmup', t: 'Dynamic Warm-Up Menu', c: 'Warm-Up', k: 'routine', m: 8, p: 9,
+    s: 'Movement prep before throwing. Coach-run with cones and a timer at first, then player-led.',
+    b: ['Warm-up jog', 'Back pedal', 'Side shuffle down and back', 'Lunge with a twist', 'Lunge with a reach', 'Toy soldier', 'Quad pulls', 'Toe swipes', 'Side lunges', 'Bear crawls', 'Figure fours', 'Butt kickers', 'High knees', 'Carioca', 'Skips for height', 'Skips for distance', 'Lateral hops', 'Shuffle to sprint', 'Sprints to finish'] },
+  { id: 'static-stretch', t: 'Static Stretches', c: 'Warm-Up', k: 'routine', m: 8, p: 9,
+    s: 'Static stretch menu for cool-down or after the dynamic work.',
+    b: ['Quad pulls', 'Arm across', 'Arm over the head', 'Palm up / down forearm stretches', 'Downward dog', 'Lunges', 'Arches', '90/90 hip stretches', 'Figure fours on ground', 'Butterflies', 'Pretzels', 'Straight-leg toe touches', 'Pigeons', 'Wide-base toe touches', 'Inchworm'] },
+  { id: 'arm-care', t: 'Arm Care Menu', c: 'Warm-Up', k: 'routine', m: 5, p: 9,
+    s: 'Arm activation before the throwing program.',
+    b: ['Arm circles', 'Scissors', 'Touchdowns', 'Seals', "DJ's"] },
+
+  // ---------- Throwing ----------
+  { id: 'throwing-program', t: 'Throwing Program Menu', c: 'Throwing', k: 'routine', m: 15, p: 8,
+    s: 'Daily catch-play progression. Same order every day so players can run it themselves.',
+    b: ['Two knees into push-up', 'Kneeling wrist throws', 'Kneeling throws', 'Field goals', 'Reset throws', 'Rockers', 'Flamingos', 'Shuffle throws (extend to long toss)', 'Missile throws (on the way back in)', '90 Ft. Drills (see 90 Ft. Drill Menu)'] },
+  { id: 'long-toss', t: 'Long-Toss Program', c: 'Throwing', k: 'routine', m: 20, p: 10,
+    s: 'Quick build-up so most throws happen at distance. About 18–20 minutes.',
+    f: 'Most of the throws should be at a distance. Move quickly through the early steps.',
+    b: ['Start short, squared up to your partner, toes pointed right at him',
+      'Keep feet still and twist side to side to throw (loosens hips). About 5 throws',
+      'Back up 3–5 steps and repeat',
+      'From here on, the partner off the line moves at least a step back every throw',
+      '3 throws: wide base, move side to side slow and controlled, staying low (control and hip mobility)',
+      '3 throws: front foot hooks around the back knee so you stand on the back leg; front hip falls forward and the front foot plants at the last moment',
+      '3 throws: squared up, toes at partner, twisting more explosively',
+      'Repeat the last three. You should finish 100–150 ft apart depending on age and arm strength',
+      'Every throw from here is a crow hop, backing up until you are one-hopping your partner (max distance)',
+      '> Throws are higher in the air ("loosey goosey") for distance',
+      'Stay at max distance for 8–10 throws, ball higher, throwing as hard as possible',
+      'Work back in a couple of steps every throw',
+      '> These throws stay low, as if throwing through a cut-off man'] },
+  { id: '90ft-menu', t: '90 Ft. Drill Menu', c: 'Throwing', k: 'drill', m: 10, p: 8,
+    s: 'Finish catch play at your team’s base distance.',
+    b: ['Controlled quick catch', 'Pickoffs', 'INF / OF footwork', '21 Points Game'] },
+  { id: 'edd', t: "Every Day Drills (EDD's)", c: 'Throwing', k: 'routine', m: 10, p: 8,
+    s: 'Partner glove-work every practice after catch play.',
+    b: ['## INF ground balls kneeling (10 ft.)', 'No glove', '> 3 middle', '> 3 glove side', '> 3 backhand',
+      '## INF ground balls standing (20 ft.)', '3 middle', '3 glove side', '3 backhand', 'Short hops',
+      '## OF footwork (60–90 ft.)', '3 fly balls straight on', '3 fly balls glove side', '3 fly balls arm side', '3 do-or-die reps'] },
+
+  // ---------- Pitching ----------
+  { id: 'flat-ground', t: 'Flat Ground', c: 'Pitching', k: 'routine', m: 10, p: 8,
+    s: '11 pitches each from the stretch, one pitcher at a time.',
+    b: ['11 pitches each from the stretch (1 guy at a time)', 'Everything down the middle, preferably down in the zone',
+      '4 fastballs, 3 changeups, 3 breaking balls, 1 fastball', 'Receivers squat in a catching position and give a good target'] },
+  { id: 'bullpen', t: 'Bullpen Routine (31 pitches)', c: 'Pitching', k: 'routine', m: 15, p: 13,
+    s: 'Catcher-led pen. Stretch first, then windup. Every pitch has a count and a purpose.',
+    f: 'Command the fastball and the bottom of the zone. “Aim small, miss small.”',
+    b: ['## Fundamentals (catcher leads the whole pen)',
+      'Start from the stretch, always. We throw more from the stretch than the windup. Second half from the windup',
+      'Command the fastball',
+      'Command the bottom of the zone. If the catcher’s target is too high, ask for it lower',
+      'Know the purpose of each pitch and tell the catcher: is it 0-0 or 0-2?',
+      'Make your own adjustments from the result. Adjust on the 2nd or 3rd pitch, not the 5th',
+      'Have a good tempo',
+      '## Stretch (21)', '3 fastballs to extension side', '3 fastballs middle', '3 fastballs opposite extension', '3 changeups middle',
+      '3 fastball-then-changeup combinations (same arm speed)', '3 curveballs for a strike', '3 curveballs in an 0-2 count (same pitch, change location)',
+      '## Windup (10)', '1 fastball extension, 1 middle, 1 non-extension', '2 changeups middle', '1 curveball for a strike, 1 curveball 0-2', '1 elevated fastball 0-2'] },
+
+  // ---------- Hitting ----------
+  { id: 'tee-routine', t: '35-Swing Tee Routine', c: 'Hitting', k: 'routine', m: 15, p: 11,
+    s: 'Six tee locations, each with a target result off the bat. No more than 15 minutes.',
+    f: '“If you want to be average, then do the bare minimum.” Focus on the result you want off the bat at each location.',
+    b: ['## Think about',
+      'Good base with strong legs, good balance', 'Location of the tee relative to contact point (inside vs. outside)', 'Start with eyes toward the pitcher (visualize)', 'Leave head and eyes at contact',
+      '## The routine',
+      '5 warm-up swings, middle, belt high',
+      '> Result: line drive up the middle to the back of the cage',
+      '5 low swings, middle, bottom of the zone',
+      '> Result: low line drive off the pitching rubber. Use your legs to get down to it',
+      '5 high swings, middle, top of the zone',
+      '> Result: line drive to the back of the cage without hitting the top. Strong top hand, no pop-ups',
+      '5 outside swings, outside corner, belt high, deep in the zone',
+      '> Result: line drive over the opposite middle infielder into the gap. Same swing, different contact point. Don’t carve it',
+      '5 inside swings, inside corner, belt high, out front',
+      '> Result: home run or double in the gap. Down the line means too far in front',
+      '10 challenge swings, middle, belt high',
+      '> How many of 10 hit the back net without touching the ground or top of the cage?'] },
+  { id: 'mass-hitting', t: 'Mass Hitting Checkpoints', c: 'Hitting', k: 'teach', m: null, p: 10,
+    s: 'The swing sequence coaches teach and watch for in group hitting.',
+    b: ['Timing (most important)', '## Base', 'Load (gather) and stride', 'Balance', 'Hand positioning', 'Early connection', 'Point of contact', 'Finish'] },
+  { id: 'tee-top-hand', t: 'Top Hand Drill', c: 'Hitting', k: 'drill', m: 5, p: 12,
+    s: 'Choke up and grip only with the top hand. Rest the bottom hand underneath for position.',
+    f: 'Early connection from elbow to back hip.' },
+  { id: 'tee-bottom-hand', t: 'Bottom Hand Drill', c: 'Hitting', k: 'drill', m: 5, p: 12,
+    s: 'Choke up and grip only with the bottom hand. Rest the top hand above for position.',
+    f: 'Extension.' },
+  { id: 'tee-short-barrel', t: 'Short Barrel', c: 'Hitting', k: 'drill', m: 5, p: 12,
+    s: 'Top hand just above the grip, bottom hand at the top of the grip. Full swings.',
+    f: 'Quick hands and extension.' },
+  { id: 'tee-split-grip', t: 'Split Grip', c: 'Hitting', k: 'drill', m: 5, p: 12,
+    s: 'Bottom hand at the knob, top hand about three inches above. Full swings.',
+    f: 'Keeping hands inside the baseball, and extension.' },
+  { id: 'tee-barry-bonds', t: 'Barry Bonds', c: 'Hitting', k: 'drill', m: 5, p: 12,
+    s: 'Tee at its highest. Every swing or two, lower it a couple of inches until it bottoms out, hitting line drives to the back net.',
+    f: 'Hand positioning.' },
+  { id: 'tee-barry-bonds-2', t: 'Barry Bonds v.2', c: 'Hitting', k: 'drill', m: 5, p: 12,
+    s: 'Tee at its lowest. First ball bounces right in front of the plate; push the bounce point farther out each swing until it’s a line drive to the back net.',
+    f: 'Hand position.' },
+  { id: 'tee-freeze', t: 'Freeze at Contact', c: 'Hitting', k: 'drill', m: 5, p: 12,
+    s: 'Full swing, freeze at contact, then finish. Barrel stays behind the hands at contact; minimize barrel movement at the freeze.',
+    f: 'Balance and keeping hands inside the baseball.' },
+  { id: 'tee-knee-drive', t: 'Knee Drive', c: 'Hitting', k: 'drill', m: 5, p: 12,
+    s: 'Load, stride, pause at 50/50 balance. Drive the back heel up and back knee toward the front knee without moving the upper body.',
+    f: 'Separation between lower and upper half. It should not feel comfortable.' },
+
+  // ---------- Infield ----------
+  { id: 'inf-mechanics', t: 'Infield Fielding: 5 Steps', c: 'Infield', k: 'teach', m: null, p: 15,
+    s: 'Ready, Charge, Triangle, Alligator, Replace and throw.',
+    f: 'Rhythm (right-handed): Right–Left–Field, Right–Left–Throw. Step on the ball; left foot lands as the ball enters the glove.',
+    b: ['## 1. Ready position', 'Knees bent, in line with feet. Feel it in your legs', 'On the balls of the feet, shoulder-width apart', 'Hands and glove at the waist', 'Pre-pitch hop: right–left–hop, land as the ball crosses the plate',
+      '## 2. Charge!', 'Stay low', 'Slow train / fast train',
+      '## 3. Triangle', 'Field the ball with a good base', 'Field it out in front (eyes behind the ball, not between your feet)',
+      '## 4. Alligator', 'Glove fingers pointed down', 'Cover the ball with the other hand', 'Soft hands: attack short hops, absorb long hops', 'Stay low, head down', 'Break thumbs to transfer', 'Replace the ball with the throwing-hand foot (come through)',
+      '## 5. Replace / come through and throw', 'Turn the foot sideways to turn the shoulders coming through the ball', 'Line up shoulders', 'Point glove or elbow at the target, step and throw'] },
+  { id: 'gb-progression', t: 'Ground Ball Progression', c: 'Infield', k: 'drill', m: 15, p: 16,
+    s: 'Rolled balls before fungos. Run it after the throwing routine and EDD’s, at a quick tempo.',
+    f: 'Don’t start by hitting fungos. Build footwork with rolled balls first.',
+    b: ['## Round 1: SS, throw to a coach/bucket or pop-up net halfway to 1st',
+      'Coach sits or stands 10–15 ft in front and rolls balls',
+      '> Right at them (glove position and footwork)', '> Forehands', '> Backhands', '> High-toss short hops (rhythm and timing)',
+      '## Round 2: half at 3rd, half receiving at 2nd',
+      'Throws to 2nd. Switch after 2–3 rounds. Same four rolls',
+      '## Round 3: half at 3rd, half in the 4-hole covering 1st',
+      'Receiver moves to cover after the roll, so throwers learn to lead a moving target. Switch after 2–3 rounds',
+      '> Same four rolls, plus slow rollers (run through to throw)'] },
+  { id: 'inf-stations', t: 'Infield Station Work', c: 'Infield', k: 'drill', m: 20, p: 17,
+    s: 'Fungos with infielders at their positions. Five stations covering every base and play.',
+    b: ['## Station 1: fungos in order 3rd, 1st, SS, 2nd', '3B tags third', '1B tags first (or uses 2B / communication)', 'SS throws to third', '2B throws to first',
+      '## Station 2: left side only, then right side after 3–5 rounds', '3B throws to first', 'SS throws to second (2B covers, turns two)', '1B throws to third', '2B throws to second (SS covers, turns two)',
+      '## Station 3: left side, then right side', '3B throws to second (2B covers, turns two)', 'SS throws to first', '1B throws to second (SS covers, turns two)', '2B throws to third with a tag',
+      '## Station 4: infield in', 'Fungos in order 3rd, SS, 2nd, 1st. Every play at home: tag, or catcher turns two to first',
+      '## Station 5: infield deep', 'Slow rollers and choppers to every position, play at first (run through to throw)', 'Bunts for corners and catcher'] },
+  { id: 'four-corner', t: 'Four Corner Drill', c: 'Infield', k: 'drill', m: 10, p: 18,
+    s: 'Even groups at each base, throwing around the horn. Hips turned, feet quick.',
+    b: ['Split the team evenly across the four bases', 'Start clockwise around the bases', 'Hips turn and feet move quickly', 'Switch to counter-clockwise anytime, adding variations:',
+      '> Inside move (the ball tells you which move)', '> Outside move', '> Add-ons: tags, coach command, free command, cross slow rollers', '> Follow your throw',
+      'Throwers hit the right spot for each variation', 'Receivers expect a bad throw and move their feet to catch with momentum toward the next target'] },
+  { id: 'four-corner-short', t: 'Four Corner: Short Distance', c: 'Infield', k: 'drill', m: 10, p: 18,
+    s: 'Same routine 20–30 ft apart. Explosive hips, quick feet, hands under control.',
+    b: ['Underhand flip', 'Overhand light throw (wrist flick)', 'Backhand flip', 'Shuffle flip', 'Any of these with follow your throw'] },
+  { id: 'dp-flips', t: 'Double Play Flips', c: 'Infield', k: 'teach', m: 10, p: 19,
+    s: 'Feeds for SS and 2B on balls at them, up the middle, and in the hole.',
+    b: ['## From SS', 'Ball at you: charge, open hips (point them at 2B), short throw', 'Up the middle: underhand flip. Field off the glove foot, move the glove so 2B sees the ball, flip off the right foot', '6-hole: backhand, pivot feet toward the target, throw',
+      '## From 2B', 'Ball at you: charge, open hips toward 2B, short throw', 'Up the middle: backhand flip. Chest down, right elbow points at target and extends straight out. Don’t stand up', '4-hole: use your momentum. Field off the side of the body, take one more step to turn (back to home) and throw. Stay low'] },
+  { id: 'dp-footwork', t: 'Double Play Footwork at 2nd', c: 'Infield', k: 'teach', m: 10, p: 19,
+    s: 'Pivot footwork for the shortstop and second baseman.',
+    f: '1 + 1 = 2. Be sure of the out at second before trying for the second out at first.',
+    b: ['## Shortstop', 'Create a throwing lane', '> Ball fielded behind the baseline: stand outside the bag', '> Ball fielded in front of the baseline: stand inside the bag', 'Inside foot on the bag', '> Right foot when outside the bag', '> Left foot when inside the bag', 'Come off the bag into the throw as the ball enters the glove',
+      '## Second base: in front or behind the bag', 'In front: left foot on the bag, step off in front as the ball enters the glove, land on the right foot to throw immediately', 'Behind: left foot on the bag, jump back behind it as the ball enters the glove, land on the right foot and throw', 'Clear a path for the sliding runner (jump back)'] },
+
+  // ---------- Outfield ----------
+  { id: 'of-positioning', t: 'Outfield Positioning', c: 'Outfield', k: 'teach', m: null, p: 20,
+    s: 'Straight-up spots, plus adjustments for two strikes and two outs.',
+    b: ['## Straight up (cover the deepest gaps where balls are hit hardest)', 'LF: in line with 1st and 2nd base, 5 steps to your right', 'CF: slightly toward the opposite gap of the hitter, to see the whole pitch', 'RF: in line with 2nd and 3rd base, 5 steps to your left',
+      '## 2 strikes', 'Weak contact is more likely with two strikes, even full count', 'All OFs move 2–5 steps in and 2–5 steps to the opposite field',
+      '## 2 outs, nobody on', 'All OFs play 2–5 steps deeper to keep the runner off second',
+      '## Notes', 'Play to your strengths: better coming in? Play a couple steps deeper, and vice versa', 'If one OF moves, everyone moves. No man left behind', 'Adjust during the game to hitter and pitcher tendencies', '> Hard thrower: shade oppo. Soft thrower: shade pull side'] },
+  { id: 'of-communication', t: 'Fly Ball Communication & Priority', c: 'Outfield', k: 'teach', m: null, p: 20,
+    s: 'Who calls it, how loud, and who has priority.',
+    b: ['Your ball: “BALL BALL BALL.” Scream it multiple times', 'Not your ball and you’re the nearest fielder: “YOU YOU YOU”', 'Everyone else yells the player’s last name as confirmation', 'Call it as early as you know it’s yours', 'Don’t call it if you’re unsure. Once it’s called, everyone else backs off',
+      '## Priority (top wins)', 'CF → corner OFs → SS → 2B → corner INFs → C → P'] },
+  { id: 'of-first-step', t: 'Outfield First Step & Ground Balls', c: 'Outfield', k: 'teach', m: null, p: 21,
+    s: 'No false steps, plus how to field balls in front, in the gap, and do-or-die.',
+    b: ['## First step', 'The ball is yours until it’s not. Once it’s decided, find work (get in position)', 'Prep step leads to a great first step. No false steps; explode off the plant foot', 'First step is only back if the ball is over your head or in the gap, or you don’t have a good read',
+      '## Ground ball in front, nobody on', 'Charge, drop to a knee, secure it in front with the glove on the ground',
+      '## Ground ball in front, runners on', 'Charge and know where the ball is going', 'Stay on your feet, field it coming through, outside the glove-side foot, straight into a crow hop',
+      '## In the gap', 'Good angle. No banana routes', 'Harder hit = deeper angle', 'Get the ball out quick to stop runners advancing',
+      '## Do or die (rare: an out HAS to be made, ball in front)', 'Charge at full speed', 'Field it outside the non-glove-side foot for a smooth crow hop', 'Strong throw through the cut-off man'] },
+  { id: 'of-fly-balls', t: 'Catching Fly Balls', c: 'Outfield', k: 'teach', m: null, p: 22,
+    s: 'Get behind it and come through it, unless nobody is on or there are two outs.',
+    f: 'Outfielders always throw to a base, through the cut-off man. If the cut isn’t lined up, that’s on the cut.',
+    b: ['## In front', 'Catch in front of your face or on the throwing shoulder as the glove-side foot plants, creating momentum into the crow hop',
+      '## In the gap', 'Good first step toward the trajectory, then RUN', 'Get around it and come through it whenever you can', 'Catching on the run: chop the feet, wide base, set and throw',
+      '## Behind', 'Turn and run, hips turning on the first step', 'Keep eyes on the ball if you can; otherwise run with your head pointed where you’re going',
+      '## One hand or two?', 'Two hands only when camped under it with nobody on or two outs', 'Otherwise one hand: more range, and the throwing arm doesn’t waste energy coming forward and back'] },
+  { id: 'foul-line', t: 'Foul Line Drill', c: 'Outfield', k: 'drill', m: 5, p: 23,
+    s: 'Run full speed straight back while locating the ball and head-whipping. No ball needed.',
+    f: 'Running full speed while locating the ball, staying in a straight line, proper head whip.',
+    b: ['Line up at 1st or 3rd facing home', 'Good first step straight back', 'Head toward home; every 3–4 steps whip to look over the other shoulder (outside turn)', 'Do 3–4 whips at full speed staying on the line. No line? Use cones'] },
+  { id: 'first-step-drill', t: 'First Step Drill', c: 'Outfield', k: 'drill', m: 5, p: 23,
+    s: 'Prep step, coach points, player takes 2–3 explosive steps that way.',
+    f: 'Better first steps; eliminate false steps.' },
+  { id: 'knee-drives', t: 'Knee Drives', c: 'Outfield', k: 'drill', m: 5, p: 23,
+    s: 'Partner drill. Kneel on the throwing-side knee, glove open on the ground; partner rolls it in and the player explodes forward one step with hips turned to throw.' },
+  { id: 'pull-downs', t: 'Pull Downs', c: 'Outfield', k: 'drill', m: 5, p: 23,
+    s: 'Working in from catch play, throw low as if through a cut-off man, long-hopping your partner. A hat 10–15 ft in front marks the landing spot.' },
+  { id: 'quarterbacks', t: 'Quarterbacks', c: 'Outfield', k: 'drill', m: 10, p: 24,
+    s: 'Player preps, coach points, player breaks, coach throws a dime on the run.',
+    b: ['Players line up behind the coach, each with a ball', 'One player stands 5 ft in front facing out, takes a prep step, then explodes where the coach points', 'Directions: back-left, back-right, straight back, head whip left, head whip right', 'Variation: start on an elevated surface (box, chair) and explode on the hop down'] },
+  { id: 'foam-ball', t: 'Foam Ball Forehead', c: 'Outfield', k: 'drill', m: 5, p: 24,
+    s: 'Toss a foam ball from 20–30 ft; the player gets behind it, runs through it and heads it back. Hats off.',
+    f: 'Come through the baseball and catch it in front of the face.' },
+  { id: 'gauntlet', t: 'Gauntlet', c: 'Outfield', k: 'drill', m: 5, p: 25,
+    s: '10×10 ft cone square (adjust by age). Coach throws from a few feet away; the player can’t leave until they catch 5.',
+    f: 'Good first step, explosiveness, finding the ball.' },
+  { id: 'spot-drill', t: 'Spot Drill', c: 'Outfield', k: 'drill', m: 10, p: 25,
+    s: 'Off a fungo: on contact the player runs to where they think it lands, then turns to find it. Goal: ball lands 3–5 ft in front.',
+    f: 'Track the ball off the bat to create perfect first steps.' },
+  { id: 'locating-ball', t: 'Locating the Ball', c: 'Outfield', k: 'drill', m: 5, p: 25,
+    s: 'Player faces away. On the sound of contact (or “GO”), turn, find it, catch it. Wait longer to make it harder.' },
+
+  // ---------- Catching ----------
+  { id: 'catcher-stances', t: 'Catcher Stances', c: 'Catching', k: 'teach', m: null, p: 26,
+    s: 'Primary and secondary stance.',
+    b: ['Primary: comfortable for the catcher but athletically poised', 'Secondary: required with two strikes or anyone on base'] },
+  { id: 'receiving', t: 'Receiving Progression', c: 'Catching', k: 'drill', m: 10, p: 26,
+    s: 'Build from eyes and head to live reps.',
+    b: ['Eyes / head focus', 'Drops', 'Fingers', 'Rapid fire', 'Live reps', 'Close the gap', 'Work pitch challenge'] },
+  { id: 'catcher-throwing', t: 'Catcher Throwing Drills', c: 'Catching', k: 'drill', m: 10, p: 26,
+    s: 'Transfer and footwork for throw-downs.',
+    b: ['Transfers', 'Stay low', 'Catch it deep', 'Great feet'] },
+  { id: 'blocking', t: 'Blocking Progression', c: 'Catching', k: 'drill', m: 10, p: 26,
+    s: 'From knees to live burn-out blocks.',
+    b: ['Knees with hip sink (hands up)', 'Short toss', 'Shadow drills', 'Short toss side-to-side', 'Live blocks (vary throws), burn out'] },
+
+  // ---------- Base Running ----------
+  { id: 'home-to-first', t: 'Home to First', c: 'Base Running', k: 'teach', m: 10, p: 27,
+    s: 'Run-through vs. rounding the bag, by where the ball goes.',
+    f: 'SCORE. Whatever base you start on, expect to score. Aggression puts pressure on the defense.',
+    b: ['## Ground ball in the infield', 'Run hard out of the box, peek to see where the ball is', 'Run straight through, touching the near side of the base', 'Break down (wide base), look right for an overthrow', 'Turn to the outside whether going back or going to second',
+      '## Ground ball through the infield', 'Peek; once it’s through, start your round', 'Width of the round depends on the runner’s speed', 'Touch the inside corner of the base; make a straight line toward second', 'First is guaranteed. Shorten the distance to second and try to take it',
+      '## Base hit', 'Start your round out of the box. Pick a line and stick to it', 'Turning toward second: dip the left shoulder, drive the legs to keep speed', 'Touch the inside corner; straight line toward second'] },
+  { id: 'first-base-leads', t: 'First Base Leads & Steals', c: 'Base Running', k: 'teach', m: 10, p: 27,
+    s: 'Primary lead, secondary lead and the steal jump at first.',
+    b: ['## Primary lead', 'Left foot first, then right foot out: 3 to 3½ shuffles. Don’t cross your feet', 'A step and a dive back. Too far if the arm doesn’t reach or is bent touching the base', 'Ball of the right foot in line with the left heel: slightly open toward second for a better jump',
+      '## Secondary lead', 'Two shuffles. Hard off, hard back. DON’T LINGER', 'Starts when the pitcher’s momentum goes home',
+      '## Stealing', 'The first step (jump) is most important', 'Bad jump? Shut it down into a secondary', 'After a couple of steps, peek in for contact', 'GET DIRTY'] },
+  { id: 'second-base-leads', t: 'Second Base Leads', c: 'Base Running', k: 'teach', m: 10, p: 28,
+    s: 'Leads with 0–1 outs vs. 2 outs, secondary, and stealing third.',
+    b: ['## Primary lead, 0–1 outs', 'In line with, or one step behind, the 2B–3B line. Be aggressive getting to third', 'With 0 outs it must be 100%. Don’t make the first out at third', 'Off as far as the closest middle infielder; never shorter than a step and a dive', 'Coach talks: “Off one” · “Back one” · “You’re good” (nobody holding) · “BACK”', 'Slowly chop the feet gaining ground; shuffle with the middle infielders as they move',
+      '## Secondary lead', 'Two shuffles. Hard off, hard back. Don’t linger', 'Starts when the pitcher’s momentum goes home',
+      '## Stealing third', 'COMMIT: pick how many looks the pitcher takes (0–2) and learn the timing', 'Shuffle once or twice after that many looks. If he pitches, take third. If he looks again or holds, shut it down',
+      '## Primary lead, 2 outs', 'As deep as the shortstop (in his front pocket). If 2B is closer, off as far as him but as deep as SS', 'Deep lead creates the best angle home', 'Never make the third out at third. Aggressive on passed balls, but don’t steal'] },
+  { id: 'third-base-leads', t: 'Third Base Leads', c: 'Base Running', k: 'teach', m: 5, p: 29,
+    s: 'Short primary, aggressive timed secondary toward home.',
+    b: ['Primary: short, only a couple of steps off', 'Secondary: left–right–hop, hips turn toward home', 'Timing: start when the pitcher’s momentum goes home; the ball should cross the plate on the final hop', 'Full shuffles, not small steps. Hard off, hard back. Don’t linger', 'Read: in the air vs. ground ball'] },
+  { id: 'steal-breaks', t: 'Steal Breaks', c: 'Base Running', k: 'drill', m: 5, p: 32,
+    s: 'Whole team on the foul line, coach acts as the pitcher. Match the opposing starter’s arm side on game day.',
+    b: ['5 reps: 2 straight steals, 1 hit & run, 1 delay, 1 straight full distance'] },
+
+  // ---------- Speed ----------
+  { id: 'speed-workout', t: 'Speed Workout', c: 'Speed', k: 'routine', m: 20, p: 30,
+    s: 'Get to top speed faster and raise top speed. 3× a week with a rest day between. Not conditioning.',
+    f: 'Sprints start from a base-stealing position with a strong first step. Rest until the heart rate is close to resting between sets.',
+    b: ['## 3 × 30 sec high knees', 'No arm pump; explosiveness from the legs', 'Knees at least hip height', 'As many reps as possible; build up to 1 minute', 'Focus: hip flexors',
+      '## 6 × 100 ft full-stride sprints', 'Almost a bound: every stride as far and high as possible', 'Pump the arms hard, reaching out in front. It will look goofy', 'Focus: entire lower body',
+      '## 10 × 10 ft short-burst sprints', 'Top speed in a short distance: 4–6 strides, don’t pitter-patter', 'Chest low; it rises naturally as you reach top speed', 'Punch the left arm through on the first step', 'Focus: explosive first step and acceleration steps',
+      '! Coach Dearing’s record after doing this workout: 7 SB in 2018, 21-for-24 in 2019, and 24-for-27 leading the GNAC in 2021.'] },
+];
+const DRILL = Object.fromEntries(DRILLS.map(d => [d.id, d]));
+
+const TEMPLATES = {
+  '60':  { name: '1 Hour', blurb: 'Warm-up and two drill blocks', blocks: [['Pray', 2], ['Dynamic Warm-Up', 8, ['dynamic-warmup']], ['Block 1', 25], ['Block 2', 25], ['Pray & Dismiss', 0]] },
+  '90':  { name: '1.5 Hours', blurb: 'Adds base running and EDD’s', blocks: [['Pray', 2], ['Dynamic Warm-Up', 8, ['dynamic-warmup']], ['Base Running', 10], ["EDD's", 10, ['edd']], ['Block 1', 30], ['Block 2', 30], ['Pray & Dismiss', 0]] },
+  '120': { name: '2 Hours', blurb: 'Defensive focus with game scenarios and devo', blocks: [['Pray', 2], ['Dynamic Warm-Up', 8, ['dynamic-warmup']], ['Base Running', 20], ['Catch Play', 15, ['throwing-program']], ["EDD's", 10, ['edd']], ['Individual Defensive Work', 20], ['Team Defense', 20], ['Game-Like Scenarios (live offense / baserunners)', 15], ['Devo', 10], ['Pray & Dismiss', 0]] },
+  '150': { name: '2.5 Hours', blurb: 'Offensive focus with on-field BP and live pitching', blocks: [['Pray', 2], ['Dynamic Warm-Up', 8, ['dynamic-warmup']], ['Base Running', 20], ['Catch Play', 15, ['throwing-program']], ["EDD's", 10, ['edd']], ['Offensive Drill Work', 20, ['tee-routine']], ['On-Field BP', 45], ['Game Scenarios / Live Pitching', 20], ['Devo', 10], ['Pray & Dismiss', 0]] },
+};
+
+const PREGAME = [
+  ['Devotion', 5, 'Start ON TIME. Remind late players why punctuality matters.'],
+  ['Jog to CF & pray', 4, 'Gloves neatly on the foul line, jog to the CF fence as a team, one player leads prayer, jog back together.'],
+  ['Dynamic warm-up', 8, 'Same warm-up menu as practice.'],
+  ['Hitting stations', 12, '2–3 stations (bownet, wiffle, extra). 3 hit, 3 toss, rest shag. Rotate every 5–6 swings; get through each station twice.'],
+  ['Catch play', 8, 'Starting pitcher plays catch with the starting catcher.'],
+  ['Defensive work', 8, 'Starters at positions. Grounder to INF → throw to C; fly to OF → INF → shagger. Set the tone with tempo and communication. Starting battery warms up in the pen.'],
+  ['Steal breaks', 4, 'Match the opposing starter’s arm side. 2 straight, 1 hit & run, 1 delay, 1 full distance.'],
+  ['Final thoughts', 3, 'Share final thoughts before first pitch.'],
+];
+
+const CHECKLIST = [
+  ['Miscellaneous', [
+    ['Dugout etiquette', 'Bag placement, coach’s corner, pick up teammates'],
+    ['Look like a ball player', 'Belts, hats, jerseys tucked in'],
+    ['Warm-up routine', 'Dynamic stretch, throwing program, EDD’s'],
+    ['On/off the field tempo', ''],
+    ['Ready step / hop (prep step)', ''],
+    ['Arm care', ''],
+  ]],
+  ['Offense', [
+    ['Base running: home to first', ''],
+    ['Base running: first base', 'Leads, ball-in-dirt reads, steal breaks'],
+    ['Base running: second base', 'Leads, reads'],
+    ['Base running: third base', 'Leads, reads (in the air vs. ground balls)'],
+    ['Quality at-bats', ''],
+    ['Offensive standard signs', ''],
+    ['Offensive automatic signs', ''],
+  ]],
+  ['Defense', [
+    ['OF drop steps', ''],
+    ['Cuts / relays', ''],
+    ['Pop fly priority', ''],
+    ['1st & 3rd defense', ''],
+    ['Bunt defense', ''],
+    ['Pitchers fielding positions routine', ''],
+    ['Pickoffs at each base', 'SS / 2B signs'],
+    ['Rundowns', ''],
+    ['Defensive positioning', 'No doubles, INF in / halfway / back'],
+  ]],
+];
+
+const MANDATE = [
+  'Pray as though nothing of eternal value is going to happen in my athletes’ lives unless God does it.',
+  'Prepare each practice and game, giving my utmost for His highest.',
+  'Seek not to be served by my athletes for personal gain, but serve them as Christ served the church.',
+  'Be satisfied not with producing a winning record, but with producing winning athletes.',
+  'Attend carefully to my private and public walk with God, knowing that the athlete will never rise to a standard higher than that being lived by the coach.',
+  'Glorify Christ in my coaching, trusting the Lord will then draw athletes to Himself.',
+  'Desire to have a growing hunger for God’s Word, a transformed heart and daily obedience.',
+  'Depend solely upon God for transformation, one athlete at a time.',
+  'Live out Christ’s word in a Christ-like manner, on and off the field of competition.',
+  'Recognize that it is impossible to bring glory to both myself and Christ at the same time.',
+  'Allow my coaching to produce the fruit of the Spirit, thus producing athletes who are authentic followers of Christ.',
+  'Trust God to reveal to my athletes His chosen purposes, regardless of whether the wins are clearly visible.',
+  'Coach with humble gratitude, as one privileged to be God’s coach.',
+];
+
+const FREEBIES = [['BB', 'Walk'], ['HBP', 'Hit by pitch'], ['WP', 'Wild pitch'], ['PB', 'Passed ball'], ['E', 'Error'], ['Bonehead', 'Silly mental mistake']];
+const BASES2 = [
+  ['B', 'Big Inning', 'Crooked number, 3+ (adjust by age)'],
+  ['A', 'Answer Back', 'Score after giving up runs'],
+  ['S', 'Score First', 'Home or away'],
+  ['E', 'Extend the Lead', 'Score in a separate inning after taking the lead'],
+  ['S', 'Shutdown Inning', 'Zero on defense right after scoring'],
+  ['2', 'Score with 2 Outs', 'Exactly what it sounds like'],
+];
+
+/* =========================================================================
+   STATE — saved in this browser only (localStorage).
+   ========================================================================= */
+const KEY = 'fcaSportsWay.v1';
+const uid = () => Math.random().toString(36).slice(2, 9);
+const today = () => { const d = new Date(); d.setMinutes(d.getMinutes() - d.getTimezoneOffset()); return d.toISOString().slice(0, 10); };
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
+function planFromTemplate(key, name) {
+  const t = TEMPLATES[key];
+  return {
+    id: uid(), name: name || `${t.name} Practice`, date: today(), start: '16:00', focus: 'Team', notes: '',
+    blocks: t.blocks.map(([title, min, drills]) => ({ id: uid(), title, min, drills: [...(drills || [])] })),
+  };
+}
+function blankGame() {
+  return {
+    opp: '', date: today(), time: '18:00', loc: '', notes: '',
+    roster: Array.from({ length: 11 }, () => ({ id: uid(), num: '', name: '', pos: '' })),
+    innings: 6, rotate: true, grid: {}, order: [],
+    arms: [{ id: uid(), name: '', role: 'Starter', limit: 60, log: [] }, { id: uid(), name: '', role: 'Relief', limit: 30, log: [] }],
+    qab: 0, free: { us: {}, them: {} }, bases: {},
+  };
+}
+function seedState() {
+  const ex = planFromTemplate('90', 'Example: 1.5 Hour Defense Day');
+  ex.focus = 'Defense';
+  ex.blocks[2].drills = ['home-to-first'];
+  ex.blocks[4].title = 'Block 1: Infield';
+  ex.blocks[4].drills = ['gb-progression', 'four-corner'];
+  ex.blocks[5].title = 'Block 2: Outfield';
+  ex.blocks[5].drills = ['foul-line', 'quarterbacks', 'spot-drill'];
+  ex.notes = 'Example plan. Edit it or start a new one from a template.';
+  const devo = blankDevo();
+  return { v: 1, plans: [ex], cur: ex.id, game: blankGame(), checks: {}, devos: [devo], curDevo: devo.id };
+}
+function blankDevo() {
+  return { id: uid(), title: '', date: today(), setting: 'Practice', leader: '', hook: '', scripture: '', bigIdea: '', points: '', questions: ['', '', ''], challenge: '', prayer: '' };
+}
+function loadState() {
+  try {
+    const s = JSON.parse(localStorage.getItem(KEY));
+    if (s && s.v === 1 && s.plans?.length) {
+      if (!s.game?.roster) s.game = blankGame();
+      if (!s.devos?.length) { const d = blankDevo(); s.devos = [d]; s.curDevo = d.id; }
+      return s;
+    }
+  } catch (e) {}
+  return seedState();
+}
+let state = loadState();
+function save() {
+  clearTimeout(save.t);
+  save.t = setTimeout(() => { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {} }, 200);
+}
+const ui = { bunt: 1, tab: 'practice', newOpen: false, confirm: null, q: '', cat: 'All', gameTab: 'plan' };
+const curPlan = () => state.plans.find(p => p.id === state.cur) || state.plans[0];
+
+/* ========================== helpers ========================== */
+function toMin(hhmm) { const [h, m] = String(hhmm || '0:0').split(':').map(Number); return (h || 0) * 60 + (m || 0); }
+function clock(total) {
+  total = ((total % 1440) + 1440) % 1440;
+  const h = Math.floor(total / 60), m = total % 60;
+  return `${((h + 11) % 12) + 1}:${String(m).padStart(2, '0')} ${h < 12 ? 'AM' : 'PM'}`;
+}
+const clockShort = t => clock(t).replace(/ (AM|PM)$/, '');
+const offset = m => `${Math.floor(m / 60)}:${String(m % 60).padStart(2, '0')}`;
+function fmtDate(iso) {
+  if (!iso) return '';
+  const d = new Date(iso + 'T12:00:00');
+  return isNaN(d) ? iso : d.toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' });
+}
+function toast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg; el.hidden = false;
+  clearTimeout(toast.t); toast.t = setTimeout(() => { el.hidden = true; }, 2200);
+}
+async function copyText(text, label) {
+  try { await navigator.clipboard.writeText(text); toast(`${label} copied. Paste it into a text or email.`); }
+  catch (e) { showText(text, label); }
+}
+
+function renderBody(d) {
+  let html = '';
+  if (d.f) html += `<p class="focus">${esc(d.f)}</p>`;
+  if (d.b) {
+    let open = false;
+    const close = () => { if (open) { html += '</ul>'; open = false; } };
+    for (const item of d.b) {
+      if (item.startsWith('## ')) { close(); html += `<h4>${esc(item.slice(3))}</h4>`; }
+      else if (item.startsWith('! ')) { close(); html += `<p>${esc(item.slice(2))}</p>`; }
+      else {
+        if (!open) { html += '<ul>'; open = true; }
+        html += item.startsWith('> ') ? `<li class="subli">${esc(item.slice(2))}</li>` : `<li>${esc(item)}</li>`;
+      }
+    }
+    close();
+  }
+  return `<div class="prose">${html}</div>`;
+}
+const drillMeta = d => `<div class="meta"><span class="tag">${esc(d.c)}</span><span class="kind">${KINDS[d.k]}</span>${d.m ? `<span>${d.m} min</span>` : ''}<span>Guide p. ${d.p}</span></div>`;
+
+/* ========================== PRACTICE ========================== */
+function planTimes(plan) {
+  let t = 0;
+  return plan.blocks.map(b => { const at = t; t += Math.max(0, Number(b.min) || 0); return at; });
+}
+function planTotal(plan) { return plan.blocks.reduce((s, b) => s + Math.max(0, Number(b.min) || 0), 0); }
+
+function renderPractice() {
+  const plan = curPlan();
+  const start = toMin(plan.start);
+  const times = planTimes(plan);
+  const total = planTotal(plan);
+  const confirmDel = ui.confirm === 'plan';
+
+  const tpl = Object.entries(TEMPLATES).map(([k, t]) => `<button class="tpl" data-act="newPlan" data-tpl="${k}"><b>${t.name}</b><span>${esc(t.blurb)}</span></button>`).join('');
+
+  const rows = plan.blocks.map((b, i) => {
+    const isEnd = i === plan.blocks.length - 1 && /dismiss/i.test(b.title);
+    const isPrayer = /pray|devo/i.test(b.title);
+    const chips = b.drills.map((id, j) => DRILL[id] ? `<li class="chip"><button class="open" data-act="viewDrill" data-id="${id}">${esc(DRILL[id].t)}</button><button aria-label="Remove ${esc(DRILL[id].t)}" data-act="rmDrill" data-bid="${b.id}" data-j="${j}">×</button></li>` : '').join('');
+    return `<li class="blk${isEnd ? ' end' : ''}${isPrayer ? ' prayer' : ''}">
+      <div class="clock"><b>${clockShort(start + times[i])}</b><span>${offset(times[i])}</span></div>
+      <div class="blk-main">
+        <div class="blk-head">
+          <label class="sr" for="bt-${b.id}">Block name</label>
+          <input type="text" class="blk-title" id="bt-${b.id}" value="${esc(b.title)}" data-bf="title" data-bid="${b.id}">
+          <div class="mins">
+            <button aria-label="5 minutes less" data-act="minStep" data-bid="${b.id}" data-d="-5">−</button>
+            <label class="sr" for="bm-${b.id}">Minutes</label>
+            <input type="number" inputmode="numeric" min="0" step="5" id="bm-${b.id}" value="${Number(b.min) || 0}" data-bf="min" data-bid="${b.id}">
+            <small>min</small>
+            <button aria-label="5 minutes more" data-act="minStep" data-bid="${b.id}" data-d="5">+</button>
+          </div>
+        </div>
+        ${chips ? `<ul class="chips">${chips}</ul>` : ''}
+        <div class="blk-actions">
+          <button class="btn sm" data-act="pick" data-bid="${b.id}">+ Add drill</button>
+          <button class="btn sm ghost" data-act="moveBlk" data-bid="${b.id}" data-d="-1" ${i === 0 ? 'disabled' : ''} aria-label="Move up">↑</button>
+          <button class="btn sm ghost" data-act="moveBlk" data-bid="${b.id}" data-d="1" ${i === plan.blocks.length - 1 ? 'disabled' : ''} aria-label="Move down">↓</button>
+          <button class="btn sm ghost danger" data-act="rmBlk" data-bid="${b.id}">Remove</button>
+        </div>
+      </div>
+    </li>`;
+  }).join('');
+
+  return `
+  <div class="view-head">
+    <div class="eyebrow">Practice · The 5 P’s: Proper Preparation Prevents Poor Performance</div>
+    <h1 class="title">Practice Plan</h1>
+    <p class="lede">Start from a guide template, drop drills into each block, then copy the plan to your assistant coaches. Keep the start of practice the same every time.</p>
+  </div>
+
+  <section class="panel toolbar" aria-label="Saved plans">
+    <div class="row">
+      <label class="field"><span>Your plans</span>
+        <select id="planSel" data-change="selPlan">${state.plans.map(p => `<option value="${p.id}" ${p.id === plan.id ? 'selected' : ''}>${esc(p.name || 'Untitled practice')}${p.date ? ' · ' + esc(fmtDate(p.date)) : ''}</option>`).join('')}</select>
+      </label>
+      <button class="btn ${ui.newOpen ? '' : 'primary'}" data-act="toggleNew">${ui.newOpen ? 'Cancel' : 'New plan'}</button>
+    </div>
+    ${ui.newOpen ? `<div class="templates">${tpl}<button class="tpl" data-act="dupPlan"><b>Copy this plan</b><span>Duplicate “${esc(plan.name)}”</span></button></div>` : ''}
+  </section>
+
+  <section class="panel" aria-label="Practice plan">
+    <div class="row">
+      <label class="field" style="flex-basis:100%"><span>Plan name</span><input type="text" id="planName" value="${esc(plan.name)}" data-pf="name"></label>
+      <label class="field"><span>Date</span><input type="date" id="planDate" value="${esc(plan.date)}" data-pf="date"></label>
+      <label class="field"><span>Start time</span><input type="time" id="planStart" value="${esc(plan.start)}" data-pf="start"></label>
+    </div>
+    <div class="row" style="align-items:center">
+      <span class="field" style="flex:0 0 auto"><span>Focus</span></span>
+      <div class="seg" role="group" aria-label="Practice focus">${['Offense', 'Defense', 'Team'].map(f => `<button data-act="focus" data-f="${f}" aria-pressed="${plan.focus === f}">${f}</button>`).join('')}</div>
+    </div>
+
+    <ol class="timeline">${rows}</ol>
+
+    <div class="row" style="justify-content:space-between;align-items:center">
+      <div class="summary"><span>Total <b>${offset(total)}</b></span><span>Ends <b>${clock(start + total)}</b></span></div>
+      <button class="btn" data-act="addBlk">+ Add block</button>
+    </div>
+
+    <label class="field"><span>Notes for coaches</span><textarea id="planNotes" data-pf="notes" placeholder="Who runs each station, equipment, reminders…">${esc(plan.notes)}</textarea></label>
+
+    <div class="row no-print">
+      <button class="btn primary" data-act="pdf" data-kind="practice" data-mode="save">Save PDF</button>
+      <button class="btn" data-act="pdf" data-kind="practice" data-mode="print">Print</button>
+      <button class="btn" data-act="copyPlan">Copy as text</button>
+      <label class="check-inline" for="pdfDrills"><input type="checkbox" id="pdfDrills" data-opt="pdfDrills" ${ui.pdfDrills !== false ? 'checked' : ''}> Include drill sheets</label>
+      ${confirmDel
+        ? `<span class="callout">Delete this plan for good?</span><button class="btn danger" data-act="delPlan">Delete</button><button class="btn ghost" data-act="cancelConfirm">Keep it</button>`
+        : `<button class="btn ghost danger" data-act="askDelPlan">Delete plan</button>`}
+    </div>
+  </section>`;
+}
+
+function planText(plan) {
+  const start = toMin(plan.start), times = planTimes(plan);
+  const lines = [`${plan.name || 'Practice'}`, `${fmtDate(plan.date)} · ${clock(start)} · ${plan.focus} focus`, ''];
+  plan.blocks.forEach((b, i) => {
+    lines.push(`${clockShort(start + times[i])} (${offset(times[i])})  ${b.title}${b.min ? ` · ${b.min} min` : ''}`);
+    b.drills.forEach(id => DRILL[id] && lines.push(`   • ${DRILL[id].t}`));
+  });
+  lines.push('', `Ends ${clock(start + planTotal(plan))}`);
+  if (plan.notes.trim()) lines.push('', 'Notes:', plan.notes.trim());
+  return lines.join('\n');
+}
+
+/* ========================== DRILLS ========================== */
+function filteredDrills(q, cat) {
+  q = q.trim().toLowerCase();
+  return DRILLS.filter(d => (cat === 'All' || d.c === cat) &&
+    (!q || [d.t, d.c, d.s, d.f, ...(d.b || [])].join(' ').toLowerCase().includes(q)));
+}
+function renderDrills() {
+  const list = filteredDrills(ui.q, ui.cat);
+  const counts = Object.fromEntries(CATS.map(c => [c, DRILLS.filter(d => d.c === c).length]));
+  return `
+  <div class="view-head">
+    <div class="eyebrow">Drill library · ${DRILLS.length} entries</div>
+    <h1 class="title">Every drill, routine and teaching point in the guide</h1>
+    <p class="lede">Search or filter, tap a card for the full write-up, and add it straight to a practice block.</p>
+  </div>
+  <section class="panel">
+    <label class="field"><span>Search</span><input type="search" id="q" value="${esc(ui.q)}" placeholder="Try “double play”, “tee”, “leads”…" data-input="q"></label>
+    <div class="chips" role="group" aria-label="Category">
+      ${['All', ...CATS].map(c => `<button class="filter" data-act="cat" data-cat="${c}" aria-pressed="${ui.cat === c}">${c}${c !== 'All' ? ` <small>${counts[c]}</small>` : ''}</button>`).join('')}
+    </div>
+  </section>
+  <section class="lib-grid" id="libGrid">${libCards(list)}</section>`;
+}
+function libCards(list) {
+  if (!list.length) return `<p class="empty">No drills match. Try a shorter search or pick “All”.</p>`;
+  return list.map(d => `<button class="card" data-act="viewDrill" data-id="${d.id}">${drillMeta(d)}<h3>${esc(d.t)}</h3><p>${esc(d.s)}</p></button>`).join('');
+}
+
+/* ========================== GAME DAY ========================== */
+function renderGame() {
+  const g = state.game;
+  const tabs = [['plan', 'Game plan'], ['lineup', 'Lineup card'], ['signs', 'Signs'], ['track', 'Live tracker']];
+  const body = { plan: gamePlan, lineup: gameLineup, signs: gameSigns, track: gameTrack }[ui.gameTab]();
+  return `
+  <div class="view-head">
+    <div class="eyebrow">Game day${g.opp ? ' · vs ' + esc(g.opp) : ''}</div>
+    <h1 class="title">Win the freebie war</h1>
+    <p class="lede">Lineup card, pregame schedule, organization-wide signs and an in-game tracker for QAB’s, freebies and BASES2. Hitting and pitching approach live under Resources.</p>
+  </div>
+  <div class="seg" role="group" aria-label="Game day section">${tabs.map(([k, l]) => `<button data-act="gameTab" data-k="${k}" aria-pressed="${ui.gameTab === k}">${l}</button>`).join('')}</div>
+  ${body}`;
+}
+
+function gamePlan() {
+  const g = state.game;
+  const fp = toMin(g.time);
+  const pgTotal = PREGAME.reduce((s, x) => s + x[1], 0);
+  let t = fp - pgTotal;
+  const pregame = PREGAME.map(([title, min, note]) => { const at = t; t += min; return `<li><div class="clock"><b>${clockShort(at)}</b><span>${min} min</span></div><div><strong>${esc(title)}</strong><span>${esc(note)}</span></div></li>`; }).join('');
+  const arms = g.arms.map(a => `<div class="row">
+    <label class="field"><span>Pitcher</span><input type="text" id="an-${a.id}" value="${esc(a.name)}" data-arm="name" data-aid="${a.id}" placeholder="Name"></label>
+    <label class="field" style="flex:0 1 120px"><span>Role</span><select id="ar-${a.id}" data-arm="role" data-aid="${a.id}">${['Starter', 'Relief', 'Closer', 'Available'].map(r => `<option ${a.role === r ? 'selected' : ''}>${r}</option>`).join('')}</select></label>
+    <label class="field" style="flex:0 1 110px"><span>Pitch limit</span><input type="number" inputmode="numeric" min="0" id="al-${a.id}" value="${esc(a.limit)}" data-arm="limit" data-aid="${a.id}"></label>
+    <button class="btn ghost danger sm" data-act="rmArm" data-aid="${a.id}" aria-label="Remove pitcher">Remove</button>
+  </div>`).join('');
+  return `
+  <section class="panel">
+    <div class="row">
+      <label class="field" style="flex-basis:100%"><span>Opponent</span><input type="text" id="gOpp" value="${esc(g.opp)}" data-gf="opp" placeholder="Opponent"></label>
+      <label class="field"><span>Date</span><input type="date" id="gDate" value="${esc(g.date)}" data-gf="date"></label>
+      <label class="field"><span>First pitch</span><input type="time" id="gTime" value="${esc(g.time)}" data-gf="time" data-rerender="1"></label>
+      <label class="field"><span>Field</span><input type="text" id="gLoc" value="${esc(g.loc)}" data-gf="loc" placeholder="Location"></label>
+    </div>
+  </section>
+  <div class="two">
+    <section class="panel">
+      <h2 class="sec">Pregame routine</h2>
+      <p class="lede" style="font-size:14px">Counts back from first pitch. Arrive by <b>${clock(fp - pgTotal)}</b> (${pgTotal} min). Times are suggestions for a 45–60 min window.</p>
+      <ol class="pregame">${pregame}</ol>
+    </section>
+    <section class="panel" style="align-content:start">
+      <h2 class="sec">Lineup</h2>
+      ${g.order.length
+        ? `<ol class="prose" style="margin:0;padding-left:22px">${lineupRows().map(r => `<li>${esc(r.label)}${r.first !== 'BN' ? ` <small style="color:var(--muted)">${r.first}</small>` : ' <small style="color:var(--muted)">bench to start</small>'}</li>`).join('')}</ol>`
+        : `<p class="lede" style="font-size:15px">No lineup yet. Enter your roster and generate a batting order and position chart.</p>`}
+      <div><button class="btn" data-act="gameTab" data-k="lineup">${g.order.length ? 'Edit lineup card' : 'Build lineup card'}</button></div>
+    </section>
+  </div>
+  <section class="panel">
+    <h2 class="sec">Pitching plan</h2>
+    <p class="lede" style="font-size:14px">Pitch to contact: under 15 pitches an inning. Set limits here; count pitches in the Live tracker.</p>
+    ${arms}
+    <div><button class="btn" data-act="addArm">+ Add pitcher</button></div>
+  </section>
+  <section class="panel">
+    <label class="field"><span>Scouting & game notes</span><textarea id="gNotes" data-gf="notes" placeholder="Opponent tendencies, their pitcher’s arm side, field notes…">${esc(g.notes)}</textarea></label>
+    <div class="row no-print">
+      <button class="btn primary" data-act="copyGame">Copy game plan</button>
+      <button class="btn" data-act="print">Print</button>
+      ${ui.confirm === 'game'
+        ? `<span class="callout">Clear the lineup, pitchers, notes and tracker?</span><button class="btn danger" data-act="newGame">Clear</button><button class="btn ghost" data-act="cancelConfirm">Keep</button>`
+        : `<button class="btn ghost danger" data-act="askNewGame">New game</button>`}
+    </div>
+  </section>`;
+}
+function gameText() {
+  const g = state.game, fp = toMin(g.time);
+  const pgTotal = PREGAME.reduce((s, x) => s + x[1], 0);
+  const L = [`Game plan${g.opp ? ' vs ' + g.opp : ''}`, `${fmtDate(g.date)} · First pitch ${clock(fp)}${g.loc ? ' · ' + g.loc : ''}`, '', `Arrive by ${clock(fp - pgTotal)}`];
+  let t = fp - pgTotal;
+  PREGAME.forEach(([title, min]) => { L.push(`  ${clockShort(t)}  ${title}`); t += min; });
+  if (g.order.length) {
+    L.push('', 'Lineup');
+    lineupRows().forEach((r, i) => L.push(`  ${i + 1}. ${r.label} · ${r.cells.join(' ')}`));
+    L.push(`  (positions by inning, ${g.innings} innings)`);
+  }
+  const arms = g.arms.filter(a => a.name.trim());
+  if (arms.length) { L.push('', 'Pitching'); arms.forEach(a => L.push(`  ${a.name} · ${a.role}${a.limit ? ' · limit ' + a.limit : ''}`)); }
+  if (g.notes.trim()) L.push('', 'Notes:', g.notes.trim());
+  return L.join('\n');
+}
+
+/* ---------- Lineup card generator ---------- */
+const POS = ['P', 'C', '1B', '2B', '3B', 'SS', 'LF', 'CF', 'RF'];
+const playerLabel = p => `${p.num ? '#' + p.num + ' ' : ''}${p.name || 'Unnamed player'}`;
+const canPlay = (p, pos) => String(p.pos || '').toUpperCase().split(/[\s,\/]+/).includes(pos);
+function activeRoster() { return state.game.roster.filter(p => p.name.trim() || p.num.trim()); }
+
+function generateLineup() {
+  const g = state.game, R = activeRoster();
+  if (R.length < 9) { toast(`Add at least 9 players (you have ${R.length})`); return false; }
+  const n = Math.max(1, Math.min(9, Number(g.innings) || 6));
+  const byId = Object.fromEntries(R.map(p => [p.id, p]));
+  const played = Object.fromEntries(R.map(p => [p.id, 0]));
+  const grid = Object.fromEntries(R.map(p => [p.id, []]));
+  let prev = null;
+  for (let i = 0; i < n; i++) {
+    let playing;
+    if (i === 0) playing = R.slice(0, 9).map(p => p.id);
+    else if (!g.rotate || R.length === 9) playing = Object.values(prev);
+    else {
+      // Pitcher and catcher stay in; everyone else sits in turn, fewest innings played goes in first.
+      const sticky = new Set([prev.P, prev.C]);
+      playing = [...R].sort((a, b) => (sticky.has(b.id) - sticky.has(a.id)) || (played[a.id] - played[b.id]) || (R.indexOf(a) - R.indexOf(b)))
+        .slice(0, 9).map(p => p.id);
+    }
+    const pool = new Set(playing), assign = {};
+    if (prev) for (const pos of POS) if (pool.has(prev[pos])) { assign[pos] = prev[pos]; pool.delete(prev[pos]); }
+    for (const pos of POS) {
+      if (assign[pos]) continue;
+      const open = POS.filter(q => !assign[q] && q !== pos);
+      const ids = [...pool];
+      const pick = ids.find(id => canPlay(byId[id], pos))
+        ?? ids.find(id => !open.some(q => canPlay(byId[id], q)))
+        ?? ids[0];
+      assign[pos] = pick; pool.delete(pick);
+    }
+    const posOf = Object.fromEntries(Object.entries(assign).map(([pos, id]) => [id, pos]));
+    R.forEach(p => { grid[p.id][i] = posOf[p.id] || 'BN'; if (posOf[p.id]) played[p.id]++; });
+    prev = assign;
+  }
+  g.grid = grid;
+  g.order = R.map(p => p.id);
+  return true;
+}
+function lineupRows() {
+  const g = state.game, n = Number(g.innings) || 6;
+  const byId = Object.fromEntries(g.roster.map(p => [p.id, p]));
+  return g.order.filter(id => byId[id]).map(id => {
+    const cells = Array.from({ length: n }, (_, i) => (g.grid[id] || [])[i] || 'BN');
+    return { id, label: playerLabel(byId[id]), cells, first: cells[0], innings: cells.filter(c => c !== 'BN').length };
+  });
+}
+function inningIssues(rows, i) {
+  const used = rows.map(r => r.cells[i]).filter(c => c !== 'BN');
+  const missing = POS.filter(p => !used.includes(p));
+  const dup = POS.filter(p => used.filter(x => x === p).length > 1);
+  return [...missing.map(p => `no ${p}`), ...dup.map(p => `2× ${p}`)];
+}
+
+function gameLineup() {
+  const g = state.game, n = Number(g.innings) || 6;
+  const rows = lineupRows();
+  const roster = g.roster.map((p, i) => `<tr>
+    <td><label class="sr" for="rn-${p.id}">Jersey number</label><input type="text" inputmode="numeric" id="rn-${p.id}" value="${esc(p.num)}" placeholder="#" data-ro="num" data-pid="${p.id}"></td>
+    <td><label class="sr" for="rnm-${p.id}">Player name</label><input type="text" id="rnm-${p.id}" value="${esc(p.name)}" placeholder="Player ${i + 1}" data-ro="name" data-pid="${p.id}"></td>
+    <td><label class="sr" for="rp-${p.id}">Positions</label><input type="text" id="rp-${p.id}" value="${esc(p.pos)}" placeholder="e.g. P, SS" data-ro="pos" data-pid="${p.id}"></td>
+    <td><button class="btn ghost sm danger" data-act="rmPlayer" data-pid="${p.id}" aria-label="Remove player">✕</button></td></tr>`).join('');
+  const issues = Array.from({ length: n }, (_, i) => rows.length ? inningIssues(rows, i) : []);
+  const card = rows.length ? `
+    <div class="table-wrap"><table class="lcard">
+      <thead><tr><th>#</th><th>Batting order</th>${Array.from({ length: n }, (_, i) => `<th>${i + 1}</th>`).join('')}<th title="Innings in the field">Inn</th><th class="no-print"></th></tr></thead>
+      <tbody>${rows.map((r, k) => `<tr>
+        <td class="ord">${k + 1}</td><td class="nm" data-nm="${r.id}">${esc(r.label)}</td>
+        ${r.cells.map((c, i) => `<td><label class="sr" for="gc-${r.id}-${i}">${esc(r.label)} inning ${i + 1}</label><select id="gc-${r.id}-${i}" class="${c === 'BN' ? 'bn' : ''}${issues[i].length && c !== 'BN' && issues[i].some(x => x === '2× ' + c) ? ' clash' : ''}" data-cell="${i}" data-pid="${r.id}">${[...POS, 'BN'].map(p => `<option ${p === c ? 'selected' : ''}>${p}</option>`).join('')}</select></td>`).join('')}
+        <td class="ord">${r.innings}</td>
+        <td class="no-print" style="white-space:nowrap"><button class="btn ghost sm" data-act="moveBat" data-pid="${r.id}" data-d="-1" ${k === 0 ? 'disabled' : ''} aria-label="Bat earlier">↑</button><button class="btn ghost sm" data-act="moveBat" data-pid="${r.id}" data-d="1" ${k === rows.length - 1 ? 'disabled' : ''} aria-label="Bat later">↓</button></td>
+      </tr>`).join('')}</tbody>
+      <tfoot><tr><td></td><td class="nm">Check</td>${issues.map(x => `<td class="${x.length ? 'warnc' : 'okc'}" title="${esc(x.join(', '))}">${x.length ? '⚠' : '✓'}</td>`).join('')}<td></td><td class="no-print"></td></tr></tfoot>
+    </table></div>
+    ${issues.some(x => x.length) ? `<p class="callout">${issues.map((x, i) => x.length ? `Inning ${i + 1}: ${x.join(', ')}` : '').filter(Boolean).join(' · ')}</p>` : ''}
+    <div class="card-foot">
+      <div><h3 class="sub">BASES2</h3><div class="boxes">${BASES2.map(([l, name]) => `<span><i></i>${l} · ${name}</span>`).join('')}</div></div>
+      <div><h3 class="sub">Freebie war</h3><div class="boxes">${FREEBIES.map(([k]) => `<span><i></i>${k}</span>`).join('')}</div></div>
+      <div><h3 class="sub">Goals</h3><div class="boxes"><span><i></i>18 QAB’s</span><span><i></i>.400+ OBP</span><span><i></i>Under 15 pitches / inning</span></div></div>
+    </div>`
+    : `<p class="empty">Enter your roster above, then generate the card.</p>`;
+  return `
+  <section class="panel no-print">
+    <h2 class="sec">Roster</h2>
+    <p class="lede" style="font-size:14px">List players in the order you want them to bat. The first 9 start. Add the positions each player can play (P, C, 1B, 2B, 3B, SS, LF, CF, RF) and the generator puts them there first.</p>
+    <div class="table-wrap"><table class="roster"><thead><tr><th>#</th><th>Name</th><th>Can play</th><th></th></tr></thead><tbody>${roster}</tbody></table></div>
+    <div><button class="btn" data-act="addPlayer">+ Add player</button></div>
+    <div class="row" style="align-items:end">
+      <label class="field" style="flex:0 1 120px"><span>Innings</span><select id="gInn" data-gf="innings" data-rerender="1">${[3, 4, 5, 6, 7, 9].map(k => `<option ${Number(g.innings) === k ? 'selected' : ''}>${k}</option>`).join('')}</select></label>
+      <div class="field" style="flex:1 1 220px"><span>Playing time</span>
+        <div class="seg" role="group" aria-label="Playing time"><button data-act="rotate" data-v="1" aria-pressed="${!!g.rotate}">Rotate the bench</button><button data-act="rotate" data-v="0" aria-pressed="${!g.rotate}">Same 9 all game</button></div>
+      </div>
+      <button class="btn primary" data-act="genLineup">${rows.length ? 'Regenerate card' : 'Generate lineup card'}</button>
+    </div>
+    <p class="lede" style="font-size:13px">Rotate the bench keeps your pitcher and catcher in and sits everyone else in turn, so playing time stays even. Edit any cell after generating.</p>
+  </section>
+  <section class="panel">
+    <div class="row" style="justify-content:space-between;align-items:center">
+      <h2 class="sec">Lineup card${g.opp ? ' vs ' + esc(g.opp) : ''}</h2>
+      <span class="meta">${esc(fmtDate(g.date))} · ${clock(toMin(g.time))}</span>
+    </div>
+    ${card}
+    ${rows.length ? `<div class="row no-print"><button class="btn primary" data-act="pdf" data-kind="lineup" data-mode="save">Save PDF</button><button class="btn" data-act="pdf" data-kind="lineup" data-mode="print">Print</button><button class="btn" data-act="copyLineup">Copy as text</button></div>` : ''}
+  </section>`;
+}
+function lineupText() {
+  const g = state.game;
+  const L = [`Lineup${g.opp ? ' vs ' + g.opp : ''} · ${fmtDate(g.date)}`, `Positions by inning 1–${g.innings}`, ''];
+  lineupRows().forEach((r, i) => L.push(`${i + 1}. ${r.label}  ${r.cells.join(' · ')}`));
+  return L.join('\n');
+}
+
+/* ========================== DEVOS ========================== */
+const DEVO_SETTINGS = { Practice: 'Practice devo · about 10 min', Pregame: 'Pregame devotion · 3–5 min', Meeting: 'Team meeting · about 20 min' };
+const DEVO_FIELDS = [
+  ['hook', 'Hook', 'Opening question, story or moment from the game…'],
+  ['scripture', 'Scripture', 'Passage and reference (have a player read it out loud)…'],
+  ['bigIdea', 'Big idea', 'The one sentence players should walk away with…'],
+  ['points', 'Talk points', 'Connect the passage to baseball and to life…'],
+];
+const curDevo = () => state.devos.find(d => d.id === state.curDevo) || state.devos[0];
+function renderDevos() {
+  const d = curDevo();
+  const area = (k, label, ph, rows = 3) => `<label class="field"><span>${label}</span><textarea id="dv-${k}" rows="${rows}" data-dv="${k}" placeholder="${esc(ph)}">${esc(d[k])}</textarea></label>`;
+  return `
+  <div class="view-head">
+    <div class="eyebrow">Team devotional</div>
+    <h1 class="title">Give God all the glory</h1>
+    <p class="lede">Every practice template ends with a Devo and every game starts with one. Fill in this template, then copy it to the coach or player leading it.</p>
+  </div>
+  <section class="panel toolbar">
+    <div class="row">
+      <label class="field"><span>Your devos</span>
+        <select id="devoSel" data-change="selDevo">${state.devos.map(x => `<option value="${x.id}" ${x.id === d.id ? 'selected' : ''}>${esc(x.title || 'Untitled devo')}${x.date ? ' · ' + esc(fmtDate(x.date)) : ''}</option>`).join('')}</select>
+      </label>
+      <button class="btn primary" data-act="newDevo">New devo</button>
+    </div>
+  </section>
+  <section class="panel">
+    <div class="row">
+      <label class="field" style="flex-basis:100%"><span>Title</span><input type="text" id="dv-title" value="${esc(d.title)}" data-dv="title" placeholder="Devo title"></label>
+      <label class="field"><span>Date</span><input type="date" id="dv-date" value="${esc(d.date)}" data-dv="date"></label>
+      <label class="field"><span>Led by</span><input type="text" id="dv-leader" value="${esc(d.leader)}" data-dv="leader" placeholder="Coach or player leader"></label>
+    </div>
+    <div class="row" style="align-items:center">
+      <div class="seg" role="group" aria-label="Setting">${Object.keys(DEVO_SETTINGS).map(k => `<button data-act="devoSetting" data-v="${k}" aria-pressed="${d.setting === k}">${k}</button>`).join('')}</div>
+      <span class="meta">${DEVO_SETTINGS[d.setting] || ''}</span>
+    </div>
+    <ol class="devo-flow">
+      ${DEVO_FIELDS.map(([k, label, ph]) => `<li>${area(k, label, ph)}</li>`).join('')}
+      <li><div class="field"><span>Discussion questions</span>
+        ${d.questions.map((q, i) => `<label class="sr" for="dq-${i}">Question ${i + 1}</label><input type="text" id="dq-${i}" value="${esc(q)}" data-dq="${i}" placeholder="Question ${i + 1}…">`).join('')}
+        <div><button class="btn sm" data-act="addQ">+ Add question</button></div>
+      </div></li>
+      <li>${area('challenge', 'Live it out', 'One specific step for this week, on or off the field…', 2)}</li>
+      <li>${area('prayer', 'Prayer', 'Who prays, and what to pray for…', 2)}</li>
+    </ol>
+    <div class="row no-print">
+      <button class="btn primary" data-act="copyDevo">Copy devo</button>
+      <button class="btn" data-act="print">Print</button>
+      ${ui.confirm === 'devo'
+        ? `<span class="callout">Delete this devo?</span><button class="btn danger" data-act="delDevo">Delete</button><button class="btn ghost" data-act="cancelConfirm">Keep it</button>`
+        : `<button class="btn ghost danger" data-act="askDelDevo">Delete devo</button>`}
+    </div>
+  </section>`;
+}
+function devoText(d) {
+  const L = [d.title || 'Team devo', [fmtDate(d.date), DEVO_SETTINGS[d.setting], d.leader && 'Led by ' + d.leader].filter(Boolean).join(' · ')];
+  const sec = (h, v) => { if (String(v).trim()) L.push('', h.toUpperCase(), String(v).trim()); };
+  DEVO_FIELDS.forEach(([k, h]) => sec(h, d[k]));
+  const qs = d.questions.filter(q => q.trim());
+  if (qs.length) { L.push('', 'DISCUSSION'); qs.forEach((q, i) => L.push(`${i + 1}. ${q.trim()}`)); }
+  sec('Live it out', d.challenge);
+  sec('Prayer', d.prayer);
+  return L.join('\n');
+}
+
+function signTable(rows) { return `<div class="table-wrap"><table class="signs"><tbody>${rows.map(([k, v]) => `<tr><th>${esc(k)}</th><td>${v}</td></tr>`).join('')}</tbody></table></div>`; }
+function gameSigns() {
+  return `
+  <p class="callout">These signs are organization-wide, from the youngest youth team to high school. Signs go by number of pumps or touches; coaches choose the indicator or hot spot (usually neck up).</p>
+  <div class="two">
+    <section class="panel">
+      <h2 class="sec">Pitch calling</h2>
+      ${signTable([['1', 'Fastball'], ['2', 'Curveball'], ['3', 'Slider'], ['4', 'Changeup']])}
+      <h3 class="sub">Location (after touches)</h3>
+      ${signTable([['1 finger', 'Inside'], ['2 fingers', 'Outside'], ['3 fingers', 'Up in the zone'], ['4 fingers', 'Down, out of the zone'], ['Thumb flick', 'Pickoff'], ['Fist', 'Pitch out']])}
+    </section>
+    <section class="panel">
+      <h2 class="sec">1st & 3rd defense</h2>
+      <p class="lede" style="font-size:14px">Catcher relays the coach’s call. Catcher touches only leg, chest and mask.</p>
+      ${signTable([['1', 'Throw to pitcher. Pitcher looks straight at the runner at 3B'], ['2', 'Throw to 2B. Make the tag or throw home on the coach’s direction'], ['3', 'Throw to 3B. Ignore lead size, no arm fake'], ['4', 'Arm fake to 2B, throw to 3B regardless']])}
+      <h3 class="sub">Bunt defense</h3>
+      ${signTable([['1', 'Play 1: runner on 1B'], ['2', 'Play 2: runner on 2B or 1st & 2nd'], ['3', 'Wheel: runner on 2B or 1st & 2nd, want the out at 3B'], ['4', 'Wheel pick: runner on 2B or 1st & 2nd']])}
+    </section>
+    <section class="panel">
+      <h2 class="sec">Pickoffs</h2>
+      <div class="prose"><ul>
+        <li><b>To first:</b> thumb flick in the pitch call</li>
+        <li><b>Timing pick to second</b> (verbal: “…up the middle…”)</li>
+        <li class="subli">SS touches the bill of his hat; pitcher acknowledges</li>
+        <li class="subli">Pitcher comes set and looks back once</li>
+        <li class="subli">2B clears, SS covers</li>
+        <li class="subli">Catcher drops the glove, pitcher picks to second</li>
+        <li><b>Timing pick to third</b> (verbal: “…down the line…”)</li>
+        <li class="subli">3B touches the bill of his hat; pitcher acknowledges</li>
+        <li class="subli">3B covers the bag as the pitcher lifts his leg</li>
+      </ul></div>
+    </section>
+    <section class="panel">
+      <h2 class="sec">Offensive signs</h2>
+      ${signTable([['1', 'Bunt (sacrifice)'], ['2', 'Hit & run'], ['3', 'Steal'], ['4', 'Squeeze bunt'], ['5', 'Slash (check league rules)']])}
+      <h3 class="sub">1st & 3rd (after a steal sign)</h3>
+      ${signTable([['Swirl', '<b>Go early.</b> Runner on 1B leaves when the pitcher comes set'], ['Both hands to bill', '<b>Long lead.</b> Draw the pick, take off on first move, get in a rundown if thrown out'], ['Belt tug', '<b>Delay steal.</b> Two shuffles, steal as the pitcher goes home']])}
+      <h3 class="sub">Automatics</h3>
+      ${signTable([['Open hand', 'Runner has 3 pitches to steal'], ['Right ear tug', 'Drag bunt'], ['Point at 3B dugout', 'Take']])}
+    </section>
+  </div>
+  <section class="panel">
+    <h2 class="sec">Giving signs</h2>
+    <div class="prose"><ul>
+      <li>Lock in signs with a clap. Even with no sign, batter and runner acknowledge you and you give a single clap</li>
+      <li>Wipe off: several claps</li>
+      <li>Signs are about keeping tempo while communicating. Batters and runners look to the coach first so signs go early</li>
+      <li>Batters don’t need to pick you up with runners on unless told otherwise</li>
+      <li>Optional indicator: the hot sign isn’t live until the indicator body part is touched</li>
+    </ul></div>
+  </section>`;
+}
+
+function gameApproach() {
+  return `
+  <div class="two">
+    <section class="panel">
+      <h2 class="sec">Hitting approach</h2>
+      <div class="acronym">
+        <div><b>F</b><p><strong>Find your pitch</strong><span>Ahead in the count. Go hunting like the Predator. Expect the pitch.</span></p></div>
+        <div><b>C</b><p><strong>Anything close</strong><span>Two strikes. Make physical adjustments. Don’t let the umpire own you.</span></p></div>
+        <div><b>A</b><p><strong>Act like you will swing</strong><span>Taking a pitch? Time it up. Yes, yes, yes mentality.</span></p></div>
+      </div>
+    </section>
+    <section class="panel">
+      <h2 class="sec">Pitching approach</h2>
+      <div class="acronym">
+        <div><b>B</b><p><strong>Breathe</strong></p></div>
+        <div><b>F</b><p><strong>Find your focal point</strong></p></div>
+        <div><b>C</b><p><strong>Commit to the pitch</strong></p></div>
+        <div><b>A</b><p><strong>Attack the hitter</strong></p></div>
+      </div>
+    </section>
+  </div>
+  <section class="panel">
+    <h2 class="sec">Pitch calling strategy</h2>
+    <div class="two prose">
+      <ul>
+        <li>Establish the fastball for strikes down in the zone</li>
+        <li>Establish good tempo</li>
+        <li>Pitch to contact: lower pitch counts, starters go deeper, the defense stays awake, fewer walks and runs</li>
+        <li>Don’t show every pitch the first time through the lineup</li>
+        <li>Don’t try to fool anybody. Have a reason for each pitch</li>
+        <li>Use what’s working (pitcher’s strengths); read the hitter (hitter’s weaknesses)</li>
+        <li>Recall what the hitter did last at-bat</li>
+      </ul>
+      <ul>
+        <li>Treat 2-2 counts like 3-2 counts</li>
+        <li><b>No lead-off walks or 2-out walks</b></li>
+        <li>0-2 options: curveball in the dirt, elevated fastball, fastball in off the plate, fastball out off the plate</li>
+        <li>Coach calling? Catcher ready for signs, signs given quickly, good rhythm for tempo</li>
+      </ul>
+    </div>
+  </section>
+  <div class="two">
+    <section class="panel">
+      <h2 class="sec">Quality at-bat</h2>
+      <p class="lede" style="font-size:14px">Team goal: <b>18 QAB’s per game</b> (60%+). Every QAB gets picked up by teammates.</p>
+      <div class="prose"><ul>
+        <li>Base hit (even a bloop or a sixteen-hopper)</li>
+        <li>Hard-hit ball (even if it’s an out)</li>
+        <li>6-pitch at-bat (even a strikeout or weak dribbler)</li>
+        <li>RBI</li>
+        <li>Executed situational hitting</li>
+        <li class="subli">Well-placed sac bunt</li>
+        <li class="subli">Hit & run on the ground (or a successful line drive)</li>
+        <li class="subli">Sac fly deep enough to score the runner</li>
+        <li class="subli">Move a runner from 2nd to 3rd with 0 outs</li>
+        <li class="subli">Squeeze</li>
+        <li class="subli">Slash (fake bunt, slap)</li>
+      </ul></div>
+    </section>
+    <section class="panel">
+      <h2 class="sec">Quality inning</h2>
+      <div class="prose"><ul>
+        <li>10 pitches or less (adjust by age group)</li>
+        <li>0 earned runs</li>
+        <li>70% strikes in the inning</li>
+      </ul></div>
+      <h3 class="sub">Results goals</h3>
+      <div class="prose"><ul>
+        <li>Offense: 60% QAB per game · over .400 OBP · execute BASES2 · aggressive base running (BID reads)</li>
+        <li>Defense: make routine plays · pitch to contact (under 15 pitches an inning) · pre-pitch plan · minimize freebies</li>
+      </ul></div>
+    </section>
+  </div>`;
+}
+
+function gameTrack() {
+  const g = state.game;
+  const sum = side => FREEBIES.reduce((s, [k]) => s + (g.free[side][k] || 0), 0);
+  const us = sum('us'), them = sum('them');
+  const war = us < them ? ['good', 'Winning the freebie war'] : us > them ? ['bad', 'Losing the freebie war'] : ['even', 'Freebie war even'];
+  const qabPct = Math.min(100, Math.round(g.qab / 18 * 100));
+  const tap = (side, k) => `<span class="tap"><button aria-label="${side} ${k} minus" data-act="free" data-side="${side}" data-k="${k}" data-d="-1">−</button><b>${g.free[side][k] || 0}</b><button aria-label="${side} ${k} plus" data-act="free" data-side="${side}" data-k="${k}" data-d="1">+</button></span>`;
+  const arms = g.arms.map(a => {
+    const p = a.log.length, s = a.log.filter(x => x === 's').length;
+    const pct = p ? Math.round(s / p * 100) : 0;
+    const lim = Number(a.limit) || 0;
+    return `<div class="arm">
+      <div class="row" style="justify-content:space-between;align-items:center"><strong>${esc(a.name || 'Unnamed pitcher')} <small style="color:var(--muted)">· ${esc(a.role)}</small></strong></div>
+      <div class="arm-stats">
+        <span class="${lim && p >= lim ? 'warn' : ''}">Pitches<b>${p}${lim ? `<small style="font-size:16px;color:var(--muted)"> / ${lim}</small>` : ''}</b></span>
+        <span>Strikes<b>${s}</b></span>
+        <span class="${p >= 5 ? (pct >= 70 ? 'ok' : 'warn') : ''}">Strike %<b>${p ? pct + '%' : '—'}</b></span>
+      </div>
+      ${lim ? `<div class="bar" aria-hidden="true"><i style="width:${Math.min(100, p / lim * 100)}%"></i></div>` : ''}
+      <div class="row">
+        <button class="btn" data-act="pitch" data-aid="${a.id}" data-v="b">+ Ball</button>
+        <button class="btn primary" data-act="pitch" data-aid="${a.id}" data-v="s">+ Strike / in play</button>
+        <button class="btn ghost" data-act="pitch" data-aid="${a.id}" data-v="undo" ${p ? '' : 'disabled'}>Undo</button>
+      </div>
+    </div>`;
+  }).join('');
+  return `
+  <div class="two">
+    <section class="panel">
+      <h2 class="sec">Quality at-bats</h2>
+      <div class="counter">
+        <button aria-label="QAB minus" data-act="qab" data-d="-1">−</button>
+        <span class="big">${g.qab}</span>
+        <button class="plus" aria-label="QAB plus" data-act="qab" data-d="1">+</button>
+        <span style="color:var(--muted)">of 18 goal</span>
+      </div>
+      <div class="bar" aria-hidden="true"><i style="width:${qabPct}%"></i></div>
+    </section>
+    <section class="panel">
+      <h2 class="sec">BASES2</h2>
+      <div class="chips">${BASES2.map(([l, name, note], i) => `<button class="filter" title="${esc(note)}" data-act="bases" data-i="${i}" aria-pressed="${!!g.bases[i]}">${l} · ${name}</button>`).join('')}</div>
+      <p class="lede" style="font-size:14px">${Object.values(g.bases).filter(Boolean).length} of 6 executed.</p>
+    </section>
+  </div>
+  <section class="panel">
+    <div class="row" style="justify-content:space-between;align-items:center">
+      <h2 class="sec">Freebie war</h2>
+      <span class="pill ${war[0]}">${war[1]}</span>
+    </div>
+    <div class="table-wrap"><table class="freebies">
+      <thead><tr><th>Freebie</th><th>We gave</th><th>They gave</th></tr></thead>
+      <tbody>${FREEBIES.map(([k, n]) => `<tr><td><b>${k}</b> <small style="color:var(--muted)">${n}</small></td><td>${tap('us', k)}</td><td>${tap('them', k)}</td></tr>`).join('')}
+        <tr><td><b>Total</b></td><td><b class="big" style="font-size:28px">${us}</b></td><td><b class="big" style="font-size:28px">${them}</b></td></tr></tbody>
+    </table></div>
+  </section>
+  <section class="panel">
+    <h2 class="sec">Pitch counts</h2>
+    <p class="lede" style="font-size:14px">Goal: 70% strikes. Add or rename pitchers on the Game plan tab.</p>
+    ${arms || '<p class="empty">No pitchers yet. Add them on the Game plan tab.</p>'}
+  </section>
+  <div class="row no-print">
+    ${ui.confirm === 'track'
+      ? `<span class="callout">Reset QAB’s, freebies, BASES2 and pitch counts?</span><button class="btn danger" data-act="resetTrack">Reset</button><button class="btn ghost" data-act="cancelConfirm">Keep</button>`
+      : `<button class="btn ghost danger" data-act="askResetTrack">Reset tracker</button>`}
+  </div>`;
+}
+
+/* ========================== RESOURCES ========================== */
+const RES_SECTIONS = [
+  ['philosophy', 'Philosophy'], ['ready', 'Get ’em ready'], ['practice-way', 'Practice'], ['strategy', 'Game strategy'],
+  ['bunt', 'Bunt defense'], ['baserunning', 'Base running'], ['signs', 'Signs'], ['teaching', 'Teaching points'],
+];
+
+// Field coordinates for the bunt defense diagrams (viewBox 0 0 300 270, home plate at the bottom).
+const FIELD = { home: [150, 240], first: [212, 178], second: [150, 116], third: [88, 178], mound: [150, 182] };
+const START = { P: [150, 182], C: [150, 254], '1B': [206, 160], '2B': [186, 122], SS: [114, 122], '3B': [94, 160], LF: [74, 66], CF: [150, 44], RF: [226, 66] };
+// Coverage assignments are standard high-school bunt coverages, not taken from the guide (it lists plays and situations only).
+const BUNT_PLAYS = [
+  { n: 1, name: 'Play 1', when: 'Runner on 1B', goal: 'Get the sure out. Take the lead runner only if it’s clean.',
+    moves: {
+      P: [[150, 199], 'Breaks to the middle, fields bunts up the middle'],
+      C: [[150, 231], 'Fields bunts in front of the plate and calls the play'],
+      '1B': [[182, 204], 'Charges and fields the first-base side'],
+      '3B': [[118, 204], 'Charges and fields the third-base side'],
+      '2B': [[210, 172], 'Covers first'],
+      SS: [[150, 110], 'Covers second'],
+      LF: [[82, 146], 'Backs up third'],
+      CF: [[150, 86], 'Backs up second'],
+      RF: [[226, 150], 'Backs up first'],
+    } },
+  { n: 2, name: 'Play 2', when: 'Runner on 2B, or 1st & 2nd', goal: 'Keep the runner from getting a free jump to third. Take the out at first unless 3B is calling for it.',
+    moves: {
+      P: [[124, 210], 'Breaks toward the third-base line and fields bunts there'],
+      C: [[150, 231], 'Fields bunts in front and calls the base'],
+      '1B': [[182, 204], 'Charges and fields the first-base side'],
+      '3B': [[90, 172], 'Reads the bunt: fields it only if the pitcher can’t, otherwise retreats to cover third'],
+      '2B': [[210, 172], 'Covers first'],
+      SS: [[150, 110], 'Holds the runner close, then covers second'],
+      LF: [[74, 146], 'Backs up third'],
+      CF: [[150, 86], 'Backs up second'],
+      RF: [[226, 150], 'Backs up first'],
+    } },
+  { n: 3, name: 'Wheel', when: 'Runner on 2B, or 1st & 2nd', goal: 'Get the out at 3B. Both corners crash and the whole infield rotates.',
+    moves: {
+      P: [[150, 199], 'Fields bunts up the middle, throws to third'],
+      C: [[150, 231], 'Fields bunts in front, calls “three”'],
+      '1B': [[184, 206], 'Crashes hard on the pitch'],
+      '3B': [[116, 206], 'Crashes hard on the pitch'],
+      SS: [[90, 172], 'Breaks for third as the pitcher comes set'],
+      '2B': [[210, 172], 'Covers first'],
+      CF: [[150, 112], 'Sprints in to cover second'],
+      LF: [[74, 146], 'Backs up third'],
+      RF: [[226, 150], 'Backs up first'],
+    } },
+  { n: 4, name: 'Wheel Pick', when: 'Runner on 2B, or 1st & 2nd', goal: 'Show the Wheel to pull the runner off second, then pick him off.',
+    moves: null },
+];
+
+function fieldSvg(play) {
+  const [hx, hy] = FIELD.home, [fx, fy] = FIELD.first, [sx, sy] = FIELD.second, [tx, ty] = FIELD.third;
+  const base = (x, y) => `<rect x="${x - 5}" y="${y - 5}" width="10" height="10" transform="rotate(45 ${x} ${y})" class="f-base"/>`;
+  const arrows = play.moves ? Object.entries(play.moves).map(([pos, [[x2, y2]]]) => {
+    const [x1, y1] = START[pos];
+    const len = Math.hypot(x2 - x1, y2 - y1);
+    if (len < 6) return '';
+    // Stop the arrow at the edge of the player's circle at the destination.
+    const ex = x2 - (x2 - x1) / len * 12, ey = y2 - (y2 - y1) / len * 12;
+    return `<circle cx="${x1}" cy="${y1}" r="3" class="f-start"/><line x1="${x1}" y1="${y1}" x2="${ex.toFixed(1)}" y2="${ey.toFixed(1)}" class="f-move" marker-end="url(#arrow)"/>`;
+  }).join('') : '';
+  const players = Object.entries(START).map(([pos, at]) => {
+    const moved = play.moves?.[pos];
+    const [x, y] = moved ? moved[0] : at;
+    return `<g class="f-player${moved ? '' : ' idle'}"><circle cx="${x}" cy="${y}" r="11"/><text x="${x}" y="${y + 3.6}">${pos}</text></g>`;
+  }).join('');
+  return `<svg class="field" viewBox="0 0 300 270" role="img" aria-label="${esc(play.name)} bunt coverage diagram">
+    <defs><marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" class="f-arrowhead"/></marker></defs>
+    <path d="M${hx} ${hy} L12 102 A195 195 0 0 1 288 102 Z" class="f-grass"/>
+    <path d="M${hx} ${hy} L${fx} ${fy} L${sx} ${sy} L${tx} ${ty} Z" class="f-infield"/>
+    <line x1="${hx}" y1="${hy}" x2="12" y2="102" class="f-line"/><line x1="${hx}" y1="${hy}" x2="288" y2="102" class="f-line"/>
+    <circle cx="${FIELD.mound[0]}" cy="${FIELD.mound[1]}" r="9" class="f-mound"/>
+    ${base(fx, fy)}${base(sx, sy)}${base(tx, ty)}
+    <path d="M${hx - 6} ${hy - 6} h12 v6 l-6 6 l-6 -6 z" class="f-base"/>
+    ${arrows}${players}
+  </svg>`;
+}
+
+function buntSection() {
+  const play = BUNT_PLAYS.find(p => p.n === ui.bunt) || BUNT_PLAYS[0];
+  const order = ['P', 'C', '1B', '3B', '2B', 'SS', 'LF', 'CF', 'RF'];
+  const assignments = play.moves
+    ? `<div class="table-wrap"><table class="signs assign"><tbody>${order.filter(pos => play.moves[pos]).map(pos => `<tr><th>${pos}</th><td>${esc(play.moves[pos][1])}</td></tr>`).join('')}</tbody></table></div>`
+    : `<p class="callout">The guide names this play but doesn’t spell out the pick. Install your own pick timing and teach it alongside the Wheel so the two look identical until the pick.</p>`;
+  return `
+  <section class="panel">
+    <p class="lede" style="font-size:15px">From the guide: the catcher relays the bunt defense call to the team after getting it from the coach. Calls go by number of pumps or touches; coaches choose the indicator or hot spot.</p>
+    ${signTable(BUNT_PLAYS.map(p => [String(p.n), `<b>${esc(p.name)}</b>: ${esc(p.when)}${p.n === 3 ? '. Want the out at 3B!' : ''}`]))}
+  </section>
+  <section class="panel">
+    <div class="seg" role="group" aria-label="Bunt play">${BUNT_PLAYS.map(p => `<button data-act="bunt" data-n="${p.n}" aria-pressed="${p.n === play.n}">${p.n} · ${esc(p.name)}</button>`).join('')}</div>
+    <div class="bunt-grid">
+      <div>${fieldSvg(play)}</div>
+      <div class="prose">
+        <div class="meta"><span class="tag">${esc(play.when)}</span><span>Sign ${play.n}</span></div>
+        <h3 class="sec" style="font-size:18px">${esc(play.name)}</h3>
+        <p class="focus">${esc(play.goal)}</p>
+        ${assignments}
+      </div>
+    </div>
+    <p class="lede" style="font-size:13px">The guide lists the four plays and when to use them. Player assignments and diagrams show standard coverages, so confirm them against how your program runs each play.</p>
+  </section>`;
+}
+
+function renderResources() {
+  const all = CHECKLIST.flatMap(([, items]) => items.map(([t]) => t));
+  const done = all.filter(t => state.checks[t]).length;
+  const teach = DRILLS.filter(d => d.k === 'teach');
+  return `
+  <div class="view-head">
+    <div class="eyebrow">Resources · FCA Sports Way</div>
+    <h1 class="title">Resources</h1>
+    <p class="lede">The philosophy, standards and strategy behind every FCA Sports Idaho team, from the Coach’s Mandate to bunt defense.</p>
+  </div>
+  <nav class="chips res-nav" aria-label="Resource sections">${RES_SECTIONS.map(([id, l]) => `<button class="filter" data-act="jump" data-to="res-${id}">${l}</button>`).join('')}</nav>
+
+  <section class="res" id="res-philosophy">
+    <h2 class="res-h">Philosophy</h2>
+    <div class="panel mission">
+      <div class="eyebrow">Our mission</div>
+      <p>We plan to <b>DEVELOP</b> baseball skills of players and help them grow in their relationship with God to positively <b>IMPACT</b> people wherever they go while we strive to compete to be the best.</p>
+      <p class="lede" style="font-size:15px">FCA Sports Idaho is all about development and impact. What we do is bigger than our sport!</p>
+    </div>
+    <div class="panel">
+      <h3 class="sec">Team goals</h3>
+      <p class="lede" style="font-size:15px">These are organization-wide. On top of these, set your own team goals in faith, culture, development and results.</p>
+      <div class="two prose">
+        <div><h4>Faith</h4><ul><li><b>UP:</b> give God ALL the glory</li><li><b>IN:</b> grow our and our players’ personal relationships with God</li><li><b>OUT:</b> spread God’s love expecting to make an impact for the sake of the Kingdom</li></ul></div>
+        <div><h4>Culture</h4><ul><li>Practice and compete with a purpose</li><li>Focus, on the field and in the dugout</li><li><b>TEE:</b> Tempo, Effort, Energy</li><li>Prepared: on time, properly equipped, properly dressed</li></ul></div>
+        <div><h4>Development</h4><ul><li>Teach Baseball 101: picking up your teammates, dugout etiquette, celebration</li><li>Teach foundational baseball skills. Assume they know nothing; teach them everything, from warm-up to cool-down</li></ul></div>
+        <div><h4>Results</h4><ul><li><b>Offense:</b> 60% QAB per game · over .400 OBP · execute BASES2 · aggressive base running (ball-in-dirt reads, pressure the defense)</li><li><b>Defense:</b> make routine plays · pitch to contact (under 15 pitches an inning) · pre-pitch plan (communicate and expect the ball) · minimize freebies</li><li><b>Win the freebie war!</b></li></ul></div>
+      </div>
+    </div>
+    <div class="panel">
+      <h3 class="sec">The Coach’s Mandate</h3>
+      <ol class="mandate">${MANDATE.map(l => `<li><b>${l[0]}</b><span>${esc(l)}</span></li>`).join('')}</ol>
+    </div>
+  </section>
+
+  <section class="res" id="res-ready">
+    <div class="row" style="justify-content:space-between;align-items:center">
+      <h2 class="res-h">Get ’em ready checklist</h2>
+      <span class="pill ${done === all.length ? 'good' : 'even'}">${done} / ${all.length}</span>
+    </div>
+    <div class="panel">
+      <p class="lede" style="font-size:15px">The goal is to have covered everything by your team’s first game. Your checks save on this device.</p>
+      <div class="bar" aria-hidden="true"><i style="width:${Math.round(done / all.length * 100)}%"></i></div>
+      <div class="two">
+        ${CHECKLIST.map(([group, items]) => `<div><h3 class="sub">${group}</h3>${items.map(([t, note], i) => {
+          const id = 'ck-' + group.slice(0, 3) + i;
+          return `<label class="check ${state.checks[t] ? 'done' : ''}" for="${id}"><input type="checkbox" id="${id}" data-check="${esc(t)}" ${state.checks[t] ? 'checked' : ''}><span>${esc(t)}${note ? `<small>${esc(note)}</small>` : ''}</span></label>`;
+        }).join('')}</div>`).join('')}
+      </div>
+    </div>
+  </section>
+
+  <section class="res" id="res-practice-way">
+    <h2 class="res-h">How we practice</h2>
+    <div class="panel">
+      <p class="focus" style="font-size:18px">The 5 P’s: Proper Preparation Prevents Poor Performance!</p>
+      <div class="two prose">
+        <ul>
+          <li>Communicate the plan with every coach and volunteer helping at practice</li>
+          <li>Every template can run with an offensive, defensive or team focus</li>
+          <li>Keep the beginning of practice the same every time: Pray, Dynamic Warm-Up, then into the work</li>
+          <li>Open and close every practice with prayer; longer practices include a Devo</li>
+        </ul>
+        <ul>
+          <li>Warm-ups take careful coach oversight at first (cones, timer), but should quickly become player-led</li>
+          <li>Don’t start by hitting fungos. After the throwing routine and EDD’s, run the ground ball progression at a quick tempo</li>
+          <li>Tee work: 35 focused swings, no more than 15 minutes. “If you want to be average, then do the bare minimum.”</li>
+          <li>Speed work builds explosiveness, not conditioning. Plenty of rest between sets</li>
+        </ul>
+      </div>
+      <div><button class="btn" data-tab-go="practice">Open the practice planner</button></div>
+    </div>
+  </section>
+
+  <section class="res" id="res-strategy">
+    <h2 class="res-h">Game strategy</h2>
+    ${gameApproach()}
+    <div class="panel">
+      <h3 class="sec">Lineup card terms</h3>
+      <div class="two">
+        <div><h3 class="sub">BASES2</h3>${signTable(BASES2.map(([l, n, note]) => [l, `<b>${esc(n)}</b>: ${esc(note)}`]))}</div>
+        <div><h3 class="sub">Freebie war</h3>${signTable([['BB', 'Base on balls (walk)'], ['HBP', 'Hit by pitch'], ['WP', 'Wild pitch (pitcher’s fault)'], ['PB', 'Passed ball (catcher’s fault)'], ['E', 'Error: misplayed ball on defense (judgment call)'], ['Bonehead', 'A silly mental mistake that shouldn’t happen']])}</div>
+      </div>
+      <h3 class="sub">Other stats we track</h3>
+      ${signTable([['IP', 'Innings pitched'], ['LOBO', 'Lead-off batter out each inning'], ['BID’s', 'Ball-in-dirt reads (base running)'], ['Blocks', 'Blocks from a catcher'], ['LOB', 'Runners left on base'], ['Mental error', 'Bad decision or tantrum'], ['Dirt bag', 'Laundry machines exist'], ['Big play', 'A clutch play in a big game situation, individual inning or full game']])}
+    </div>
+  </section>
+
+  <section class="res" id="res-bunt">
+    <h2 class="res-h">Bunt defense</h2>
+    ${buntSection()}
+  </section>
+
+  <section class="res" id="res-baserunning">
+    <h2 class="res-h">Base running</h2>
+    <div class="panel">
+      <p class="focus" style="font-size:18px">SCORE. No matter what base you start at, expect to score.</p>
+      <p>Be aggressive. Your aggression puts pressure on the defense, making them make mistakes and taking the focus off the batter.</p>
+      <div class="two prose">
+        <ul>
+          <li><b>Leads:</b> hard off, hard back. DON’T LINGER</li>
+          <li><b>Secondary leads</b> start when the pitcher’s momentum goes home</li>
+          <li><b>Steals:</b> the first step (jump) is most important. Bad jump? Shut it down</li>
+        </ul>
+        <ul>
+          <li>With 0 outs at second it has to be 100%. Don’t make the first out at third</li>
+          <li><b>Never make the third out at third</b></li>
+          <li>Ball-in-dirt reads every pitch</li>
+        </ul>
+      </div>
+      <div class="chips">${['home-to-first', 'first-base-leads', 'second-base-leads', 'third-base-leads', 'steal-breaks'].map(id => `<button class="filter" data-act="viewDrill" data-id="${id}">${esc(DRILL[id].t)}</button>`).join('')}</div>
+    </div>
+  </section>
+
+  <section class="res" id="res-signs">
+    <h2 class="res-h">Signs</h2>
+    ${gameSigns()}
+  </section>
+
+  <section class="res" id="res-teaching">
+    <h2 class="res-h">Teaching points</h2>
+    <p class="lede">Mechanics and positioning write-ups from the guide. Tap one to read it or add it to a practice.</p>
+    <div class="lib-grid">${libCards(teach)}</div>
+  </section>`;
+}
+
+/* ========================== PDF EXPORT ==========================
+   Branded, printable PDFs built in the browser with jsPDF (vendored in ./vendor). */
+const PDF = { W: 612, H: 792, M: 40, ink: [21, 21, 21], muted: [93, 92, 86], line: [224, 223, 216], band: [230, 230, 230], gold: [255, 194, 14], zebra: [247, 247, 244] };
+let pdfBadge;
+function loadScript(src) {
+  return new Promise((res, rej) => { const s = document.createElement('script'); s.src = src; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
+}
+function imageData(src) {
+  return new Promise((res, rej) => {
+    const im = new Image();
+    im.onload = () => { try { const c = document.createElement('canvas'); c.width = im.naturalWidth; c.height = im.naturalHeight; c.getContext('2d').drawImage(im, 0, 0); res(c.toDataURL('image/png')); } catch (e) { rej(e); } };
+    im.onerror = rej; im.src = src;
+  });
+}
+async function newPdf() {
+  if (!window.jspdf) { await loadScript('vendor/jspdf.umd.min.js'); await loadScript('vendor/jspdf.plugin.autotable.min.js'); }
+  if (pdfBadge === undefined) pdfBadge = await imageData('fca-sports-idaho-clubs.png').catch(() => null);
+  return new window.jspdf.jsPDF({ unit: 'pt', format: 'letter' });
+}
+// Standard PDF fonts only cover Latin-1, so swap typographic punctuation for plain equivalents.
+const pdfSafe = s => String(s ?? '').replace(/[‘’]/g, "'").replace(/[“”]/g, '"').replace(/[–—−]/g, '-').replace(/→/g, '>').replace(/…/g, '...').replace(/[^\x00-\xFF]/g, '');
+
+function pdfHeader(doc, kind, title, meta) {
+  const { W, M } = PDF;
+  doc.setFillColor(...PDF.band); doc.rect(0, 0, W, 76, 'F');
+  if (pdfBadge) doc.addImage(pdfBadge, 'PNG', M, 11, 54, 54);
+  let x = M + (pdfBadge ? 66 : 0);
+  doc.setTextColor(...PDF.ink); doc.setFontSize(22);
+  for (const [word, style] of [['FCA ', 'bold'], ['SPORTS ', 'normal'], ['WAY', 'bold']]) { doc.setFont('helvetica', style); doc.text(word, x, 40); x += doc.getTextWidth(word); }
+  doc.setFont('helvetica', 'bold'); doc.setFontSize(9); doc.setTextColor(...PDF.muted);
+  doc.setCharSpace(1.6); doc.text(kind.toUpperCase(), M + (pdfBadge ? 66 : 0), 56); doc.setCharSpace(0);
+  doc.setFontSize(8); doc.setFont('helvetica', 'normal');
+  doc.text('FCA Sports Idaho Clubs', W - M, 40, { align: 'right' });
+  doc.text('FCA Coach Guide', W - M, 52, { align: 'right' });
+  doc.setTextColor(...PDF.ink); doc.setFont('helvetica', 'bold'); doc.setFontSize(20);
+  const lines = doc.splitTextToSize(pdfSafe(title), W - 2 * M);
+  doc.text(lines, M, 108);
+  let y = 108 + (lines.length - 1) * 24;
+  if (meta) { doc.setFont('helvetica', 'normal'); doc.setFontSize(10.5); doc.setTextColor(...PDF.muted); y += 17; doc.text(pdfSafe(meta), M, y); }
+  doc.setFillColor(...PDF.gold); doc.rect(M, y + 10, 44, 3.5, 'F');
+  return y + 30;
+}
+function pdfFooters(doc) {
+  const { W, H, M } = PDF, n = doc.getNumberOfPages();
+  for (let i = 1; i <= n; i++) {
+    doc.setPage(i);
+    doc.setDrawColor(...PDF.line); doc.setLineWidth(0.75); doc.line(M, H - 34, W - M, H - 34);
+    doc.setFont('helvetica', 'normal'); doc.setFontSize(8); doc.setTextColor(...PDF.muted);
+    doc.text('FCA Sports Way  ·  Develop skills. Grow in Christ. Make an impact.', M, H - 22);
+    doc.text(`Page ${i} of ${n}`, W - M, H - 22, { align: 'right' });
+  }
+}
+function pdfSection(doc, y, label) {
+  doc.setFont('helvetica', 'bold'); doc.setFontSize(10); doc.setTextColor(...PDF.ink);
+  doc.setCharSpace(1.2); doc.text(label.toUpperCase(), PDF.M, y); doc.setCharSpace(0);
+  return y + 12;
+}
+function pdfRoom(doc, y, need) {
+  if (y + need <= PDF.H - 50) return y;
+  doc.addPage(); return 50;
+}
+function pdfTableBase() {
+  return {
+    margin: { left: PDF.M, right: PDF.M, bottom: 50 },
+    theme: 'grid',
+    styles: { font: 'helvetica', fontSize: 10, cellPadding: 5, lineColor: PDF.line, lineWidth: 0.75, textColor: PDF.ink, valign: 'middle' },
+    headStyles: { fillColor: PDF.ink, textColor: 255, fontStyle: 'bold', fontSize: 9, lineColor: PDF.ink },
+    alternateRowStyles: { fillColor: PDF.zebra },
+  };
+}
+function pdfLines(doc, y, n) {
+  doc.setDrawColor(...PDF.line); doc.setLineWidth(0.75);
+  for (let i = 0; i < n; i++) { y += 20; doc.line(PDF.M, y, PDF.W - PDF.M, y); }
+  return y + 8;
+}
+function pdfBox(doc, x, y, label) {
+  doc.setDrawColor(...PDF.ink); doc.setLineWidth(1); doc.rect(x, y - 8.5, 10, 10);
+  doc.setFont('helvetica', 'normal'); doc.setFontSize(9.5); doc.setTextColor(...PDF.ink);
+  doc.text(pdfSafe(label), x + 15, y);
+}
+async function deliverPdf(doc, filename, mode, win) {
+  if (mode === 'print') {
+    doc.autoPrint();
+    const url = doc.output('bloburl');
+    if (win) win.location.href = url; else window.open(url, '_blank');
+  } else {
+    doc.save(filename);
+  }
+}
+const fileSafe = s => pdfSafe(s).replace(/[^A-Za-z0-9]+/g, '-').replace(/^-|-$/g, '');
+
+async function practicePdf(mode, win) {
+  const plan = curPlan(), doc = await newPdf();
+  const start = toMin(plan.start), times = planTimes(plan), total = planTotal(plan);
+  let y = pdfHeader(doc, 'FCA Coach Guide', 'Practice Plan',
+    [plan.name, fmtDate(plan.date), `${clock(start)} - ${clock(start + total)}`, `${plan.focus} focus`].filter(Boolean).join('  ·  '));
+  doc.autoTable({
+    ...pdfTableBase(), startY: y,
+    head: [['Time', 'Elapsed', 'Block', 'Min', 'Drills']],
+    body: plan.blocks.map((b, i) => [clockShort(start + times[i]), offset(times[i]), pdfSafe(b.title), b.min ? String(b.min) : '-',
+      pdfSafe(b.drills.filter(id => DRILL[id]).map(id => DRILL[id].t).join('\n'))]),
+    columnStyles: { 0: { cellWidth: 46, fontStyle: 'bold' }, 1: { cellWidth: 50, textColor: PDF.muted }, 2: { cellWidth: 170, fontStyle: 'bold' }, 3: { cellWidth: 34, halign: 'center' } },
+    didParseCell: d => { if (d.section === 'body' && d.column.index === 2 && /pray|devo/i.test(d.cell.raw)) d.cell.styles.fontStyle = 'bolditalic'; },
+  });
+  y = doc.lastAutoTable.finalY + 26;
+  y = pdfRoom(doc, y, 140);
+  y = pdfSection(doc, y, 'Notes for coaches');
+  if (plan.notes.trim()) {
+    doc.setFont('helvetica', 'normal'); doc.setFontSize(10.5); doc.setTextColor(...PDF.ink);
+    const ls = doc.splitTextToSize(pdfSafe(plan.notes.trim()), PDF.W - 2 * PDF.M);
+    for (const l of ls) { y = pdfRoom(doc, y, 16) + 4; doc.text(l, PDF.M, y + 6); y += 10; }
+    y += 10;
+  } else y = pdfLines(doc, y - 6, 5);
+
+  const used = [...new Set(plan.blocks.flatMap(b => b.drills))].filter(id => DRILL[id]);
+  if (ui.pdfDrills !== false && used.length) {
+    doc.addPage(); y = pdfHeader(doc, 'Drill Sheets', plan.name || 'Practice', `${used.length} drill${used.length > 1 ? 's' : ''} from the FCA Sports Way Coach Guide`);
+    const width = PDF.W - 2 * PDF.M;
+    for (const id of used) {
+      const d = DRILL[id];
+      y = pdfRoom(doc, y, 70);
+      doc.setFont('helvetica', 'bold'); doc.setFontSize(13); doc.setTextColor(...PDF.ink); doc.text(pdfSafe(d.t), PDF.M, y);
+      doc.setFont('helvetica', 'bold'); doc.setFontSize(8.5); doc.setTextColor(...PDF.muted);
+      doc.text(pdfSafe(`${d.c.toUpperCase()}  ·  ${KINDS[d.k].toUpperCase()}${d.m ? `  ·  ${d.m} MIN` : ''}  ·  GUIDE P. ${d.p}`), PDF.M, y + 13);
+      y += 28;
+      const para = (text, style = 'normal', indent = 0, size = 10, color = PDF.ink, bullet = '') => {
+        doc.setFont('helvetica', style); doc.setFontSize(size); doc.setTextColor(...color);
+        const ls = doc.splitTextToSize(pdfSafe(text), width - indent - (bullet ? 10 : 0));
+        ls.forEach((l, i) => { y = pdfRoom(doc, y, 14); if (bullet && i === 0) doc.text(bullet, PDF.M + indent, y); doc.text(l, PDF.M + indent + (bullet ? 10 : 0), y); y += size + 3.5; });
+      };
+      para(d.s);
+      if (d.f) { y += 2; para('Focus: ' + d.f, 'bold'); }
+      for (const item of d.b || []) {
+        if (item.startsWith('## ')) { y += 4; para(item.slice(3).toUpperCase(), 'bold', 0, 8.5, PDF.muted); }
+        else if (item.startsWith('! ')) para(item.slice(2), 'italic');
+        else if (item.startsWith('> ')) para(item.slice(2), 'normal', 14, 9.5, PDF.muted, '-');
+        else para(item, 'normal', 0, 10, PDF.ink, '•');
+      }
+      y += 8; doc.setDrawColor(...PDF.line); doc.setLineWidth(0.75); doc.line(PDF.M, y, PDF.W - PDF.M, y); y += 20;
+    }
+  }
+  pdfFooters(doc);
+  await deliverPdf(doc, `FCA-Practice-${fileSafe(plan.name) || 'Plan'}-${plan.date || ''}.pdf`, mode, win);
+}
+
+async function lineupPdf(mode, win) {
+  const g = state.game, rows = lineupRows(), n = Number(g.innings) || 6, doc = await newPdf();
+  const meta = [fmtDate(g.date), 'First pitch ' + clock(toMin(g.time)), g.loc].filter(Boolean).join('  ·  ');
+  let y = pdfHeader(doc, 'Lineup Card', g.opp ? `vs ${g.opp}` : 'Lineup Card', meta);
+  const innW = Math.min(40, (PDF.W - 2 * PDF.M - 24 - 150 - 34) / n);
+  doc.autoTable({
+    ...pdfTableBase(), startY: y,
+    head: [['#', 'Batting order', ...Array.from({ length: n }, (_, i) => String(i + 1)), 'Inn']],
+    body: rows.map((r, k) => [String(k + 1), pdfSafe(r.label), ...r.cells, String(r.innings)]),
+    styles: { ...pdfTableBase().styles, fontSize: 11, cellPadding: { top: 6, bottom: 6, left: 5, right: 5 } },
+    columnStyles: Object.assign({ 0: { cellWidth: 24, halign: 'center', fontStyle: 'bold' }, 1: { fontStyle: 'bold' }, [n + 2]: { cellWidth: 34, halign: 'center', textColor: PDF.muted } },
+      Object.fromEntries(Array.from({ length: n }, (_, i) => [i + 2, { cellWidth: innW, halign: 'center', fontStyle: 'bold' }]))),
+    didParseCell: d => {
+      if (d.section === 'head' && d.column.index >= 2) d.cell.styles.halign = 'center';
+      if (d.section === 'body' && d.cell.raw === 'BN') { d.cell.styles.textColor = PDF.muted; d.cell.styles.fontStyle = 'normal'; }
+    },
+  });
+  y = doc.lastAutoTable.finalY + 26;
+
+  const arms = g.arms.filter(a => a.name.trim());
+  y = pdfRoom(doc, y, 60 + 24 * Math.max(4, arms.length));
+  y = pdfSection(doc, y, 'Pitching');
+  doc.autoTable({
+    ...pdfTableBase(), startY: y,
+    head: [['Pitcher', 'Role', 'Limit', 'Pitch count']],
+    body: [...arms.map(a => [pdfSafe(a.name), a.role, a.limit ? String(a.limit) : '', '']), ...Array.from({ length: Math.max(0, 4 - arms.length) }, () => ['', '', '', ''])],
+    columnStyles: { 1: { cellWidth: 80 }, 2: { cellWidth: 50, halign: 'center' }, 3: { cellWidth: 200 } },
+  });
+  y = doc.lastAutoTable.finalY + 22;
+
+  y = pdfRoom(doc, y, 112);
+  const colW = (PDF.W - 2 * PDF.M) / 3;
+  const cols = [
+    ['BASES2', BASES2.map(([l, name]) => `${l}  ${name}`)],
+    ['Freebie war', FREEBIES.map(([k, nm]) => `${k}  ${nm}`)],
+    ['Goals', ['18 quality at-bats', '.400+ OBP', 'Under 15 pitches / inning', 'No lead-off or 2-out walks', 'Win the freebie war']],
+  ];
+  cols.forEach(([label, items], c) => {
+    const x = PDF.M + c * colW;
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(10); doc.setTextColor(...PDF.ink); doc.text(label.toUpperCase(), x, y);
+    if (label === 'Freebie war') {
+      // Tally columns: freebies we gave vs. freebies they gave.
+      doc.setFontSize(7.5); doc.setTextColor(...PDF.muted); doc.text('US', x + 92, y); doc.text('THEM', x + 132, y);
+      FREEBIES.forEach(([k], i) => {
+        const ty = y + 18 + i * 15.5;
+        doc.setFont('helvetica', 'bold'); doc.setFontSize(9.5); doc.setTextColor(...PDF.ink); doc.text(k, x, ty);
+        doc.setDrawColor(...PDF.ink); doc.setLineWidth(0.75); doc.line(x + 86, ty + 2, x + 122, ty + 2); doc.line(x + 130, ty + 2, x + 166, ty + 2);
+      });
+    } else items.forEach((it, i) => pdfBox(doc, x, y + 18 + i * 15.5, it));
+  });
+  pdfFooters(doc);
+  await deliverPdf(doc, `FCA-Lineup-${fileSafe(g.opp) || 'Card'}-${g.date || ''}.pdf`, mode, win);
+}
+
+async function makePdf(kind, mode) {
+  // Open the print tab now, while the click still counts as a user action, so popup blockers allow it.
+  const win = mode === 'print' ? window.open('', '_blank') : null;
+  toast('Building PDF…');
+  try { await (kind === 'lineup' ? lineupPdf : practicePdf)(mode, win); if (mode !== 'print') toast('PDF saved'); }
+  catch (e) { if (win) win.close(); console.error(e); toast('Couldn’t build the PDF. Reload the page and try again.'); }
+}
+
+/* ========================== DIALOG ========================== */
+const dlg = document.getElementById('dlg');
+function openDialog(html) { dlg.innerHTML = `<div class="dlg">${html}</div>`; if (!dlg.open) dlg.showModal(); }
+function closeDialog() { if (dlg.open) dlg.close(); }
+dlg.addEventListener('click', e => { if (e.target === dlg) closeDialog(); });
+
+function viewDrill(id) {
+  const d = DRILL[id], plan = curPlan();
+  openDialog(`
+    <div class="dlg-head" style="position:relative">
+      ${drillMeta(d)}
+      <h2 class="sec" id="dlgTitle" style="padding-right:48px">${esc(d.t)}</h2>
+      <p class="lede">${esc(d.s)}</p>
+      <button class="btn ghost close" data-act="close" aria-label="Close">✕</button>
+    </div>
+    <div class="dlg-body">${d.f || d.b ? renderBody(d) : '<p class="lede">That’s the whole drill. Keep the tempo quick.</p>'}</div>
+    <div class="dlg-foot">
+      <label class="field"><span>Add to “${esc(plan.name)}”</span>
+        <select id="addTo">${plan.blocks.map(b => `<option value="${b.id}">${esc(b.title)}</option>`).join('')}</select></label>
+      <button class="btn primary" data-act="addFromView" data-id="${d.id}">Add to practice</button>
+    </div>`);
+}
+function pickDrill(bid) {
+  const b = curPlan().blocks.find(x => x.id === bid);
+  ui.pick = { bid, q: '', cat: 'All' };
+  openDialog(`
+    <div class="dlg-head" style="position:relative">
+      <div class="eyebrow">Add a drill to</div>
+      <h2 class="sec" id="dlgTitle" style="padding-right:48px">${esc(b.title)}</h2>
+      <button class="btn ghost close" data-act="close" aria-label="Close">✕</button>
+      <label class="sr" for="pickQ">Search drills</label>
+      <input type="search" id="pickQ" placeholder="Search drills" data-input="pickQ">
+      <div class="chips">${['All', ...CATS].map(c => `<button class="filter" data-act="pickCat" data-cat="${c}" aria-pressed="${c === 'All'}">${c}</button>`).join('')}</div>
+    </div>
+    <div class="dlg-body"><div class="pick-list" id="pickList">${pickItems()}</div></div>
+    <div class="dlg-foot"><button class="btn" data-act="close">Done</button></div>`);
+}
+function pickItems() {
+  const list = filteredDrills(ui.pick.q, ui.pick.cat);
+  if (!list.length) return '<p class="empty">No drills match.</p>';
+  return list.map(d => `<button class="pick-item" data-act="pickAdd" data-id="${d.id}"><b>${esc(d.t)}</b><small>${esc(d.c)} · ${KINDS[d.k]}${d.m ? ' · ' + d.m + ' min' : ''}</small></button>`).join('');
+}
+function showText(text, label) {
+  openDialog(`
+    <div class="dlg-head" style="position:relative"><h2 class="sec" id="dlgTitle">${esc(label)}</h2><p class="lede">Copying isn’t allowed here. Select the text and copy it yourself.</p><button class="btn ghost close" data-act="close" aria-label="Close">✕</button></div>
+    <div class="dlg-body"><label class="sr" for="shareText">${esc(label)}</label><textarea id="shareText" rows="14" readonly>${esc(text)}</textarea></div>
+    <div class="dlg-foot"><button class="btn" data-act="close">Done</button></div>`);
+  const ta = document.getElementById('shareText'); ta.focus(); ta.select();
+}
+
+/* ========================== ROUTER / EVENTS ========================== */
+const app = document.getElementById('app');
+function render() {
+  const view = { practice: renderPractice, drills: renderDrills, game: renderGame, devos: renderDevos, resources: renderResources }[ui.tab];
+  const focusId = document.activeElement?.id;
+  app.innerHTML = view() + `<p class="foot">From the FCA Sports Way Coach Guide · FCA Sports Idaho Clubs. Your plans save in this browser only.</p>`;
+  document.querySelectorAll('.tab').forEach(t => t.setAttribute('aria-current', t.dataset.tab === ui.tab ? 'page' : 'false'));
+  // Keep keyboard focus when a re-render replaces the field the coach is typing in.
+  if (focusId && !dlg.open) document.getElementById(focusId)?.focus({ preventScroll: true });
+}
+function go(tab) {
+  if (tab === 'team') tab = 'resources';
+  if (!['practice', 'drills', 'game', 'devos', 'resources'].includes(tab)) tab = 'practice';
+  ui.tab = tab; ui.confirm = null; render();
+  if (location.hash.slice(1) !== tab) history.replaceState(null, '', '#' + tab);
+  window.scrollTo(0, 0);
+}
+document.querySelector('.tabs').addEventListener('click', e => { const t = e.target.closest('[data-tab]'); if (t) go(t.dataset.tab); });
+window.addEventListener('hashchange', () => go(location.hash.slice(1)));
+
+function block(bid) { return curPlan().blocks.find(b => b.id === bid); }
+function arm(aid) { return state.game.arms.find(a => a.id === aid); }
+
+const ACTIONS = {
+  toggleNew() { ui.newOpen = !ui.newOpen; render(); },
+  newPlan(el) { const p = planFromTemplate(el.dataset.tpl); state.plans.unshift(p); state.cur = p.id; ui.newOpen = false; save(); render(); toast(`New ${TEMPLATES[el.dataset.tpl].name} plan`); },
+  dupPlan() { const src = curPlan(); const p = JSON.parse(JSON.stringify(src)); p.id = uid(); p.name = src.name.replace(/^Example: /, '') + ' (copy)'; p.date = today(); p.blocks.forEach(b => b.id = uid()); state.plans.unshift(p); state.cur = p.id; ui.newOpen = false; save(); render(); toast('Plan copied'); },
+  focus(el) { curPlan().focus = el.dataset.f; save(); render(); },
+  minStep(el) { const b = block(el.dataset.bid); b.min = Math.max(0, (Number(b.min) || 0) + Number(el.dataset.d)); save(); render(); },
+  moveBlk(el) { const bl = curPlan().blocks, i = bl.findIndex(b => b.id === el.dataset.bid), j = i + Number(el.dataset.d); if (j < 0 || j >= bl.length) return; [bl[i], bl[j]] = [bl[j], bl[i]]; save(); render(); },
+  rmBlk(el) { const p = curPlan(); p.blocks = p.blocks.filter(b => b.id !== el.dataset.bid); save(); render(); },
+  addBlk() { const bl = curPlan().blocks; const last = bl[bl.length - 1]; const nb = { id: uid(), title: `Block ${bl.length}`, min: 15, drills: [] }; if (last && /dismiss/i.test(last.title)) bl.splice(bl.length - 1, 0, nb); else bl.push(nb); save(); render(); document.getElementById('bt-' + nb.id)?.select(); },
+  rmDrill(el) { block(el.dataset.bid).drills.splice(Number(el.dataset.j), 1); save(); render(); },
+  pick(el) { pickDrill(el.dataset.bid); },
+  pickCat(el) { ui.pick.cat = el.dataset.cat; dlg.querySelectorAll('[data-act="pickCat"]').forEach(b => b.setAttribute('aria-pressed', b.dataset.cat === ui.pick.cat)); document.getElementById('pickList').innerHTML = pickItems(); },
+  pickAdd(el) { const b = block(ui.pick.bid); b.drills.push(el.dataset.id); save(); render(); toast(`Added ${DRILL[el.dataset.id].t} to ${b.title}`); },
+  viewDrill(el) { viewDrill(el.dataset.id); },
+  addFromView(el) { const b = block(document.getElementById('addTo').value); if (!b) return; b.drills.push(el.dataset.id); save(); closeDialog(); render(); toast(`Added to ${b.title}. Open Practice to see it.`); },
+  close() { closeDialog(); },
+  copyPlan() { copyText(planText(curPlan()), 'Practice plan'); },
+  print() { window.print(); },
+  askDelPlan() { ui.confirm = 'plan'; render(); },
+  cancelConfirm() { ui.confirm = null; render(); },
+  delPlan() {
+    state.plans = state.plans.filter(p => p.id !== state.cur);
+    if (!state.plans.length) state.plans.push(planFromTemplate('60'));
+    state.cur = state.plans[0].id; ui.confirm = null; save(); render(); toast('Plan deleted');
+  },
+  cat(el) { ui.cat = el.dataset.cat; render(); },
+  gameTab(el) { ui.gameTab = el.dataset.k; ui.confirm = null; render(); },
+  addArm() { state.game.arms.push({ id: uid(), name: '', role: 'Relief', limit: 30, log: [] }); save(); render(); },
+  rmArm(el) { state.game.arms = state.game.arms.filter(a => a.id !== el.dataset.aid); save(); render(); },
+  copyGame() { copyText(gameText(), 'Game plan'); },
+  askNewGame() { ui.confirm = 'game'; render(); },
+  newGame() { state.game = blankGame(); ui.confirm = null; save(); render(); toast('Ready for a new game'); },
+  qab(el) { state.game.qab = Math.max(0, state.game.qab + Number(el.dataset.d)); save(); render(); },
+  free(el) { const f = state.game.free[el.dataset.side]; f[el.dataset.k] = Math.max(0, (f[el.dataset.k] || 0) + Number(el.dataset.d)); save(); render(); },
+  bases(el) { const g = state.game; g.bases[el.dataset.i] = !g.bases[el.dataset.i]; save(); render(); },
+  pitch(el) { const a = arm(el.dataset.aid); if (el.dataset.v === 'undo') a.log.pop(); else a.log.push(el.dataset.v); save(); render(); },
+  addPlayer() { state.game.roster.push({ id: uid(), num: '', name: '', pos: '' }); save(); render(); },
+  rmPlayer(el) { const g = state.game; g.roster = g.roster.filter(p => p.id !== el.dataset.pid); g.order = g.order.filter(id => id !== el.dataset.pid); delete g.grid[el.dataset.pid]; save(); render(); },
+  rotate(el) { state.game.rotate = el.dataset.v === '1'; save(); render(); },
+  genLineup() { if (generateLineup()) { save(); render(); toast('Lineup card generated'); } },
+  moveBat(el) { const o = state.game.order, i = o.indexOf(el.dataset.pid), j = i + Number(el.dataset.d); if (j < 0 || j >= o.length) return; [o[i], o[j]] = [o[j], o[i]]; save(); render(); },
+  bunt(el) { ui.bunt = Number(el.dataset.n); render(); },
+  jump(el) { document.getElementById(el.dataset.to)?.scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start' }); },
+  pdf(el) { makePdf(el.dataset.kind, el.dataset.mode); },
+  copyLineup() { copyText(lineupText(), 'Lineup'); },
+  newDevo() { const d = blankDevo(); state.devos.unshift(d); state.curDevo = d.id; ui.confirm = null; save(); render(); document.getElementById('dv-title')?.focus(); },
+  devoSetting(el) { curDevo().setting = el.dataset.v; save(); render(); },
+  addQ() { curDevo().questions.push(''); save(); render(); document.getElementById('dq-' + (curDevo().questions.length - 1))?.focus(); },
+  copyDevo() { copyText(devoText(curDevo()), 'Devo'); },
+  askDelDevo() { ui.confirm = 'devo'; render(); },
+  delDevo() { state.devos = state.devos.filter(d => d.id !== state.curDevo); if (!state.devos.length) state.devos.push(blankDevo()); state.curDevo = state.devos[0].id; ui.confirm = null; save(); render(); toast('Devo deleted'); },
+  askResetTrack() { ui.confirm = 'track'; render(); },
+  resetTrack() { const g = state.game; g.qab = 0; g.free = { us: {}, them: {} }; g.bases = {}; g.arms.forEach(a => a.log = []); ui.confirm = null; save(); render(); toast('Tracker reset'); },
+};
+document.addEventListener('click', e => {
+  const go2 = e.target.closest('[data-tab-go]'); if (go2) { go(go2.dataset.tabGo); return; }
+  const el = e.target.closest('[data-act]');
+  if (el && ACTIONS[el.dataset.act] && !el.disabled) ACTIONS[el.dataset.act](el);
+});
+
+document.addEventListener('input', e => {
+  const el = e.target, d = el.dataset;
+  if (d.pf) {
+    const p = curPlan(); p[d.pf] = el.value; save();
+    const opt = document.querySelector(`#planSel option[value="${p.id}"]`);
+    if (opt) opt.textContent = (p.name || 'Untitled practice') + (p.date ? ' · ' + fmtDate(p.date) : '');
+  }
+  else if (d.bf === 'title') { block(d.bid).title = el.value; save(); }
+  else if (d.gf) { state.game[d.gf] = el.value; save(); }
+  else if (d.ro) {
+    const p = state.game.roster.find(x => x.id === d.pid); p[d.ro] = el.value; save();
+    const cell = document.querySelector(`[data-nm="${p.id}"]`); if (cell) cell.textContent = playerLabel(p);
+  }
+  else if (d.dv) {
+    const v = curDevo(); v[d.dv] = el.value; save();
+    const opt = document.querySelector(`#devoSel option[value="${v.id}"]`);
+    if (opt) opt.textContent = (v.title || 'Untitled devo') + (v.date ? ' · ' + fmtDate(v.date) : '');
+  }
+  else if (d.dq) { curDevo().questions[Number(d.dq)] = el.value; save(); }
+  else if (d.arm) { arm(d.aid)[d.arm] = el.value; save(); }
+  else if (d.input === 'q') { ui.q = el.value; document.getElementById('libGrid').innerHTML = libCards(filteredDrills(ui.q, ui.cat)); }
+  else if (d.input === 'pickQ') { ui.pick.q = el.value; document.getElementById('pickList').innerHTML = pickItems(); }
+});
+document.addEventListener('change', e => {
+  const el = e.target, d = el.dataset;
+  if (d.change === 'selPlan') { state.cur = el.value; ui.confirm = null; save(); render(); }
+  else if (d.change === 'selDevo') { state.curDevo = el.value; ui.confirm = null; save(); render(); }
+  else if (d.cell) { const g = state.game; (g.grid[d.pid] ||= [])[Number(d.cell)] = el.value; save(); render(); }
+  else if (d.bf === 'min') { block(d.bid).min = Math.max(0, Number(el.value) || 0); save(); render(); }
+  else if (d.pf === 'start') { render(); }
+  else if (d.rerender) { render(); }
+  else if (d.opt) { ui[d.opt] = el.checked; }
+  else if (d.check) { state.checks[d.check] = el.checked; save(); render(); }
+});
+
+go(location.hash.slice(1) || 'practice');
+</script>
+</body>
+</html>
