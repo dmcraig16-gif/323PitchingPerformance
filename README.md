@@ -58,9 +58,9 @@ npm run preview
 
 - **Practice** – the guide's 1 / 1.5 / 2 / 2.5 hour templates as a clock-time timeline; add drills to each block, copy or print the plan
 - **Drills** – searchable library of every drill, routine and teaching point in the guide (with guide page numbers)
-- **Game Day** – game plan with pregame routine timed back from first pitch, lineup card generator (batting order + positions by inning with bench rotation), organization-wide signs, hitting/pitching approach, live QAB / freebie war / BASES2 / pitch-count tracker
+- **Game Day** – game plan with pregame routine timed back from first pitch, lineup card generator (batting order + positions by inning with bench rotation), organization-wide signs, live QAB / freebie war / BASES2 / pitch-count tracker
 - **Devos** – blank team devotional template (hook, scripture, big idea, talk points, questions, live it out, prayer)
-- **Team** – Coach's Mandate, team goals, Get 'em Ready checklist
+- **Resources** – mission, team goals and Coach's Mandate; Get 'em Ready checklist; practice philosophy; game strategy (hitting/pitching approach, pitch calling, QAB, quality inning, lineup card terms); bunt defense with field diagrams per play; base running; signs; teaching points
 
 Practice plans (with optional drill sheets) and lineup cards export as FCA-branded, printable PDFs. They're generated in the browser with jsPDF 2.5.2 + jspdf-autotable 3.8.4, bundled in `public/coach-guide/vendor/` (MIT licenses alongside). The badge is `fca-sports-idaho-clubs.png`, taken from the guide's cover.
 

@@ -24,6 +24,9 @@
   --good: #1D7547;
   --bad: #B3261E;
   --band: #E6E6E6;
+  --field: #DDE8D6;
+  --dirt: #EBDDC9;
+  --dirt-dark: #D9C6AA;
   --font-display: "Montserrat", "Helvetica Neue", Arial, sans-serif;
   --font-body: "Barlow", "Segoe UI", system-ui, sans-serif;
   --font-label: "Barlow Condensed", "Arial Narrow", "Segoe UI", sans-serif;
@@ -34,13 +37,13 @@
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
     --bg: #111110; --surface: #1C1C1A; --ink: #F1F0EA; --muted: #A4A399; --line: #302F2B;
-    --gold-soft: #3A3011; --gold-text: #FFC20E; --good: #61C58F; --bad: #F2877E; --band: #242422;
+    --gold-soft: #3A3011; --gold-text: #FFC20E; --good: #61C58F; --bad: #F2877E; --band: #242422; --field: #26301F; --dirt: #3A3127; --dirt-dark: #4A3E30;
     color-scheme: dark;
   }
 }
 :root[data-theme="dark"] {
   --bg: #111110; --surface: #1C1C1A; --ink: #F1F0EA; --muted: #A4A399; --line: #302F2B;
-  --gold-soft: #3A3011; --gold-text: #FFC20E; --good: #61C58F; --bad: #F2877E; --band: #242422;
+  --gold-soft: #3A3011; --gold-text: #FFC20E; --good: #61C58F; --bad: #F2877E; --band: #242422; --field: #26301F; --dirt: #3A3127; --dirt-dark: #4A3E30;
   color-scheme: dark;
 }
 
@@ -256,6 +259,34 @@ textarea { resize: vertical; min-height: 80px; }
 .devo-flow > li::before { content: counter(step); font-family: var(--font-display); font-weight: 800; font-size: 15px; width: 28px; height: 28px; border-radius: 50%; background: var(--gold); color: var(--on-gold); display: grid; place-items: center; margin-top: 18px; }
 .devo-flow .field { gap: 6px; }
 
+/* Resources */
+.res-nav { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 64px); z-index: 10; background: var(--bg); padding: 10px 0 8px; flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; }
+.res-nav::-webkit-scrollbar { display: none; }
+.res-nav .filter { flex: none; }
+.res { display: grid; gap: 14px; scroll-margin-top: 130px; min-width: 0; }
+.res-h { font-family: var(--font-display); font-weight: 800; font-size: 24px; letter-spacing: -0.01em; text-transform: uppercase; padding-top: 12px; border-top: 3px solid var(--ink); }
+.res .row .res-h { flex: 1; }
+.mission { background: var(--gold); border-color: var(--gold); color: var(--on-gold); }
+.mission .eyebrow, .mission .lede { color: var(--on-gold); }
+.mission p:not(.lede) { margin: 0; font-family: var(--font-display); font-weight: 500; font-size: clamp(17px, 3.6vw, 21px); line-height: 1.4; max-width: 60ch; }
+.mission b { font-weight: 800; }
+.bunt-grid { display: grid; grid-template-columns: minmax(0, 380px) minmax(0, 1fr); gap: 20px; align-items: start; }
+@media (max-width: 640px) { .bunt-grid { grid-template-columns: minmax(0, 1fr); } }
+.field { width: 100%; max-width: 380px; height: auto; display: block; margin: 0 auto; }
+.f-grass { fill: var(--field); }
+.f-infield { fill: var(--dirt); }
+.f-line { stroke: var(--surface); stroke-width: 1.5; }
+.f-mound { fill: var(--dirt-dark); }
+.f-base { fill: var(--surface); stroke: var(--ink); stroke-width: 0.75; }
+.f-move { stroke: var(--ink); stroke-width: 2; stroke-dasharray: 4 3; }
+.f-arrowhead { fill: var(--ink); }
+.f-start { fill: var(--surface); stroke: var(--ink); stroke-width: 1.25; }
+.f-player circle { fill: var(--gold); stroke: var(--ink); stroke-width: 1.5; }
+.f-player text { font-family: var(--font-label); font-weight: 700; font-size: 10px; text-anchor: middle; fill: var(--on-gold); }
+.f-player.idle circle { fill: var(--surface); }
+.f-player.idle text { fill: var(--muted); }
+.assign th { width: 48px; font-size: 16px; }
+
 /* Team */
 .mandate { display: grid; gap: 10px; counter-reset: m; list-style: none; margin: 0; padding: 0; }
 .mandate li { display: grid; grid-template-columns: 34px 1fr; gap: 10px; }
@@ -316,7 +347,7 @@ dialog::backdrop { background: rgba(10,10,10,.55); }
       <button class="tab" data-tab="drills"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M7 5.5c2 2 2 11 0 13M17 5.5c-2 2-2 11 0 13"/></svg>Drills</button>
       <button class="tab" data-tab="game"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M12 3l8 8v9H4v-9z"/><path d="M9 20v-5h6v5"/></svg>Game Day</button>
       <button class="tab" data-tab="devos"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M5 4.5A1.5 1.5 0 016.5 3H19v15H6.5A1.5 1.5 0 005 19.5z"/><path d="M5 19.5A1.5 1.5 0 006.5 21H19v-3M12 6.5v7M9.5 9h5"/></svg>Devos</button>
-      <button class="tab" data-tab="team"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.8-3.6 3.4-5.5 6.5-5.5s5.7 1.9 6.5 5.5"/><path d="M16 4.8a3.5 3.5 0 010 6.4M18 14.8c2 .7 3.2 2.5 3.6 5.2"/></svg>Team</button>
+      <button class="tab" data-tab="resources"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M3 6.5A1.5 1.5 0 014.5 5H9l2 2h8.5A1.5 1.5 0 0121 8.5v10a1.5 1.5 0 01-1.5 1.5h-15A1.5 1.5 0 013 18.5z"/><path d="M8 13h8M8 16.5h5"/></svg>Resources</button>
     </nav>
   </div>
 </header>
@@ -719,7 +750,7 @@ function save() {
   clearTimeout(save.t);
   save.t = setTimeout(() => { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {} }, 200);
 }
-const ui = { tab: 'practice', newOpen: false, confirm: null, q: '', cat: 'All', gameTab: 'plan' };
+const ui = { bunt: 1, tab: 'practice', newOpen: false, confirm: null, q: '', cat: 'All', gameTab: 'plan' };
 const curPlan = () => state.plans.find(p => p.id === state.cur) || state.plans[0];
 
 /* ========================== helpers ========================== */
@@ -903,13 +934,13 @@ function libCards(list) {
 /* ========================== GAME DAY ========================== */
 function renderGame() {
   const g = state.game;
-  const tabs = [['plan', 'Game plan'], ['lineup', 'Lineup card'], ['signs', 'Signs'], ['approach', 'Approach'], ['track', 'Live tracker']];
-  const body = { plan: gamePlan, lineup: gameLineup, signs: gameSigns, approach: gameApproach, track: gameTrack }[ui.gameTab]();
+  const tabs = [['plan', 'Game plan'], ['lineup', 'Lineup card'], ['signs', 'Signs'], ['track', 'Live tracker']];
+  const body = { plan: gamePlan, lineup: gameLineup, signs: gameSigns, track: gameTrack }[ui.gameTab]();
   return `
   <div class="view-head">
     <div class="eyebrow">Game day${g.opp ? ' · vs ' + esc(g.opp) : ''}</div>
     <h1 class="title">Win the freebie war</h1>
-    <p class="lede">Lineup card, pregame schedule, organization-wide signs and an in-game tracker for QAB’s, freebies and BASES2.</p>
+    <p class="lede">Lineup card, pregame schedule, organization-wide signs and an in-game tracker for QAB’s, freebies and BASES2. Hitting and pitching approach live under Resources.</p>
   </div>
   <div class="seg" role="group" aria-label="Game day section">${tabs.map(([k, l]) => `<button data-act="gameTab" data-k="${k}" aria-pressed="${ui.gameTab === k}">${l}</button>`).join('')}</div>
   ${body}`;
@@ -1360,46 +1391,234 @@ function gameTrack() {
   </div>`;
 }
 
-/* ========================== TEAM ========================== */
-function renderTeam() {
+/* ========================== RESOURCES ========================== */
+const RES_SECTIONS = [
+  ['philosophy', 'Philosophy'], ['ready', 'Get ’em ready'], ['practice-way', 'Practice'], ['strategy', 'Game strategy'],
+  ['bunt', 'Bunt defense'], ['baserunning', 'Base running'], ['signs', 'Signs'], ['teaching', 'Teaching points'],
+];
+
+// Field coordinates for the bunt defense diagrams (viewBox 0 0 300 270, home plate at the bottom).
+const FIELD = { home: [150, 240], first: [212, 178], second: [150, 116], third: [88, 178], mound: [150, 182] };
+const START = { P: [150, 182], C: [150, 254], '1B': [206, 160], '2B': [186, 122], SS: [114, 122], '3B': [94, 160], LF: [74, 66], CF: [150, 44], RF: [226, 66] };
+// Coverage assignments are standard high-school bunt coverages, not taken from the guide (it lists plays and situations only).
+const BUNT_PLAYS = [
+  { n: 1, name: 'Play 1', when: 'Runner on 1B', goal: 'Get the sure out. Take the lead runner only if it’s clean.',
+    moves: {
+      P: [[150, 199], 'Breaks to the middle, fields bunts up the middle'],
+      C: [[150, 231], 'Fields bunts in front of the plate and calls the play'],
+      '1B': [[182, 204], 'Charges and fields the first-base side'],
+      '3B': [[118, 204], 'Charges and fields the third-base side'],
+      '2B': [[210, 172], 'Covers first'],
+      SS: [[150, 110], 'Covers second'],
+      LF: [[82, 146], 'Backs up third'],
+      CF: [[150, 86], 'Backs up second'],
+      RF: [[226, 150], 'Backs up first'],
+    } },
+  { n: 2, name: 'Play 2', when: 'Runner on 2B, or 1st & 2nd', goal: 'Keep the runner from getting a free jump to third. Take the out at first unless 3B is calling for it.',
+    moves: {
+      P: [[124, 210], 'Breaks toward the third-base line and fields bunts there'],
+      C: [[150, 231], 'Fields bunts in front and calls the base'],
+      '1B': [[182, 204], 'Charges and fields the first-base side'],
+      '3B': [[90, 172], 'Reads the bunt: fields it only if the pitcher can’t, otherwise retreats to cover third'],
+      '2B': [[210, 172], 'Covers first'],
+      SS: [[150, 110], 'Holds the runner close, then covers second'],
+      LF: [[74, 146], 'Backs up third'],
+      CF: [[150, 86], 'Backs up second'],
+      RF: [[226, 150], 'Backs up first'],
+    } },
+  { n: 3, name: 'Wheel', when: 'Runner on 2B, or 1st & 2nd', goal: 'Get the out at 3B. Both corners crash and the whole infield rotates.',
+    moves: {
+      P: [[150, 199], 'Fields bunts up the middle, throws to third'],
+      C: [[150, 231], 'Fields bunts in front, calls “three”'],
+      '1B': [[184, 206], 'Crashes hard on the pitch'],
+      '3B': [[116, 206], 'Crashes hard on the pitch'],
+      SS: [[90, 172], 'Breaks for third as the pitcher comes set'],
+      '2B': [[210, 172], 'Covers first'],
+      CF: [[150, 112], 'Sprints in to cover second'],
+      LF: [[74, 146], 'Backs up third'],
+      RF: [[226, 150], 'Backs up first'],
+    } },
+  { n: 4, name: 'Wheel Pick', when: 'Runner on 2B, or 1st & 2nd', goal: 'Show the Wheel to pull the runner off second, then pick him off.',
+    moves: null },
+];
+
+function fieldSvg(play) {
+  const [hx, hy] = FIELD.home, [fx, fy] = FIELD.first, [sx, sy] = FIELD.second, [tx, ty] = FIELD.third;
+  const base = (x, y) => `<rect x="${x - 5}" y="${y - 5}" width="10" height="10" transform="rotate(45 ${x} ${y})" class="f-base"/>`;
+  const arrows = play.moves ? Object.entries(play.moves).map(([pos, [[x2, y2]]]) => {
+    const [x1, y1] = START[pos];
+    const len = Math.hypot(x2 - x1, y2 - y1);
+    if (len < 6) return '';
+    // Stop the arrow at the edge of the player's circle at the destination.
+    const ex = x2 - (x2 - x1) / len * 12, ey = y2 - (y2 - y1) / len * 12;
+    return `<circle cx="${x1}" cy="${y1}" r="3" class="f-start"/><line x1="${x1}" y1="${y1}" x2="${ex.toFixed(1)}" y2="${ey.toFixed(1)}" class="f-move" marker-end="url(#arrow)"/>`;
+  }).join('') : '';
+  const players = Object.entries(START).map(([pos, at]) => {
+    const moved = play.moves?.[pos];
+    const [x, y] = moved ? moved[0] : at;
+    return `<g class="f-player${moved ? '' : ' idle'}"><circle cx="${x}" cy="${y}" r="11"/><text x="${x}" y="${y + 3.6}">${pos}</text></g>`;
+  }).join('');
+  return `<svg class="field" viewBox="0 0 300 270" role="img" aria-label="${esc(play.name)} bunt coverage diagram">
+    <defs><marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" class="f-arrowhead"/></marker></defs>
+    <path d="M${hx} ${hy} L12 102 A195 195 0 0 1 288 102 Z" class="f-grass"/>
+    <path d="M${hx} ${hy} L${fx} ${fy} L${sx} ${sy} L${tx} ${ty} Z" class="f-infield"/>
+    <line x1="${hx}" y1="${hy}" x2="12" y2="102" class="f-line"/><line x1="${hx}" y1="${hy}" x2="288" y2="102" class="f-line"/>
+    <circle cx="${FIELD.mound[0]}" cy="${FIELD.mound[1]}" r="9" class="f-mound"/>
+    ${base(fx, fy)}${base(sx, sy)}${base(tx, ty)}
+    <path d="M${hx - 6} ${hy - 6} h12 v6 l-6 6 l-6 -6 z" class="f-base"/>
+    ${arrows}${players}
+  </svg>`;
+}
+
+function buntSection() {
+  const play = BUNT_PLAYS.find(p => p.n === ui.bunt) || BUNT_PLAYS[0];
+  const order = ['P', 'C', '1B', '3B', '2B', 'SS', 'LF', 'CF', 'RF'];
+  const assignments = play.moves
+    ? `<div class="table-wrap"><table class="signs assign"><tbody>${order.filter(pos => play.moves[pos]).map(pos => `<tr><th>${pos}</th><td>${esc(play.moves[pos][1])}</td></tr>`).join('')}</tbody></table></div>`
+    : `<p class="callout">The guide names this play but doesn’t spell out the pick. Install your own pick timing and teach it alongside the Wheel so the two look identical until the pick.</p>`;
+  return `
+  <section class="panel">
+    <p class="lede" style="font-size:15px">From the guide: the catcher relays the bunt defense call to the team after getting it from the coach. Calls go by number of pumps or touches; coaches choose the indicator or hot spot.</p>
+    ${signTable(BUNT_PLAYS.map(p => [String(p.n), `<b>${esc(p.name)}</b>: ${esc(p.when)}${p.n === 3 ? '. Want the out at 3B!' : ''}`]))}
+  </section>
+  <section class="panel">
+    <div class="seg" role="group" aria-label="Bunt play">${BUNT_PLAYS.map(p => `<button data-act="bunt" data-n="${p.n}" aria-pressed="${p.n === play.n}">${p.n} · ${esc(p.name)}</button>`).join('')}</div>
+    <div class="bunt-grid">
+      <div>${fieldSvg(play)}</div>
+      <div class="prose">
+        <div class="meta"><span class="tag">${esc(play.when)}</span><span>Sign ${play.n}</span></div>
+        <h3 class="sec" style="font-size:18px">${esc(play.name)}</h3>
+        <p class="focus">${esc(play.goal)}</p>
+        ${assignments}
+      </div>
+    </div>
+    <p class="lede" style="font-size:13px">The guide lists the four plays and when to use them. Player assignments and diagrams show standard coverages, so confirm them against how your program runs each play.</p>
+  </section>`;
+}
+
+function renderResources() {
   const all = CHECKLIST.flatMap(([, items]) => items.map(([t]) => t));
   const done = all.filter(t => state.checks[t]).length;
+  const teach = DRILLS.filter(d => d.k === 'teach');
   return `
   <div class="view-head">
-    <div class="eyebrow">Team · FCA Sports Idaho</div>
-    <h1 class="title">What we do is bigger than our sport</h1>
-    <p class="lede">We plan to DEVELOP baseball skills of players and help them grow in their relationship with God to positively IMPACT people wherever they go while we strive to compete to be the best.</p>
+    <div class="eyebrow">Resources · FCA Sports Way</div>
+    <h1 class="title">Resources</h1>
+    <p class="lede">The philosophy, standards and strategy behind every FCA Sports Idaho team, from the Coach’s Mandate to bunt defense.</p>
   </div>
+  <nav class="chips res-nav" aria-label="Resource sections">${RES_SECTIONS.map(([id, l]) => `<button class="filter" data-act="jump" data-to="res-${id}">${l}</button>`).join('')}</nav>
 
-  <section class="panel">
+  <section class="res" id="res-philosophy">
+    <h2 class="res-h">Philosophy</h2>
+    <div class="panel mission">
+      <div class="eyebrow">Our mission</div>
+      <p>We plan to <b>DEVELOP</b> baseball skills of players and help them grow in their relationship with God to positively <b>IMPACT</b> people wherever they go while we strive to compete to be the best.</p>
+      <p class="lede" style="font-size:15px">FCA Sports Idaho is all about development and impact. What we do is bigger than our sport!</p>
+    </div>
+    <div class="panel">
+      <h3 class="sec">Team goals</h3>
+      <p class="lede" style="font-size:15px">These are organization-wide. On top of these, set your own team goals in faith, culture, development and results.</p>
+      <div class="two prose">
+        <div><h4>Faith</h4><ul><li><b>UP:</b> give God ALL the glory</li><li><b>IN:</b> grow our and our players’ personal relationships with God</li><li><b>OUT:</b> spread God’s love expecting to make an impact for the sake of the Kingdom</li></ul></div>
+        <div><h4>Culture</h4><ul><li>Practice and compete with a purpose</li><li>Focus, on the field and in the dugout</li><li><b>TEE:</b> Tempo, Effort, Energy</li><li>Prepared: on time, properly equipped, properly dressed</li></ul></div>
+        <div><h4>Development</h4><ul><li>Teach Baseball 101: picking up your teammates, dugout etiquette, celebration</li><li>Teach foundational baseball skills. Assume they know nothing; teach them everything, from warm-up to cool-down</li></ul></div>
+        <div><h4>Results</h4><ul><li><b>Offense:</b> 60% QAB per game · over .400 OBP · execute BASES2 · aggressive base running (ball-in-dirt reads, pressure the defense)</li><li><b>Defense:</b> make routine plays · pitch to contact (under 15 pitches an inning) · pre-pitch plan (communicate and expect the ball) · minimize freebies</li><li><b>Win the freebie war!</b></li></ul></div>
+      </div>
+    </div>
+    <div class="panel">
+      <h3 class="sec">The Coach’s Mandate</h3>
+      <ol class="mandate">${MANDATE.map(l => `<li><b>${l[0]}</b><span>${esc(l)}</span></li>`).join('')}</ol>
+    </div>
+  </section>
+
+  <section class="res" id="res-ready">
     <div class="row" style="justify-content:space-between;align-items:center">
-      <h2 class="sec">Get ’em ready checklist</h2>
+      <h2 class="res-h">Get ’em ready checklist</h2>
       <span class="pill ${done === all.length ? 'good' : 'even'}">${done} / ${all.length}</span>
     </div>
-    <p class="lede" style="font-size:15px">Goal: cover everything before your team’s first game.</p>
-    <div class="bar" aria-hidden="true"><i style="width:${Math.round(done / all.length * 100)}%"></i></div>
-    <div class="two">
-      ${CHECKLIST.map(([group, items]) => `<div><h3 class="sub">${group}</h3>${items.map(([t, note], i) => {
-        const id = 'ck-' + group.slice(0, 3) + i;
-        return `<label class="check ${state.checks[t] ? 'done' : ''}" for="${id}"><input type="checkbox" id="${id}" data-check="${esc(t)}" ${state.checks[t] ? 'checked' : ''}><span>${esc(t)}${note ? `<small>${esc(note)}</small>` : ''}</span></label>`;
-      }).join('')}</div>`).join('')}
+    <div class="panel">
+      <p class="lede" style="font-size:15px">The goal is to have covered everything by your team’s first game. Your checks save on this device.</p>
+      <div class="bar" aria-hidden="true"><i style="width:${Math.round(done / all.length * 100)}%"></i></div>
+      <div class="two">
+        ${CHECKLIST.map(([group, items]) => `<div><h3 class="sub">${group}</h3>${items.map(([t, note], i) => {
+          const id = 'ck-' + group.slice(0, 3) + i;
+          return `<label class="check ${state.checks[t] ? 'done' : ''}" for="${id}"><input type="checkbox" id="${id}" data-check="${esc(t)}" ${state.checks[t] ? 'checked' : ''}><span>${esc(t)}${note ? `<small>${esc(note)}</small>` : ''}</span></label>`;
+        }).join('')}</div>`).join('')}
+      </div>
     </div>
   </section>
 
-  <section class="panel">
-    <h2 class="sec">Team goals</h2>
-    <p class="lede" style="font-size:15px">These are organization-wide. Also set your own team goals in faith, culture, development and results.</p>
-    <div class="two prose">
-      <div><h4>Faith</h4><ul><li><b>UP:</b> give God ALL the glory</li><li><b>IN:</b> grow our and our players’ personal relationships with God</li><li><b>OUT:</b> spread God’s love expecting to make an impact for the Kingdom</li></ul></div>
-      <div><h4>Culture</h4><ul><li>Practice and compete with a purpose</li><li>Focus, on the field and in the dugout</li><li><b>TEE:</b> Tempo, Effort, Energy</li><li>Prepared: on time, properly equipped, properly dressed</li></ul></div>
-      <div><h4>Development</h4><ul><li>Teach Baseball 101: picking up teammates, dugout etiquette, celebration</li><li>Teach foundational skills. Assume they know nothing and teach them everything, warm-up to cool-down</li></ul></div>
-      <div><h4>Results</h4><ul><li><b>Offense:</b> 60% QAB · .400+ OBP · execute BASES2 · aggressive base running</li><li><b>Defense:</b> routine plays · under 15 pitches an inning · pre-pitch plan · minimize freebies</li><li><b>Win the freebie war!</b></li></ul></div>
+  <section class="res" id="res-practice-way">
+    <h2 class="res-h">How we practice</h2>
+    <div class="panel">
+      <p class="focus" style="font-size:18px">The 5 P’s: Proper Preparation Prevents Poor Performance!</p>
+      <div class="two prose">
+        <ul>
+          <li>Communicate the plan with every coach and volunteer helping at practice</li>
+          <li>Every template can run with an offensive, defensive or team focus</li>
+          <li>Keep the beginning of practice the same every time: Pray, Dynamic Warm-Up, then into the work</li>
+          <li>Open and close every practice with prayer; longer practices include a Devo</li>
+        </ul>
+        <ul>
+          <li>Warm-ups take careful coach oversight at first (cones, timer), but should quickly become player-led</li>
+          <li>Don’t start by hitting fungos. After the throwing routine and EDD’s, run the ground ball progression at a quick tempo</li>
+          <li>Tee work: 35 focused swings, no more than 15 minutes. “If you want to be average, then do the bare minimum.”</li>
+          <li>Speed work builds explosiveness, not conditioning. Plenty of rest between sets</li>
+        </ul>
+      </div>
+      <div><button class="btn" data-tab-go="practice">Open the practice planner</button></div>
     </div>
   </section>
 
-  <section class="panel">
-    <h2 class="sec">The Coach’s Mandate</h2>
-    <ol class="mandate">${MANDATE.map((l, i) => `<li><b>${l[0]}</b><span>${esc(l)}</span></li>`).join('')}</ol>
+  <section class="res" id="res-strategy">
+    <h2 class="res-h">Game strategy</h2>
+    ${gameApproach()}
+    <div class="panel">
+      <h3 class="sec">Lineup card terms</h3>
+      <div class="two">
+        <div><h3 class="sub">BASES2</h3>${signTable(BASES2.map(([l, n, note]) => [l, `<b>${esc(n)}</b>: ${esc(note)}`]))}</div>
+        <div><h3 class="sub">Freebie war</h3>${signTable([['BB', 'Base on balls (walk)'], ['HBP', 'Hit by pitch'], ['WP', 'Wild pitch (pitcher’s fault)'], ['PB', 'Passed ball (catcher’s fault)'], ['E', 'Error: misplayed ball on defense (judgment call)'], ['Bonehead', 'A silly mental mistake that shouldn’t happen']])}</div>
+      </div>
+      <h3 class="sub">Other stats we track</h3>
+      ${signTable([['IP', 'Innings pitched'], ['LOBO', 'Lead-off batter out each inning'], ['BID’s', 'Ball-in-dirt reads (base running)'], ['Blocks', 'Blocks from a catcher'], ['LOB', 'Runners left on base'], ['Mental error', 'Bad decision or tantrum'], ['Dirt bag', 'Laundry machines exist'], ['Big play', 'A clutch play in a big game situation, individual inning or full game']])}
+    </div>
+  </section>
+
+  <section class="res" id="res-bunt">
+    <h2 class="res-h">Bunt defense</h2>
+    ${buntSection()}
+  </section>
+
+  <section class="res" id="res-baserunning">
+    <h2 class="res-h">Base running</h2>
+    <div class="panel">
+      <p class="focus" style="font-size:18px">SCORE. No matter what base you start at, expect to score.</p>
+      <p>Be aggressive. Your aggression puts pressure on the defense, making them make mistakes and taking the focus off the batter.</p>
+      <div class="two prose">
+        <ul>
+          <li><b>Leads:</b> hard off, hard back. DON’T LINGER</li>
+          <li><b>Secondary leads</b> start when the pitcher’s momentum goes home</li>
+          <li><b>Steals:</b> the first step (jump) is most important. Bad jump? Shut it down</li>
+        </ul>
+        <ul>
+          <li>With 0 outs at second it has to be 100%. Don’t make the first out at third</li>
+          <li><b>Never make the third out at third</b></li>
+          <li>Ball-in-dirt reads every pitch</li>
+        </ul>
+      </div>
+      <div class="chips">${['home-to-first', 'first-base-leads', 'second-base-leads', 'third-base-leads', 'steal-breaks'].map(id => `<button class="filter" data-act="viewDrill" data-id="${id}">${esc(DRILL[id].t)}</button>`).join('')}</div>
+    </div>
+  </section>
+
+  <section class="res" id="res-signs">
+    <h2 class="res-h">Signs</h2>
+    ${gameSigns()}
+  </section>
+
+  <section class="res" id="res-teaching">
+    <h2 class="res-h">Teaching points</h2>
+    <p class="lede">Mechanics and positioning write-ups from the guide. Tap one to read it or add it to a practice.</p>
+    <div class="lib-grid">${libCards(teach)}</div>
   </section>`;
 }
 
@@ -1663,7 +1882,7 @@ function showText(text, label) {
 /* ========================== ROUTER / EVENTS ========================== */
 const app = document.getElementById('app');
 function render() {
-  const view = { practice: renderPractice, drills: renderDrills, game: renderGame, devos: renderDevos, team: renderTeam }[ui.tab];
+  const view = { practice: renderPractice, drills: renderDrills, game: renderGame, devos: renderDevos, resources: renderResources }[ui.tab];
   const focusId = document.activeElement?.id;
   app.innerHTML = view() + `<p class="foot">From the FCA Sports Way Coach Guide · FCA Sports Idaho Clubs. Your plans save in this browser only.</p>`;
   document.querySelectorAll('.tab').forEach(t => t.setAttribute('aria-current', t.dataset.tab === ui.tab ? 'page' : 'false'));
@@ -1671,7 +1890,8 @@ function render() {
   if (focusId && !dlg.open) document.getElementById(focusId)?.focus({ preventScroll: true });
 }
 function go(tab) {
-  if (!['practice', 'drills', 'game', 'devos', 'team'].includes(tab)) tab = 'practice';
+  if (tab === 'team') tab = 'resources';
+  if (!['practice', 'drills', 'game', 'devos', 'resources'].includes(tab)) tab = 'practice';
   ui.tab = tab; ui.confirm = null; render();
   if (location.hash.slice(1) !== tab) history.replaceState(null, '', '#' + tab);
   window.scrollTo(0, 0);
@@ -1723,6 +1943,8 @@ const ACTIONS = {
   rotate(el) { state.game.rotate = el.dataset.v === '1'; save(); render(); },
   genLineup() { if (generateLineup()) { save(); render(); toast('Lineup card generated'); } },
   moveBat(el) { const o = state.game.order, i = o.indexOf(el.dataset.pid), j = i + Number(el.dataset.d); if (j < 0 || j >= o.length) return; [o[i], o[j]] = [o[j], o[i]]; save(); render(); },
+  bunt(el) { ui.bunt = Number(el.dataset.n); render(); },
+  jump(el) { document.getElementById(el.dataset.to)?.scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start' }); },
   pdf(el) { makePdf(el.dataset.kind, el.dataset.mode); },
   copyLineup() { copyText(lineupText(), 'Lineup'); },
   newDevo() { const d = blankDevo(); state.devos.unshift(d); state.curDevo = d.id; ui.confirm = null; save(); render(); document.getElementById('dv-title')?.focus(); },
@@ -1735,6 +1957,7 @@ const ACTIONS = {
   resetTrack() { const g = state.game; g.qab = 0; g.free = { us: {}, them: {} }; g.bases = {}; g.arms.forEach(a => a.log = []); ui.confirm = null; save(); render(); toast('Tracker reset'); },
 };
 document.addEventListener('click', e => {
+  const go2 = e.target.closest('[data-tab-go]'); if (go2) { go(go2.dataset.tabGo); return; }
   const el = e.target.closest('[data-act]');
   if (el && ACTIONS[el.dataset.act] && !el.disabled) ACTIONS[el.dataset.act](el);
 });
