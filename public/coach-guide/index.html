@@ -113,6 +113,8 @@ textarea { resize: vertical; min-height: 80px; }
 .btn.ghost { background: none; border-color: transparent; color: var(--muted); }
 .btn.danger { color: var(--bad); }
 .btn.sm { padding: 5px 10px; font-size: 13px; }
+.check-inline { display: inline-flex; align-items: center; gap: 6px; font-size: 15px; color: var(--muted); }
+.check-inline input { width: 18px; height: 18px; accent-color: var(--gold); }
 
 .seg { display: inline-flex; border: 1px solid var(--line); border-radius: 999px; padding: 3px; gap: 2px; background: var(--bg); flex-wrap: wrap; }
 .seg button { border: 0; background: none; border-radius: 999px; padding: 6px 14px; font-family: var(--font-label); font-weight: 700; font-size: 14px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); }
@@ -304,12 +306,7 @@ dialog::backdrop { background: rgba(10,10,10,.55); }
 
 <header class="top">
   <div class="top-inner">
-    <svg class="badge" viewBox="0 0 64 64" role="img" aria-label="FCA Sports Idaho Clubs">
-      <circle cx="32" cy="32" r="30.5" fill="#FFC20E" stroke="#151515" stroke-width="1.5"/>
-      <text x="32" y="30" text-anchor="middle" font-family="Montserrat, Arial, sans-serif" font-weight="800" font-size="13" fill="#151515">FCA</text>
-      <text x="32" y="40" text-anchor="middle" font-family="Montserrat, Arial, sans-serif" font-weight="500" font-size="7.2" fill="#151515">SPORTS</text>
-      <text x="32" y="48" text-anchor="middle" font-family="Montserrat, Arial, sans-serif" font-weight="800" font-size="5" fill="#151515" letter-spacing=".3">IDAHO CLUBS</text>
-    </svg>
+    <img class="badge" src="fca-sports-idaho-clubs.png" alt="FCA Sports Idaho Clubs" width="44" height="44">
     <div>
       <div class="mark"><b>FCA</b> <span>SPORTS</span> <b>WAY</b></div>
       <div class="mark-sub">FCA Coach Guide</div>
@@ -852,8 +849,10 @@ function renderPractice() {
     <label class="field"><span>Notes for coaches</span><textarea id="planNotes" data-pf="notes" placeholder="Who runs each station, equipment, reminders…">${esc(plan.notes)}</textarea></label>
 
     <div class="row no-print">
-      <button class="btn primary" data-act="copyPlan">Copy plan</button>
-      <button class="btn" data-act="print">Print</button>
+      <button class="btn primary" data-act="pdf" data-kind="practice" data-mode="save">Save PDF</button>
+      <button class="btn" data-act="pdf" data-kind="practice" data-mode="print">Print</button>
+      <button class="btn" data-act="copyPlan">Copy as text</button>
+      <label class="check-inline" for="pdfDrills"><input type="checkbox" id="pdfDrills" data-opt="pdfDrills" ${ui.pdfDrills !== false ? 'checked' : ''}> Include drill sheets</label>
       ${confirmDel
         ? `<span class="callout">Delete this plan for good?</span><button class="btn danger" data-act="delPlan">Delete</button><button class="btn ghost" data-act="cancelConfirm">Keep it</button>`
         : `<button class="btn ghost danger" data-act="askDelPlan">Delete plan</button>`}
@@ -1091,7 +1090,7 @@ function gameLineup() {
       <span class="meta">${esc(fmtDate(g.date))} · ${clock(toMin(g.time))}</span>
     </div>
     ${card}
-    ${rows.length ? `<div class="row no-print"><button class="btn primary" data-act="copyLineup">Copy lineup</button><button class="btn" data-act="print">Print card</button></div>` : ''}
+    ${rows.length ? `<div class="row no-print"><button class="btn primary" data-act="pdf" data-kind="lineup" data-mode="save">Save PDF</button><button class="btn" data-act="pdf" data-kind="lineup" data-mode="print">Print</button><button class="btn" data-act="copyLineup">Copy as text</button></div>` : ''}
   </section>`;
 }
 function lineupText() {
@@ -1404,6 +1403,213 @@ function renderTeam() {
   </section>`;
 }
 
+/* ========================== PDF EXPORT ==========================
+   Branded, printable PDFs built in the browser with jsPDF (vendored in ./vendor). */
+const PDF = { W: 612, H: 792, M: 40, ink: [21, 21, 21], muted: [93, 92, 86], line: [224, 223, 216], band: [230, 230, 230], gold: [255, 194, 14], zebra: [247, 247, 244] };
+let pdfBadge;
+function loadScript(src) {
+  return new Promise((res, rej) => { const s = document.createElement('script'); s.src = src; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
+}
+function imageData(src) {
+  return new Promise((res, rej) => {
+    const im = new Image();
+    im.onload = () => { try { const c = document.createElement('canvas'); c.width = im.naturalWidth; c.height = im.naturalHeight; c.getContext('2d').drawImage(im, 0, 0); res(c.toDataURL('image/png')); } catch (e) { rej(e); } };
+    im.onerror = rej; im.src = src;
+  });
+}
+async function newPdf() {
+  if (!window.jspdf) { await loadScript('vendor/jspdf.umd.min.js'); await loadScript('vendor/jspdf.plugin.autotable.min.js'); }
+  if (pdfBadge === undefined) pdfBadge = await imageData('fca-sports-idaho-clubs.png').catch(() => null);
+  return new window.jspdf.jsPDF({ unit: 'pt', format: 'letter' });
+}
+// Standard PDF fonts only cover Latin-1, so swap typographic punctuation for plain equivalents.
+const pdfSafe = s => String(s ?? '').replace(/[‘’]/g, "'").replace(/[“”]/g, '"').replace(/[–—−]/g, '-').replace(/→/g, '>').replace(/…/g, '...').replace(/[^\x00-\xFF]/g, '');
+
+function pdfHeader(doc, kind, title, meta) {
+  const { W, M } = PDF;
+  doc.setFillColor(...PDF.band); doc.rect(0, 0, W, 76, 'F');
+  if (pdfBadge) doc.addImage(pdfBadge, 'PNG', M, 11, 54, 54);
+  let x = M + (pdfBadge ? 66 : 0);
+  doc.setTextColor(...PDF.ink); doc.setFontSize(22);
+  for (const [word, style] of [['FCA ', 'bold'], ['SPORTS ', 'normal'], ['WAY', 'bold']]) { doc.setFont('helvetica', style); doc.text(word, x, 40); x += doc.getTextWidth(word); }
+  doc.setFont('helvetica', 'bold'); doc.setFontSize(9); doc.setTextColor(...PDF.muted);
+  doc.setCharSpace(1.6); doc.text(kind.toUpperCase(), M + (pdfBadge ? 66 : 0), 56); doc.setCharSpace(0);
+  doc.setFontSize(8); doc.setFont('helvetica', 'normal');
+  doc.text('FCA Sports Idaho Clubs', W - M, 40, { align: 'right' });
+  doc.text('FCA Coach Guide', W - M, 52, { align: 'right' });
+  doc.setTextColor(...PDF.ink); doc.setFont('helvetica', 'bold'); doc.setFontSize(20);
+  const lines = doc.splitTextToSize(pdfSafe(title), W - 2 * M);
+  doc.text(lines, M, 108);
+  let y = 108 + (lines.length - 1) * 24;
+  if (meta) { doc.setFont('helvetica', 'normal'); doc.setFontSize(10.5); doc.setTextColor(...PDF.muted); y += 17; doc.text(pdfSafe(meta), M, y); }
+  doc.setFillColor(...PDF.gold); doc.rect(M, y + 10, 44, 3.5, 'F');
+  return y + 30;
+}
+function pdfFooters(doc) {
+  const { W, H, M } = PDF, n = doc.getNumberOfPages();
+  for (let i = 1; i <= n; i++) {
+    doc.setPage(i);
+    doc.setDrawColor(...PDF.line); doc.setLineWidth(0.75); doc.line(M, H - 34, W - M, H - 34);
+    doc.setFont('helvetica', 'normal'); doc.setFontSize(8); doc.setTextColor(...PDF.muted);
+    doc.text('FCA Sports Way  ·  Develop skills. Grow in Christ. Make an impact.', M, H - 22);
+    doc.text(`Page ${i} of ${n}`, W - M, H - 22, { align: 'right' });
+  }
+}
+function pdfSection(doc, y, label) {
+  doc.setFont('helvetica', 'bold'); doc.setFontSize(10); doc.setTextColor(...PDF.ink);
+  doc.setCharSpace(1.2); doc.text(label.toUpperCase(), PDF.M, y); doc.setCharSpace(0);
+  return y + 12;
+}
+function pdfRoom(doc, y, need) {
+  if (y + need <= PDF.H - 50) return y;
+  doc.addPage(); return 50;
+}
+function pdfTableBase() {
+  return {
+    margin: { left: PDF.M, right: PDF.M, bottom: 50 },
+    theme: 'grid',
+    styles: { font: 'helvetica', fontSize: 10, cellPadding: 5, lineColor: PDF.line, lineWidth: 0.75, textColor: PDF.ink, valign: 'middle' },
+    headStyles: { fillColor: PDF.ink, textColor: 255, fontStyle: 'bold', fontSize: 9, lineColor: PDF.ink },
+    alternateRowStyles: { fillColor: PDF.zebra },
+  };
+}
+function pdfLines(doc, y, n) {
+  doc.setDrawColor(...PDF.line); doc.setLineWidth(0.75);
+  for (let i = 0; i < n; i++) { y += 20; doc.line(PDF.M, y, PDF.W - PDF.M, y); }
+  return y + 8;
+}
+function pdfBox(doc, x, y, label) {
+  doc.setDrawColor(...PDF.ink); doc.setLineWidth(1); doc.rect(x, y - 8.5, 10, 10);
+  doc.setFont('helvetica', 'normal'); doc.setFontSize(9.5); doc.setTextColor(...PDF.ink);
+  doc.text(pdfSafe(label), x + 15, y);
+}
+async function deliverPdf(doc, filename, mode, win) {
+  if (mode === 'print') {
+    doc.autoPrint();
+    const url = doc.output('bloburl');
+    if (win) win.location.href = url; else window.open(url, '_blank');
+  } else {
+    doc.save(filename);
+  }
+}
+const fileSafe = s => pdfSafe(s).replace(/[^A-Za-z0-9]+/g, '-').replace(/^-|-$/g, '');
+
+async function practicePdf(mode, win) {
+  const plan = curPlan(), doc = await newPdf();
+  const start = toMin(plan.start), times = planTimes(plan), total = planTotal(plan);
+  let y = pdfHeader(doc, 'Practice Plan', plan.name || 'Practice',
+    `${fmtDate(plan.date)}  ·  ${clock(start)} - ${clock(start + total)}  ·  ${offset(total)} total  ·  ${plan.focus} focus`);
+  doc.autoTable({
+    ...pdfTableBase(), startY: y,
+    head: [['Time', 'Elapsed', 'Block', 'Min', 'Drills']],
+    body: plan.blocks.map((b, i) => [clockShort(start + times[i]), offset(times[i]), pdfSafe(b.title), b.min ? String(b.min) : '-',
+      pdfSafe(b.drills.filter(id => DRILL[id]).map(id => DRILL[id].t).join('\n'))]),
+    columnStyles: { 0: { cellWidth: 46, fontStyle: 'bold' }, 1: { cellWidth: 50, textColor: PDF.muted }, 2: { cellWidth: 170, fontStyle: 'bold' }, 3: { cellWidth: 34, halign: 'center' } },
+    didParseCell: d => { if (d.section === 'body' && d.column.index === 2 && /pray|devo/i.test(d.cell.raw)) d.cell.styles.fontStyle = 'bolditalic'; },
+  });
+  y = doc.lastAutoTable.finalY + 26;
+  y = pdfRoom(doc, y, 140);
+  y = pdfSection(doc, y, 'Notes for coaches');
+  if (plan.notes.trim()) {
+    doc.setFont('helvetica', 'normal'); doc.setFontSize(10.5); doc.setTextColor(...PDF.ink);
+    const ls = doc.splitTextToSize(pdfSafe(plan.notes.trim()), PDF.W - 2 * PDF.M);
+    for (const l of ls) { y = pdfRoom(doc, y, 16) + 4; doc.text(l, PDF.M, y + 6); y += 10; }
+    y += 10;
+  } else y = pdfLines(doc, y - 6, 5);
+
+  const used = [...new Set(plan.blocks.flatMap(b => b.drills))].filter(id => DRILL[id]);
+  if (ui.pdfDrills !== false && used.length) {
+    doc.addPage(); y = pdfHeader(doc, 'Drill Sheets', plan.name || 'Practice', `${used.length} drill${used.length > 1 ? 's' : ''} from the FCA Sports Way Coach Guide`);
+    const width = PDF.W - 2 * PDF.M;
+    for (const id of used) {
+      const d = DRILL[id];
+      y = pdfRoom(doc, y, 70);
+      doc.setFont('helvetica', 'bold'); doc.setFontSize(13); doc.setTextColor(...PDF.ink); doc.text(pdfSafe(d.t), PDF.M, y);
+      doc.setFont('helvetica', 'bold'); doc.setFontSize(8.5); doc.setTextColor(...PDF.muted);
+      doc.text(pdfSafe(`${d.c.toUpperCase()}  ·  ${KINDS[d.k].toUpperCase()}${d.m ? `  ·  ${d.m} MIN` : ''}  ·  GUIDE P. ${d.p}`), PDF.M, y + 13);
+      y += 28;
+      const para = (text, style = 'normal', indent = 0, size = 10, color = PDF.ink, bullet = '') => {
+        doc.setFont('helvetica', style); doc.setFontSize(size); doc.setTextColor(...color);
+        const ls = doc.splitTextToSize(pdfSafe(text), width - indent - (bullet ? 10 : 0));
+        ls.forEach((l, i) => { y = pdfRoom(doc, y, 14); if (bullet && i === 0) doc.text(bullet, PDF.M + indent, y); doc.text(l, PDF.M + indent + (bullet ? 10 : 0), y); y += size + 3.5; });
+      };
+      para(d.s);
+      if (d.f) { y += 2; para('Focus: ' + d.f, 'bold'); }
+      for (const item of d.b || []) {
+        if (item.startsWith('## ')) { y += 4; para(item.slice(3).toUpperCase(), 'bold', 0, 8.5, PDF.muted); }
+        else if (item.startsWith('! ')) para(item.slice(2), 'italic');
+        else if (item.startsWith('> ')) para(item.slice(2), 'normal', 14, 9.5, PDF.muted, '-');
+        else para(item, 'normal', 0, 10, PDF.ink, '•');
+      }
+      y += 8; doc.setDrawColor(...PDF.line); doc.setLineWidth(0.75); doc.line(PDF.M, y, PDF.W - PDF.M, y); y += 20;
+    }
+  }
+  pdfFooters(doc);
+  await deliverPdf(doc, `FCA-Practice-${fileSafe(plan.name) || 'Plan'}-${plan.date || ''}.pdf`, mode, win);
+}
+
+async function lineupPdf(mode, win) {
+  const g = state.game, rows = lineupRows(), n = Number(g.innings) || 6, doc = await newPdf();
+  const meta = [fmtDate(g.date), 'First pitch ' + clock(toMin(g.time)), g.loc].filter(Boolean).join('  ·  ');
+  let y = pdfHeader(doc, 'Lineup Card', g.opp ? `vs ${g.opp}` : 'Lineup Card', meta);
+  const innW = Math.min(40, (PDF.W - 2 * PDF.M - 24 - 150 - 34) / n);
+  doc.autoTable({
+    ...pdfTableBase(), startY: y,
+    head: [['#', 'Batting order', ...Array.from({ length: n }, (_, i) => String(i + 1)), 'Inn']],
+    body: rows.map((r, k) => [String(k + 1), pdfSafe(r.label), ...r.cells, String(r.innings)]),
+    styles: { ...pdfTableBase().styles, fontSize: 11, cellPadding: { top: 6, bottom: 6, left: 5, right: 5 } },
+    columnStyles: Object.assign({ 0: { cellWidth: 24, halign: 'center', fontStyle: 'bold' }, 1: { fontStyle: 'bold' }, [n + 2]: { cellWidth: 34, halign: 'center', textColor: PDF.muted } },
+      Object.fromEntries(Array.from({ length: n }, (_, i) => [i + 2, { cellWidth: innW, halign: 'center', fontStyle: 'bold' }]))),
+    didParseCell: d => {
+      if (d.section === 'head' && d.column.index >= 2) d.cell.styles.halign = 'center';
+      if (d.section === 'body' && d.cell.raw === 'BN') { d.cell.styles.textColor = PDF.muted; d.cell.styles.fontStyle = 'normal'; }
+    },
+  });
+  y = doc.lastAutoTable.finalY + 26;
+
+  const arms = g.arms.filter(a => a.name.trim());
+  y = pdfRoom(doc, y, 60 + 24 * Math.max(4, arms.length));
+  y = pdfSection(doc, y, 'Pitching');
+  doc.autoTable({
+    ...pdfTableBase(), startY: y,
+    head: [['Pitcher', 'Role', 'Limit', 'Pitch count']],
+    body: [...arms.map(a => [pdfSafe(a.name), a.role, a.limit ? String(a.limit) : '', '']), ...Array.from({ length: Math.max(0, 4 - arms.length) }, () => ['', '', '', ''])],
+    columnStyles: { 1: { cellWidth: 80 }, 2: { cellWidth: 50, halign: 'center' }, 3: { cellWidth: 200 } },
+  });
+  y = doc.lastAutoTable.finalY + 22;
+
+  y = pdfRoom(doc, y, 112);
+  const colW = (PDF.W - 2 * PDF.M) / 3;
+  const cols = [
+    ['BASES2', BASES2.map(([l, name]) => `${l}  ${name}`)],
+    ['Freebie war', FREEBIES.map(([k, nm]) => `${k}  ${nm}`)],
+    ['Goals', ['18 quality at-bats', '.400+ OBP', 'Under 15 pitches / inning', 'No lead-off or 2-out walks', 'Win the freebie war']],
+  ];
+  cols.forEach(([label, items], c) => {
+    const x = PDF.M + c * colW;
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(10); doc.setTextColor(...PDF.ink); doc.text(label.toUpperCase(), x, y);
+    if (label === 'Freebie war') {
+      // Tally columns: freebies we gave vs. freebies they gave.
+      doc.setFontSize(7.5); doc.setTextColor(...PDF.muted); doc.text('US', x + 92, y); doc.text('THEM', x + 132, y);
+      FREEBIES.forEach(([k], i) => {
+        const ty = y + 18 + i * 15.5;
+        doc.setFont('helvetica', 'bold'); doc.setFontSize(9.5); doc.setTextColor(...PDF.ink); doc.text(k, x, ty);
+        doc.setDrawColor(...PDF.ink); doc.setLineWidth(0.75); doc.line(x + 86, ty + 2, x + 122, ty + 2); doc.line(x + 130, ty + 2, x + 166, ty + 2);
+      });
+    } else items.forEach((it, i) => pdfBox(doc, x, y + 18 + i * 15.5, it));
+  });
+  pdfFooters(doc);
+  await deliverPdf(doc, `FCA-Lineup-${fileSafe(g.opp) || 'Card'}-${g.date || ''}.pdf`, mode, win);
+}
+
+async function makePdf(kind, mode) {
+  // Open the print tab now, while the click still counts as a user action, so popup blockers allow it.
+  const win = mode === 'print' ? window.open('', '_blank') : null;
+  toast('Building PDF…');
+  try { await (kind === 'lineup' ? lineupPdf : practicePdf)(mode, win); if (mode !== 'print') toast('PDF saved'); }
+  catch (e) { if (win) win.close(); console.error(e); toast('Couldn’t build the PDF. Reload the page and try again.'); }
+}
+
 /* ========================== DIALOG ========================== */
 const dlg = document.getElementById('dlg');
 function openDialog(html) { dlg.innerHTML = `<div class="dlg">${html}</div>`; if (!dlg.open) dlg.showModal(); }
@@ -1517,6 +1723,7 @@ const ACTIONS = {
   rotate(el) { state.game.rotate = el.dataset.v === '1'; save(); render(); },
   genLineup() { if (generateLineup()) { save(); render(); toast('Lineup card generated'); } },
   moveBat(el) { const o = state.game.order, i = o.indexOf(el.dataset.pid), j = i + Number(el.dataset.d); if (j < 0 || j >= o.length) return; [o[i], o[j]] = [o[j], o[i]]; save(); render(); },
+  pdf(el) { makePdf(el.dataset.kind, el.dataset.mode); },
   copyLineup() { copyText(lineupText(), 'Lineup'); },
   newDevo() { const d = blankDevo(); state.devos.unshift(d); state.curDevo = d.id; ui.confirm = null; save(); render(); document.getElementById('dv-title')?.focus(); },
   devoSetting(el) { curDevo().setting = el.dataset.v; save(); render(); },
@@ -1563,6 +1770,7 @@ document.addEventListener('change', e => {
   else if (d.bf === 'min') { block(d.bid).min = Math.max(0, Number(el.value) || 0); save(); render(); }
   else if (d.pf === 'start') { render(); }
   else if (d.rerender) { render(); }
+  else if (d.opt) { ui[d.opt] = el.checked; }
   else if (d.check) { state.checks[d.check] = el.checked; save(); render(); }
 });
 
