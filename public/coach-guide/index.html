@@ -108,6 +108,8 @@ h2.sec { font-family: var(--font-display); font-weight: 800; font-size: 20px; le
 h3.sub { font-family: var(--font-label); font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; font-size: 15px; color: var(--muted); }
 
 .panel { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 16px; display: grid; gap: 14px; min-width: 0; }
+.panel > *, .res > *, main > * { min-width: 0; }
+.table-wrap { max-width: 100%; position: relative; }
 .row { display: flex; flex-wrap: wrap; gap: 10px; align-items: end; }
 .field { display: grid; gap: 4px; flex: 1 1 140px; min-width: 0; }
 .field > span { font-family: var(--font-label); font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; font-size: 13px; color: var(--muted); }
