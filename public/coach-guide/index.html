@@ -813,8 +813,8 @@ function renderPractice() {
 
   return `
   <div class="view-head">
-    <div class="eyebrow">Practice · The 5 P’s</div>
-    <h1 class="title">Proper Preparation Prevents Poor Performance</h1>
+    <div class="eyebrow">Practice · The 5 P’s: Proper Preparation Prevents Poor Performance</div>
+    <h1 class="title">Practice Plan</h1>
     <p class="lede">Start from a guide template, drop drills into each block, then copy the plan to your assistant coaches. Keep the start of practice the same every time.</p>
   </div>
 
@@ -1497,8 +1497,8 @@ const fileSafe = s => pdfSafe(s).replace(/[^A-Za-z0-9]+/g, '-').replace(/^-|-$/g
 async function practicePdf(mode, win) {
   const plan = curPlan(), doc = await newPdf();
   const start = toMin(plan.start), times = planTimes(plan), total = planTotal(plan);
-  let y = pdfHeader(doc, 'Practice Plan', plan.name || 'Practice',
-    `${fmtDate(plan.date)}  ·  ${clock(start)} - ${clock(start + total)}  ·  ${offset(total)} total  ·  ${plan.focus} focus`);
+  let y = pdfHeader(doc, 'FCA Coach Guide', 'Practice Plan',
+    [plan.name, fmtDate(plan.date), `${clock(start)} - ${clock(start + total)}`, `${plan.focus} focus`].filter(Boolean).join('  ·  '));
   doc.autoTable({
     ...pdfTableBase(), startY: y,
     head: [['Time', 'Elapsed', 'Block', 'Min', 'Drills']],
