@@ -298,6 +298,24 @@ textarea { resize: vertical; min-height: 80px; }
 .f-player.idle text { fill: var(--muted); }
 .assign th { width: 48px; font-size: 16px; }
 
+/* Video + shared content */
+.video { position: relative; aspect-ratio: 16 / 9; max-width: 100%; border-radius: var(--radius); overflow: hidden; background: #000; }
+.video iframe, .video-poster { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+.video-poster { padding: 0; background: #000; cursor: pointer; }
+.video-poster img { width: 100%; height: 100%; object-fit: cover; display: block; opacity: .9; }
+.video-poster .play { position: absolute; left: 50%; top: 50%; width: 68px; height: 48px; transform: translate(-50%, -50%); }
+.video-poster:hover img { opacity: 1; }
+.video-link { margin: -6px 0 0; font-size: 14px; }
+.video-link a { color: var(--muted); }
+.meta .vid { color: var(--ink); background: var(--gold-soft); border-radius: 4px; padding: 0 5px; }
+.meta .new { color: var(--good); }
+.sync { margin: 4px 0 0; font-size: 14px; color: var(--muted); display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.sync .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--line); flex: none; }
+.sync .dot.live { background: var(--good); }
+.sync .dot.cached, .sync .dot.offline { background: var(--gold); }
+.linkbtn { border: 0; background: none; padding: 0; color: var(--ink); text-decoration: underline; font-size: 14px; }
+.prose ol { margin: 0; padding-left: 22px; display: grid; gap: 4px; }
+
 /* Team */
 .mandate { display: grid; gap: 10px; counter-reset: m; list-style: none; margin: 0; padding: 0; }
 .mandate li { display: grid; grid-template-columns: 34px 1fr; gap: 10px; }
@@ -374,11 +392,11 @@ dialog::backdrop { background: rgba(10,10,10,.55); }
    Page numbers (p) refer to that guide.
    ========================================================================= */
 
-const CATS = ['Warm-Up', 'Throwing', 'Pitching', 'Hitting', 'Infield', 'Outfield', 'Catching', 'Base Running', 'Speed'];
+let CATS = ['Warm-Up', 'Throwing', 'Pitching', 'Hitting', 'Infield', 'Outfield', 'Catching', 'Base Running', 'Speed'];
 const KINDS = { drill: 'Drill', routine: 'Routine', teach: 'Teaching points' };
 
 // b: body. Strings are list items, "> " prefix = sub-item, "## " prefix = sub-heading, "! " prefix = paragraph.
-const DRILLS = [
+let DRILLS = [
   // ---------- Warm-Up ----------
   { id: 'dynamic-warmup', t: 'Dynamic Warm-Up Menu', c: 'Warm-Up', k: 'routine', m: 8, p: 9,
     s: 'Movement prep before throwing. Coach-run with cones and a timer at first, then player-led.',
@@ -629,7 +647,9 @@ const DRILLS = [
       '## 10 × 10 ft short-burst sprints', 'Top speed in a short distance: 4–6 strides, don’t pitter-patter', 'Chest low; it rises naturally as you reach top speed', 'Punch the left arm through on the first step', 'Focus: explosive first step and acceleration steps',
       '! Coach Dearing’s record after doing this workout: 7 SB in 2018, 21-for-24 in 2019, and 24-for-27 leading the GNAC in 2021.'] },
 ];
-const DRILL = Object.fromEntries(DRILLS.map(d => [d.id, d]));
+let DRILL = Object.fromEntries(DRILLS.map(d => [d.id, d]));
+const BUILTIN_DRILLS = DRILLS.map(d => ({ ...d }));
+const BUILTIN_CATS = [...CATS];
 
 const TEMPLATES = {
   '60':  { name: '1 Hour', blurb: 'Warm-up and two drill blocks', blocks: [['Pray', 2], ['Dynamic Warm-Up', 8, ['dynamic-warmup']], ['Block 1', 25], ['Block 2', 25], ['Pray & Dismiss', 0]] },
@@ -806,7 +826,7 @@ function renderBody(d) {
   }
   return `<div class="prose">${html}</div>`;
 }
-const drillMeta = d => `<div class="meta"><span class="tag">${esc(d.c)}</span><span class="kind">${KINDS[d.k]}</span>${d.m ? `<span>${d.m} min</span>` : ''}<span>Guide p. ${d.p}</span></div>`;
+const drillMeta = d => `<div class="meta"><span class="tag">${esc(d.c)}</span><span class="kind">${KINDS[d.k] || 'Drill'}</span>${d.m ? `<span>${esc(d.m)} min</span>` : ''}${d.p ? `<span>Guide p. ${d.p}</span>` : '<span class="new">Added by staff</span>'}${ytId(d.v) || d.v ? '<span class="vid">▶ Video</span>' : ''}</div>`;
 
 /* ========================== PRACTICE ========================== */
 function planTimes(plan) {
@@ -907,7 +927,7 @@ function planText(plan) {
   const lines = [`${plan.name || 'Practice'}`, `${fmtDate(plan.date)} · ${clock(start)} · ${plan.focus} focus`, ''];
   plan.blocks.forEach((b, i) => {
     lines.push(`${clockShort(start + times[i])} (${offset(times[i])})  ${b.title}${b.min ? ` · ${b.min} min` : ''}`);
-    b.drills.forEach(id => DRILL[id] && lines.push(`   • ${DRILL[id].t}`));
+    b.drills.forEach(id => DRILL[id] && lines.push(`   • ${DRILL[id].t}${DRILL[id].v ? `  (video: ${DRILL[id].v})` : ''}`));
   });
   lines.push('', `Ends ${clock(start + planTotal(plan))}`);
   if (plan.notes.trim()) lines.push('', 'Notes:', plan.notes.trim());
@@ -917,7 +937,7 @@ function planText(plan) {
 /* ========================== DRILLS ========================== */
 function filteredDrills(q, cat) {
   q = q.trim().toLowerCase();
-  return DRILLS.filter(d => (cat === 'All' || d.c === cat) &&
+  return DRILLS.filter(d => (cat === 'All' || d.c === cat || (cat === 'Video' && d.v)) &&
     (!q || [d.t, d.c, d.s, d.f, ...(d.b || [])].join(' ').toLowerCase().includes(q)));
 }
 function renderDrills() {
@@ -927,12 +947,14 @@ function renderDrills() {
   <div class="view-head">
     <div class="eyebrow">Drill library · ${DRILLS.length} entries</div>
     <h1 class="title">Every drill, routine and teaching point in the guide</h1>
-    <p class="lede">Search or filter, tap a card for the full write-up, and add it straight to a practice block.</p>
+    <p class="lede">Search or filter, tap a card for the full write-up and video, and add it straight to a practice block.</p>
+    ${syncLine()}
   </div>
   <section class="panel">
     <label class="field"><span>Search</span><input type="search" id="q" value="${esc(ui.q)}" placeholder="Try “double play”, “tee”, “leads”…" data-input="q"></label>
     <div class="chips" role="group" aria-label="Category">
-      ${['All', ...CATS].map(c => `<button class="filter" data-act="cat" data-cat="${c}" aria-pressed="${ui.cat === c}">${c}${c !== 'All' ? ` <small>${counts[c]}</small>` : ''}</button>`).join('')}
+      ${['All', ...CATS].map(c => `<button class="filter" data-act="cat" data-cat="${esc(c)}" aria-pressed="${ui.cat === c}">${esc(c)}${c !== 'All' ? ` <small>${counts[c]}</small>` : ''}</button>`).join('')}
+      ${DRILLS.some(d => d.v) ? `<button class="filter" data-act="cat" data-cat="Video" aria-pressed="${ui.cat === 'Video'}">▶ With video <small>${DRILLS.filter(d => d.v).length}</small></button>` : ''}
     </div>
   </section>
   <section class="lib-grid" id="libGrid">${libCards(list)}</section>`;
@@ -1158,8 +1180,9 @@ function renderDevos() {
   <div class="view-head">
     <div class="eyebrow">Team devotional</div>
     <h1 class="title">Give God all the glory</h1>
-    <p class="lede">Every practice template ends with a Devo and every game starts with one. Fill in this template, then copy it to the coach or player leading it.</p>
+    <p class="lede">Every practice template ends with a Devo and every game starts with one. Use a shared devo from FCA staff, or fill in your own below.</p>
   </div>
+  ${devoLibrary()}
   <section class="panel toolbar">
     <div class="row">
       <label class="field"><span>Your devos</span>
@@ -1633,6 +1656,187 @@ function renderResources() {
   </section>`;
 }
 
+/* ========================== SHARED CONTENT (Google Sheet) ==========================
+   Staff add drills, YouTube links and devotionals in the "FCA Sports Way — Coach Guide Content"
+   Google Sheet. The sheet must be shared as "Anyone with the link: Viewer". The site reads it on
+   load, keeps the last copy for offline use, and falls back to the guide's built-in drills. */
+const CONTENT_SHEET_ID = '1BaLpOpi98iKbLQQtS0BlliBw4T9SAVHZinrKVw6Vh2A';
+const CONTENT_KEY = 'fcaSportsWay.content.v1';
+const content = { status: 'loading', at: null, devos: [] };
+
+const sheetCsvUrl = tab => `https://docs.google.com/spreadsheets/d/${CONTENT_SHEET_ID}/gviz/tq?tqx=out:csv&headers=1&sheet=${encodeURIComponent(tab)}`;
+
+function parseCSV(text) {
+  const rows = []; let row = [], cell = '', q = false;
+  for (let i = 0; i < text.length; i++) {
+    const ch = text[i];
+    if (q) {
+      if (ch === '"') { if (text[i + 1] === '"') { cell += '"'; i++; } else q = false; }
+      else cell += ch;
+    } else if (ch === '"') q = true;
+    else if (ch === ',') { row.push(cell); cell = ''; }
+    else if (ch === '\n' || ch === '\r') {
+      if (ch === '\r' && text[i + 1] === '\n') i++;
+      row.push(cell); rows.push(row); row = []; cell = '';
+    } else cell += ch;
+  }
+  if (cell !== '' || row.length) { row.push(cell); rows.push(row); }
+  const head = (rows.shift() || []).map(h => h.trim().toLowerCase());
+  return rows.filter(r => r.some(c => c.trim())).map(r => Object.fromEntries(head.map((h, i) => [h, (r[i] ?? '').trim()])));
+}
+
+const slug = s => String(s).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+const KIND_OF = { drill: 'drill', routine: 'routine', 'teaching points': 'teach', teaching: 'teach' };
+// Sheet step format: one per line; "## " heading, "- " sub-point, "Note: " paragraph.
+const stepsFromSheet = txt => txt.split('\n').map(l => l.trim()).filter(Boolean)
+  .map(l => l.startsWith('## ') ? l : /^[-•]\s+/.test(l) ? '> ' + l.replace(/^[-•]\s+/, '') : /^note:\s*/i.test(l) ? '! ' + l.replace(/^note:\s*/i, '') : l);
+
+function applyDrillRows(rows) {
+  const byId = new Map(BUILTIN_DRILLS.map(d => [d.id, { ...d }]));
+  const order = BUILTIN_DRILLS.map(d => d.id);
+  for (const r of rows) {
+    const id = r.id || slug(r.title || '');
+    if (!id) continue;
+    if (/^draft$/i.test(r.status)) { byId.delete(id); continue; }
+    const base = byId.get(id);
+    if (!base && (!r.title || /^example/i.test(r.title))) continue;
+    const d = base || { id, t: r.title, c: r.category || 'Other', k: 'drill', s: '', b: [] };
+    if (r.title) d.t = r.title;
+    if (r.category) d.c = r.category;
+    if (r.type && KIND_OF[r.type.toLowerCase()]) d.k = KIND_OF[r.type.toLowerCase()];
+    if (r.minutes) d.m = Number(r.minutes) || r.minutes;
+    if (r.summary) d.s = r.summary;
+    if (r.focus) d.f = r.focus;
+    if (r.steps) d.b = stepsFromSheet(r.steps);
+    d.v = r.video_url || d.v || '';
+    byId.set(id, d);
+    if (!base) order.push(id);
+  }
+  DRILLS = order.filter(id => byId.has(id)).map(id => byId.get(id));
+  DRILL = Object.fromEntries(DRILLS.map(d => [d.id, d]));
+  CATS = [...BUILTIN_CATS, ...new Set(DRILLS.map(d => d.c).filter(c => !BUILTIN_CATS.includes(c)))];
+}
+function applyDevoRows(rows) {
+  content.devos = rows.filter(r => /^published$/i.test(r.status) && r.title).map((r, i) => ({ ...r, id: r.id || slug(r.title) || 'devo-' + i }));
+}
+
+async function fetchTab(tab) {
+  const ctl = new AbortController(); const t = setTimeout(() => ctl.abort(), 8000);
+  try {
+    const res = await fetch(sheetCsvUrl(tab), { signal: ctl.signal, cache: 'no-store' });
+    const text = await res.text();
+    // A sheet that isn't shared returns Google's sign-in page instead of CSV.
+    if (!res.ok || /^\s*</.test(text)) throw new Error('Sheet not readable (is it shared as "Anyone with the link"?)');
+    return parseCSV(text);
+  } finally { clearTimeout(t); }
+}
+async function loadContent(manual) {
+  let cached = null;
+  try { cached = JSON.parse(localStorage.getItem(CONTENT_KEY)); } catch (e) {}
+  if (cached && !manual) { applyDrillRows(cached.drills || []); applyDevoRows(cached.devos || []); content.at = cached.at; content.status = 'cached'; refreshView(); }
+  if (!CONTENT_SHEET_ID) { content.status = 'off'; return; }
+  try {
+    const [drills, devos] = await Promise.all([fetchTab('Drills'), fetchTab('Devotionals')]);
+    applyDrillRows(drills); applyDevoRows(devos);
+    content.at = Date.now(); content.status = 'live';
+    try { localStorage.setItem(CONTENT_KEY, JSON.stringify({ at: content.at, drills, devos })); } catch (e) {}
+    if (manual) toast('Drills and devos updated');
+  } catch (e) {
+    console.warn('Content sheet:', e.message);
+    content.status = cached ? 'cached' : 'offline';
+    if (manual) toast(cached ? 'Couldn’t reach the content sheet. Showing your last saved copy.' : 'Couldn’t reach the content sheet. Showing the guide’s drills.');
+  }
+  refreshView();
+}
+function refreshView() { if (!dlg.open && (ui.tab === 'drills' || ui.tab === 'devos' || ui.tab === 'practice')) render(); }
+
+function ago(t) {
+  const m = Math.round((Date.now() - t) / 60000);
+  return m < 1 ? 'just now' : m < 60 ? `${m} min ago` : m < 1440 ? `${Math.round(m / 60)} hr ago` : fmtDate(new Date(t).toISOString().slice(0, 10));
+}
+function syncLine() {
+  const msg = {
+    loading: 'Checking for new drills and videos…',
+    live: `Up to date with FCA staff content · ${content.at ? ago(content.at) : ''}`,
+    cached: `Showing saved staff content from ${content.at ? ago(content.at) : 'earlier'} (offline)`,
+    offline: 'Showing the guide’s drills. Staff content couldn’t be loaded.',
+    off: '',
+  }[content.status];
+  return msg ? `<p class="sync"><span class="dot ${content.status}"></span>${esc(msg)} <button class="linkbtn" data-act="refreshContent">Refresh</button></p>` : '';
+}
+
+/* ---------- YouTube ---------- */
+function ytId(url) {
+  if (!url) return null;
+  const m = String(url).match(/(?:youtu\.be\/|youtube(?:-nocookie)?\.com\/(?:watch\?(?:.*&)?v=|embed\/|shorts\/|live\/|v\/))([A-Za-z0-9_-]{11})/);
+  return m ? m[1] : null;
+}
+function ytStart(url) {
+  const m = String(url).match(/[?&#](?:t|start)=(\d+h)?(\d+m)?(\d+)?s?\b/);
+  if (!m) return 0;
+  return (parseInt(m[1]) || 0) * 3600 + (parseInt(m[2]) || 0) * 60 + (parseInt(m[3]) || 0);
+}
+function videoBlock(url, title) {
+  if (!url) return '';
+  const id = ytId(url);
+  if (!id) return `<p><a class="btn" href="${esc(url)}" target="_blank" rel="noopener">▶ Watch video</a></p>`;
+  return `<div class="video" data-yt="${id}" data-start="${ytStart(url)}">
+      <button class="video-poster" data-act="playVideo" aria-label="Play video: ${esc(title)}">
+        <img src="https://i.ytimg.com/vi/${id}/hqdefault.jpg" alt="" loading="lazy">
+        <span class="play" aria-hidden="true"><svg viewBox="0 0 68 48"><path d="M66.5 7.7A8.5 8.5 0 0060.5 1.7C55.2.3 34 .3 34 .3S12.8.3 7.5 1.7A8.5 8.5 0 001.5 7.7 89 89 0 00.2 24a89 89 0 001.3 16.3 8.5 8.5 0 006 6c5.3 1.4 26.5 1.4 26.5 1.4s21.2 0 26.5-1.4a8.5 8.5 0 006-6A89 89 0 0067.8 24a89 89 0 00-1.3-16.3z" fill="#FFC20E"/><path d="M27 34.5l18-10.5-18-10.5z" fill="#151515"/></svg></span>
+      </button>
+    </div>
+    <p class="video-link"><a href="${esc(url)}" target="_blank" rel="noopener">Open in YouTube ↗</a></p>`;
+}
+function playVideo(el) {
+  const box = el.closest('.video'), id = box.dataset.yt, start = Number(box.dataset.start) || 0;
+  box.innerHTML = `<iframe src="https://www.youtube-nocookie.com/embed/${id}?autoplay=1&rel=0&playsinline=1${start ? '&start=' + start : ''}" title="Drill video" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen></iframe>`;
+}
+
+/* ---------- Shared devo library ---------- */
+const DEVO_SETTING_OF = s => /pre/i.test(s) ? 'Pregame' : /meet/i.test(s) ? 'Meeting' : 'Practice';
+function devoLibrary() {
+  const list = content.devos;
+  return `<section class="panel">
+    <div class="row" style="justify-content:space-between;align-items:center">
+      <h2 class="sec">From FCA staff</h2>
+      <span class="meta">${list.length} devo${list.length === 1 ? '' : 's'}</span>
+    </div>
+    ${list.length
+      ? `<div class="lib-grid">${list.map(d => `<button class="card" data-act="viewSharedDevo" data-id="${esc(d.id)}">
+          <div class="meta"><span class="tag">${esc(DEVO_SETTING_OF(d.setting))}</span>${d.date ? `<span>${esc(d.date)}</span>` : ''}${ytId(d.video_url) || d.video_url ? '<span class="vid">▶ Video</span>' : ''}</div>
+          <h3>${esc(d.title)}</h3>${d.scripture ? `<p>${esc(d.scripture)}</p>` : ''}</button>`).join('')}</div>`
+      : `<p class="lede" style="font-size:15px">${content.status === 'loading' ? 'Loading shared devos…' : 'No shared devos yet. When FCA staff publish one in the content sheet, it shows up here.'}</p>`}
+  </section>`;
+}
+function sharedDevo(id) { return content.devos.find(d => d.id === id); }
+function viewSharedDevo(id) {
+  const d = sharedDevo(id); if (!d) return;
+  const sec = (h, v) => v ? `<h4>${h}</h4>${v.split('\n').filter(Boolean).length > 1 ? `<ul>${v.split('\n').filter(Boolean).map(l => `<li>${esc(l)}</li>`).join('')}</ul>` : `<p>${esc(v)}</p>`}` : '';
+  openDialog(`
+    <div class="dlg-head" style="position:relative">
+      <div class="meta"><span class="tag">${esc(DEVO_SETTINGS[DEVO_SETTING_OF(d.setting)])}</span>${d.date ? `<span>${esc(d.date)}</span>` : ''}${d.led_by ? `<span>${esc(d.led_by)}</span>` : ''}</div>
+      <h2 class="sec" id="dlgTitle" style="padding-right:48px">${esc(d.title)}</h2>
+      ${d.scripture ? `<p class="lede">${esc(d.scripture)}</p>` : ''}
+      <button class="btn ghost close" data-act="close" aria-label="Close">✕</button>
+    </div>
+    <div class="dlg-body">${videoBlock(d.video_url, d.title)}<div class="prose">
+      ${sec('Hook', d.hook)}${d.big_idea ? `<p class="focus">${esc(d.big_idea)}</p>` : ''}${sec('Talk points', d.talk_points)}
+      ${d.discussion_questions ? `<h4>Discussion questions</h4><ol>${d.discussion_questions.split('\n').filter(Boolean).map(l => `<li>${esc(l)}</li>`).join('')}</ol>` : ''}
+      ${sec('Live it out', d.live_it_out)}${sec('Prayer', d.prayer)}
+    </div></div>
+    <div class="dlg-foot">
+      <button class="btn primary" data-act="useSharedDevo" data-id="${esc(d.id)}">Use as my devo</button>
+      <button class="btn" data-act="copySharedDevo" data-id="${esc(d.id)}">Copy as text</button>
+    </div>`);
+}
+function sharedToMine(d) {
+  const iso = /^\d{4}-\d{2}-\d{2}$/.test(d.date) ? d.date : (() => { const t = new Date(d.date); return isNaN(t) ? today() : t.toISOString().slice(0, 10); })();
+  const qs = (d.discussion_questions || '').split('\n').map(x => x.trim()).filter(Boolean);
+  return { ...blankDevo(), title: d.title, date: iso, setting: DEVO_SETTING_OF(d.setting), leader: d.led_by || '', hook: d.hook || '', scripture: d.scripture || '',
+    bigIdea: d.big_idea || '', points: d.talk_points || '', questions: qs.length ? qs : ['', '', ''], challenge: d.live_it_out || '', prayer: d.prayer || '' };
+}
+
 /* ========================== PDF EXPORT ==========================
    Branded, printable PDFs built in the browser with jsPDF (vendored in ./vendor). */
 const PDF = { W: 612, H: 792, M: 40, ink: [21, 21, 21], muted: [93, 92, 86], line: [224, 223, 216], band: [230, 230, 230], gold: [255, 194, 14], zebra: [247, 247, 244] };
@@ -1756,7 +1960,7 @@ async function practicePdf(mode, win) {
       y = pdfRoom(doc, y, 70);
       doc.setFont('helvetica', 'bold'); doc.setFontSize(13); doc.setTextColor(...PDF.ink); doc.text(pdfSafe(d.t), PDF.M, y);
       doc.setFont('helvetica', 'bold'); doc.setFontSize(8.5); doc.setTextColor(...PDF.muted);
-      doc.text(pdfSafe(`${d.c.toUpperCase()}  ·  ${KINDS[d.k].toUpperCase()}${d.m ? `  ·  ${d.m} MIN` : ''}  ·  GUIDE P. ${d.p}`), PDF.M, y + 13);
+      doc.text(pdfSafe(`${d.c.toUpperCase()}  ·  ${(KINDS[d.k] || 'Drill').toUpperCase()}${d.m ? `  ·  ${d.m} MIN` : ''}${d.p ? `  ·  GUIDE P. ${d.p}` : ''}`), PDF.M, y + 13);
       y += 28;
       const para = (text, style = 'normal', indent = 0, size = 10, color = PDF.ink, bullet = '') => {
         doc.setFont('helvetica', style); doc.setFontSize(size); doc.setTextColor(...color);
@@ -1764,6 +1968,7 @@ async function practicePdf(mode, win) {
         ls.forEach((l, i) => { y = pdfRoom(doc, y, 14); if (bullet && i === 0) doc.text(bullet, PDF.M + indent, y); doc.text(l, PDF.M + indent + (bullet ? 10 : 0), y); y += size + 3.5; });
       };
       para(d.s);
+      if (d.v) { y += 2; para('Video: ' + d.v, 'normal', 0, 9, PDF.muted); }
       if (d.f) { y += 2; para('Focus: ' + d.f, 'bold'); }
       for (const item of d.b || []) {
         if (item.startsWith('## ')) { y += 4; para(item.slice(3).toUpperCase(), 'bold', 0, 8.5, PDF.muted); }
@@ -1844,6 +2049,7 @@ async function makePdf(kind, mode) {
 const dlg = document.getElementById('dlg');
 function openDialog(html) { dlg.innerHTML = `<div class="dlg">${html}</div>`; if (!dlg.open) dlg.showModal(); }
 function closeDialog() { if (dlg.open) dlg.close(); }
+dlg.addEventListener('close', () => { dlg.innerHTML = ''; });
 dlg.addEventListener('click', e => { if (e.target === dlg) closeDialog(); });
 
 function viewDrill(id) {
@@ -1855,7 +2061,7 @@ function viewDrill(id) {
       <p class="lede">${esc(d.s)}</p>
       <button class="btn ghost close" data-act="close" aria-label="Close">✕</button>
     </div>
-    <div class="dlg-body">${d.f || d.b ? renderBody(d) : '<p class="lede">That’s the whole drill. Keep the tempo quick.</p>'}</div>
+    <div class="dlg-body">${videoBlock(d.v, d.t)}${d.f || d.b?.length ? renderBody(d) : '<p class="lede">That’s the whole drill. Keep the tempo quick.</p>'}</div>
     <div class="dlg-foot">
       <label class="field"><span>Add to “${esc(plan.name)}”</span>
         <select id="addTo">${plan.blocks.map(b => `<option value="${b.id}">${esc(b.title)}</option>`).join('')}</select></label>
@@ -1956,6 +2162,11 @@ const ACTIONS = {
   moveBat(el) { const o = state.game.order, i = o.indexOf(el.dataset.pid), j = i + Number(el.dataset.d); if (j < 0 || j >= o.length) return; [o[i], o[j]] = [o[j], o[i]]; save(); render(); },
   bunt(el) { ui.bunt = Number(el.dataset.n); render(); },
   jump(el) { document.getElementById(el.dataset.to)?.scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start' }); },
+  playVideo(el) { playVideo(el); },
+  refreshContent() { content.status = 'loading'; render(); loadContent(true); },
+  viewSharedDevo(el) { viewSharedDevo(el.dataset.id); },
+  useSharedDevo(el) { const d = sharedToMine(sharedDevo(el.dataset.id)); state.devos.unshift(d); state.curDevo = d.id; save(); closeDialog(); render(); toast('Added to your devos. Edit it below.'); },
+  copySharedDevo(el) { copyText(devoText(sharedToMine(sharedDevo(el.dataset.id))), 'Devo'); },
   pdf(el) { makePdf(el.dataset.kind, el.dataset.mode); },
   copyLineup() { copyText(lineupText(), 'Lineup'); },
   newDevo() { const d = blankDevo(); state.devos.unshift(d); state.curDevo = d.id; ui.confirm = null; save(); render(); document.getElementById('dv-title')?.focus(); },
@@ -2009,6 +2220,7 @@ document.addEventListener('change', e => {
 });
 
 go(location.hash.slice(1) || 'practice');
+loadContent();
 </script>
 </body>
 </html>
