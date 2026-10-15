@@ -271,16 +271,43 @@ textarea { resize: vertical; min-height: 80px; }
 .devo-flow .field { gap: 6px; }
 
 /* Resources */
-.res-nav { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 64px); z-index: 10; background: var(--bg); padding: 10px 0 8px; flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; }
-.res-nav::-webkit-scrollbar { display: none; }
-.res-nav .filter { flex: none; }
-.res { display: grid; gap: 14px; scroll-margin-top: 130px; min-width: 0; }
+/* Philosophy hero: always black and gold, in both themes. */
+.philo { background: #111110; color: #F4F4F1; border: 1px solid var(--line); border-radius: 16px; padding: clamp(24px, 5vw, 44px); display: grid; gap: 18px; position: relative; overflow: hidden; }
+.philo::after { content: ''; position: absolute; right: -70px; bottom: -70px; width: 220px; height: 220px; border-radius: 50%; border: 28px solid #FFC20E; opacity: .12; pointer-events: none; }
+.philo-eyebrow { font-family: var(--font-label); font-weight: 700; text-transform: uppercase; letter-spacing: .12em; font-size: 13px; color: #FFC20E; }
+.philo-title { font-family: var(--font-display); font-weight: 800; font-size: clamp(36px, 9vw, 64px); line-height: .98; letter-spacing: -.03em; text-transform: uppercase; margin: 0; }
+.philo-title span { color: #FFC20E; }
+.philo-mission { margin: 0; max-width: 58ch; font-size: clamp(16px, 2.6vw, 19px); line-height: 1.5; color: #D9D8D0; }
+.philo-mission b { color: #F4F4F1; text-transform: uppercase; letter-spacing: .02em; }
+.philo-faith { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; border-top: 1px solid #3A3936; padding-top: 18px; }
+.philo-faith div { display: grid; gap: 4px; align-content: start; }
+.philo-faith b { font-family: var(--font-display); font-weight: 800; font-size: clamp(30px, 7vw, 44px); line-height: 1; color: #FFC20E; letter-spacing: -.02em; }
+.philo-faith span { font-size: 14px; line-height: 1.35; color: #D9D8D0; }
+.philo-faith em { font-style: normal; font-weight: 600; color: #F4F4F1; text-transform: uppercase; }
+@media (max-width: 480px) { .philo-faith { grid-template-columns: minmax(0, 1fr); } .philo-faith div { grid-template-columns: 84px 1fr; align-items: center; } .philo::after { display: none; } }
+.philo-tag { margin: 0; font-family: var(--font-label); font-weight: 700; text-transform: uppercase; letter-spacing: .08em; font-size: 15px; }
+
+/* Coach's Mandate */
+.mandate-block { background: var(--surface); border: 1px solid var(--line); border-top: 6px solid var(--gold); border-radius: 16px; padding: clamp(20px, 4vw, 36px); display: grid; gap: 8px; }
+.mandate-title { font-family: var(--font-display); font-weight: 800; font-size: clamp(28px, 6vw, 40px); letter-spacing: -.02em; line-height: 1.05; text-transform: uppercase; margin-bottom: 10px; }
+.mandate { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 0 32px; }
+.mandate li { display: grid; grid-template-columns: 34px 1fr; gap: 10px; padding: 12px 0; border-top: 1px solid var(--line); }
+.mandate .n { font-family: var(--font-label); font-weight: 700; font-size: 15px; color: var(--gold-text); padding-top: 3px; font-variant-numeric: tabular-nums; }
+.mandate p { margin: 0; font-size: 16px; line-height: 1.45; color: var(--muted); }
+.mandate p b { font-family: var(--font-display); font-weight: 800; color: var(--ink); text-transform: uppercase; letter-spacing: .01em; font-size: 15px; }
+
+/* Topic tiles */
+.topics { display: grid; gap: 12px; scroll-margin-top: 80px; }
+.topic-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 190px), 1fr)); gap: 10px; }
+@media (max-width: 480px) { .topic-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.topic { text-align: left; border: 1px solid var(--line); background: var(--surface); border-radius: 12px; padding: 14px; display: grid; gap: 4px; align-content: start; min-height: 78px; border-left: 4px solid var(--gold); }
+.topic b { font-family: var(--font-display); font-weight: 800; font-size: 16px; line-height: 1.2; }
+.topic span { font-size: 13px; color: var(--muted); line-height: 1.3; }
+.topic:hover { border-color: var(--gold); background: var(--gold-soft); }
+.totop { float: right; border: 0; background: none; font-family: var(--font-label); font-weight: 700; font-size: 13px; letter-spacing: .06em; color: var(--muted); padding: 6px 0; text-transform: uppercase; }
+.res { display: grid; gap: 14px; scroll-margin-top: 80px; min-width: 0; }
 .res-h { font-family: var(--font-display); font-weight: 800; font-size: 24px; letter-spacing: -0.01em; text-transform: uppercase; padding-top: 12px; border-top: 3px solid var(--ink); }
 .res .row .res-h { flex: 1; }
-.mission { background: var(--gold); border-color: var(--gold); color: var(--on-gold); }
-.mission .eyebrow, .mission .lede { color: var(--on-gold); }
-.mission p:not(.lede) { margin: 0; font-family: var(--font-display); font-weight: 500; font-size: clamp(17px, 3.6vw, 21px); line-height: 1.4; max-width: 60ch; }
-.mission b { font-weight: 800; }
 .bunt-grid { display: grid; grid-template-columns: minmax(0, 380px) minmax(0, 1fr); gap: 20px; align-items: start; }
 @media (max-width: 640px) { .bunt-grid { grid-template-columns: minmax(0, 1fr); } }
 .field { width: 100%; max-width: 380px; height: auto; display: block; margin: 0 auto; }
@@ -345,9 +372,6 @@ details.panel:not([open]) > summary h2::after { content: ' ▸'; }
 .drag-ghost { position: fixed; left: 0; top: 0; z-index: 100; pointer-events: none; opacity: .95; box-shadow: 0 10px 30px rgba(0,0,0,.25); background: var(--surface); }
 
 /* Team */
-.mandate { display: grid; gap: 10px; counter-reset: m; list-style: none; margin: 0; padding: 0; }
-.mandate li { display: grid; grid-template-columns: 34px 1fr; gap: 10px; }
-.mandate li b { font-family: var(--font-display); font-weight: 800; font-size: 24px; line-height: 1; color: var(--gold-text); }
 .check { display: flex; gap: 10px; align-items: flex-start; padding: 8px 0; border-top: 1px solid var(--line); cursor: pointer; }
 .check input { width: 22px; height: 22px; margin: 1px 0 0; accent-color: var(--gold); flex: none; }
 .check small { display: block; color: var(--muted); font-size: 14px; }
@@ -1616,8 +1640,14 @@ function gameTrack() {
 
 /* ========================== RESOURCES ========================== */
 const RES_SECTIONS = [
-  ['philosophy', 'Philosophy'], ['ready', 'Get ’em ready'], ['practice-way', 'Practice'], ['strategy', 'Game strategy'],
-  ['bunt', 'Bunt defense'], ['baserunning', 'Base running'], ['signs', 'Signs'], ['teaching', 'Teaching points'],
+  ['goals', 'Team goals', 'Faith, culture, development, results'],
+  ['ready', 'Get ’em ready', 'Checklist before game one'],
+  ['practice-way', 'How we practice', 'The 5 P’s and practice standards'],
+  ['strategy', 'Game strategy', 'Approach, pitch calling, QAB'],
+  ['bunt', 'Bunt defense', 'Plays 1–4 with diagrams'],
+  ['baserunning', 'Base running', 'Leads, reads and steals'],
+  ['signs', 'Signs', 'Offense and defense'],
+  ['teaching', 'Teaching points', 'Mechanics write-ups'],
 ];
 
 // Field coordinates for the bunt defense diagrams (viewBox 0 0 300 270, home plate at the bottom).
@@ -1724,22 +1754,32 @@ function renderResources() {
   const done = all.filter(t => state.checks[t]).length;
   const teach = DRILLS.filter(d => d.k === 'teach');
   return `
-  <div class="view-head">
-    <div class="eyebrow">Resources · FCA Sports Way</div>
-    <h1 class="title">Resources</h1>
-    <p class="lede">The philosophy, standards and strategy behind every FCA Sports Idaho team, from the Coach’s Mandate to bunt defense.</p>
-  </div>
-  <nav class="chips res-nav" aria-label="Resource sections">${RES_SECTIONS.map(([id, l]) => `<button class="filter" data-act="jump" data-to="res-${id}">${l}</button>`).join('')}</nav>
-
-  <section class="res" id="res-philosophy">
-    <h2 class="res-h">Philosophy</h2>
-    <div class="panel mission">
-      <div class="eyebrow">Our mission</div>
-      <p>We plan to <b>DEVELOP</b> baseball skills of players and help them grow in their relationship with God to positively <b>IMPACT</b> people wherever they go while we strive to compete to be the best.</p>
-      <p class="lede" style="font-size:15px">FCA Sports Idaho is all about development and impact. What we do is bigger than our sport!</p>
+  <section class="philo" aria-labelledby="philoTitle">
+    <div class="philo-eyebrow">The FCA Sports Way · Our philosophy</div>
+    <h1 class="philo-title" id="philoTitle"><span>Develop</span> players.<br><span>Impact</span> people.</h1>
+    <p class="philo-mission">We plan to <b>develop</b> baseball skills of players and help them grow in their relationship with God to positively <b>impact</b> people wherever they go while we strive to compete to be the best.</p>
+    <div class="philo-faith">
+      <div><b>UP</b><span>Give God <em>all</em> the glory</span></div>
+      <div><b>IN</b><span>Grow our and our players’ relationships with God</span></div>
+      <div><b>OUT</b><span>Spread God’s love to make an impact for the Kingdom</span></div>
     </div>
+    <p class="philo-tag">What we do is bigger than our sport.</p>
+  </section>
+
+  <section class="mandate-block" aria-labelledby="mandateTitle">
+    <div class="eyebrow">Every FCA coach commits to</div>
+    <h2 class="mandate-title" id="mandateTitle">The Coach’s Mandate</h2>
+    <ol class="mandate">${MANDATE.map((l, i) => { const m = l.match(/^(Be satisfied|\S+)\s(.*)$/); return `<li><span class="n">${String(i + 1).padStart(2, '0')}</span><p><b>${esc(m[1])}</b> ${esc(m[2])}</p></li>`; }).join('')}</ol>
+  </section>
+
+  <nav class="topics" id="resTop" aria-label="Resource topics">
+    <h2 class="res-h" style="border-top:0;padding-top:0">Resources</h2>
+    <div class="topic-grid">${RES_SECTIONS.map(([id, l, d]) => `<button class="topic" data-act="jump" data-to="res-${id}"><b>${l}</b><span>${d}</span></button>`).join('')}</div>
+  </nav>
+
+  <section class="res" id="res-goals">
+    <h2 class="res-h"><button class="totop" data-act="jump" data-to="resTop" aria-label="Back to topics">↑ Topics</button>Team goals</h2>
     <div class="panel">
-      <h3 class="sec">Team goals</h3>
       <p class="lede" style="font-size:15px">These are organization-wide. On top of these, set your own team goals in faith, culture, development and results.</p>
       <div class="two prose">
         <div><h4>Faith</h4><ul><li><b>UP:</b> give God ALL the glory</li><li><b>IN:</b> grow our and our players’ personal relationships with God</li><li><b>OUT:</b> spread God’s love expecting to make an impact for the sake of the Kingdom</li></ul></div>
@@ -1748,15 +1788,11 @@ function renderResources() {
         <div><h4>Results</h4><ul><li><b>Offense:</b> 60% QAB per game · over .400 OBP · execute BASES2 · aggressive base running (ball-in-dirt reads, pressure the defense)</li><li><b>Defense:</b> make routine plays · pitch to contact (under 15 pitches an inning) · pre-pitch plan (communicate and expect the ball) · minimize freebies</li><li><b>Win the freebie war!</b></li></ul></div>
       </div>
     </div>
-    <div class="panel">
-      <h3 class="sec">The Coach’s Mandate</h3>
-      <ol class="mandate">${MANDATE.map(l => `<li><b>${l[0]}</b><span>${esc(l)}</span></li>`).join('')}</ol>
-    </div>
   </section>
 
   <section class="res" id="res-ready">
     <div class="row" style="justify-content:space-between;align-items:center">
-      <h2 class="res-h">Get ’em ready checklist</h2>
+      <h2 class="res-h"><button class="totop" data-act="jump" data-to="resTop" aria-label="Back to topics">↑ Topics</button>Get ’em ready checklist</h2>
       <span class="pill ${done === all.length ? 'good' : 'even'}">${done} / ${all.length}</span>
     </div>
     <div class="panel">
@@ -1772,7 +1808,7 @@ function renderResources() {
   </section>
 
   <section class="res" id="res-practice-way">
-    <h2 class="res-h">How we practice</h2>
+    <h2 class="res-h"><button class="totop" data-act="jump" data-to="resTop" aria-label="Back to topics">↑ Topics</button>How we practice</h2>
     <div class="panel">
       <p class="focus" style="font-size:18px">The 5 P’s: Proper Preparation Prevents Poor Performance!</p>
       <div class="two prose">
@@ -1794,7 +1830,7 @@ function renderResources() {
   </section>
 
   <section class="res" id="res-strategy">
-    <h2 class="res-h">Game strategy</h2>
+    <h2 class="res-h"><button class="totop" data-act="jump" data-to="resTop" aria-label="Back to topics">↑ Topics</button>Game strategy</h2>
     ${gameApproach()}
     <div class="panel">
       <h3 class="sec">Lineup card terms</h3>
@@ -1808,12 +1844,12 @@ function renderResources() {
   </section>
 
   <section class="res" id="res-bunt">
-    <h2 class="res-h">Bunt defense</h2>
+    <h2 class="res-h"><button class="totop" data-act="jump" data-to="resTop" aria-label="Back to topics">↑ Topics</button>Bunt defense</h2>
     ${buntSection()}
   </section>
 
   <section class="res" id="res-baserunning">
-    <h2 class="res-h">Base running</h2>
+    <h2 class="res-h"><button class="totop" data-act="jump" data-to="resTop" aria-label="Back to topics">↑ Topics</button>Base running</h2>
     <div class="panel">
       <p class="focus" style="font-size:18px">SCORE. No matter what base you start at, expect to score.</p>
       <p>Be aggressive. Your aggression puts pressure on the defense, making them make mistakes and taking the focus off the batter.</p>
@@ -1834,12 +1870,12 @@ function renderResources() {
   </section>
 
   <section class="res" id="res-signs">
-    <h2 class="res-h">Signs</h2>
+    <h2 class="res-h"><button class="totop" data-act="jump" data-to="resTop" aria-label="Back to topics">↑ Topics</button>Signs</h2>
     ${gameSigns()}
   </section>
 
   <section class="res" id="res-teaching">
-    <h2 class="res-h">Teaching points</h2>
+    <h2 class="res-h"><button class="totop" data-act="jump" data-to="resTop" aria-label="Back to topics">↑ Topics</button>Teaching points</h2>
     <p class="lede">Mechanics and positioning write-ups from the guide. Tap one to read it or add it to a practice.</p>
     <div class="lib-grid">${libCards(teach)}</div>
   </section>`;
