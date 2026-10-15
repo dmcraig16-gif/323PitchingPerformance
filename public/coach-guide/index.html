@@ -273,7 +273,9 @@ textarea { resize: vertical; min-height: 80px; }
 /* Resources */
 /* Philosophy hero: always black and gold, in both themes. */
 .philo { background: #111110; color: #F4F4F1; border: 1px solid var(--line); border-radius: 16px; padding: clamp(24px, 5vw, 44px); display: grid; gap: 18px; position: relative; overflow: hidden; }
-.philo::after { content: ''; position: absolute; right: -70px; bottom: -70px; width: 220px; height: 220px; border-radius: 50%; border: 28px solid #FFC20E; opacity: .12; pointer-events: none; }
+.philo > * { position: relative; z-index: 1; }
+/* FCA cross-and-bats mark as a faint watermark behind the philosophy. */
+.philo::after { content: ''; position: absolute; z-index: 0; right: -4%; top: 50%; transform: translateY(-50%); width: min(58%, 460px); aspect-ratio: 608 / 628; background: url('brand/fca-cross-watermark.png') center / contain no-repeat; opacity: .13; pointer-events: none; }
 .philo-eyebrow { font-family: var(--font-label); font-weight: 700; text-transform: uppercase; letter-spacing: .12em; font-size: 13px; color: #FFC20E; }
 .philo-title { font-family: var(--font-display); font-weight: 800; font-size: clamp(36px, 9vw, 64px); line-height: .98; letter-spacing: -.03em; text-transform: uppercase; margin: 0; }
 .philo-title span { color: #FFC20E; }
@@ -284,7 +286,7 @@ textarea { resize: vertical; min-height: 80px; }
 .philo-faith b { font-family: var(--font-display); font-weight: 800; font-size: clamp(30px, 7vw, 44px); line-height: 1; color: #FFC20E; letter-spacing: -.02em; }
 .philo-faith span { font-size: 14px; line-height: 1.35; color: #D9D8D0; }
 .philo-faith em { font-style: normal; font-weight: 600; color: #F4F4F1; text-transform: uppercase; }
-@media (max-width: 480px) { .philo-faith { grid-template-columns: minmax(0, 1fr); } .philo-faith div { grid-template-columns: 84px 1fr; align-items: center; } .philo::after { display: none; } }
+@media (max-width: 480px) { .philo-faith { grid-template-columns: minmax(0, 1fr); } .philo-faith div { grid-template-columns: 84px 1fr; align-items: center; } .philo::after { right: 50%; transform: translate(50%, -50%); width: 92%; opacity: .1; } }
 .philo-tag { margin: 0; font-family: var(--font-label); font-weight: 700; text-transform: uppercase; letter-spacing: .08em; font-size: 15px; }
 
 /* Coach's Mandate */
