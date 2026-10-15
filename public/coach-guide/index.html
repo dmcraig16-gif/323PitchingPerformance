@@ -373,6 +373,19 @@ details.panel:not([open]) > summary h2::after { content: ' ▸'; }
 .dragging { opacity: .35; }
 .drag-ghost { position: fixed; left: 0; top: 0; z-index: 100; pointer-events: none; opacity: .95; box-shadow: 0 10px 30px rgba(0,0,0,.25); background: var(--surface); }
 
+/* Pitcher workload */
+.wl-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 320px), 1fr)); gap: 12px; }
+.wl-card { border: 1px solid var(--line); border-left: 5px solid var(--good); border-radius: var(--radius); padding: 14px; display: grid; gap: 10px; background: var(--surface); min-width: 0; }
+.wl-card.rest { border-left-color: var(--bad); }
+.wl-card.fresh { border-left-color: var(--line); }
+.wl-name { font-family: var(--font-display); font-weight: 800; font-size: 17px; }
+.wl-card .arm-stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
+@media (max-width: 420px) { .wl-card .arm-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.wl-card .arm-stats b { font-size: 24px; }
+.wl-card .arm-stats small { font-size: 13px; color: var(--muted); }
+.wl-card .arm-stats em { display: block; font-style: normal; text-transform: none; letter-spacing: 0; font-family: var(--font-body); font-size: 12px; color: var(--muted); }
+.wl-history summary { cursor: pointer; color: var(--muted); font-size: 14px; }
+
 /* Team */
 .check { display: flex; gap: 10px; align-items: flex-start; padding: 8px 0; border-top: 1px solid var(--line); cursor: pointer; }
 .check input { width: 22px; height: 22px; margin: 1px 0 0; accent-color: var(--gold); flex: none; }
@@ -813,7 +826,7 @@ function seedState() {
   ex.blocks[5].drills = ['foul-line', 'quarterbacks', 'spot-drill'];
   ex.notes = 'Example plan. Edit it or start a new one from a template.';
   const devo = blankDevo();
-  return { v: 1, plans: [ex], cur: ex.id, game: blankGame(), roster: [], checks: {}, devos: [devo], curDevo: devo.id };
+  return { v: 1, plans: [ex], cur: ex.id, game: blankGame(), roster: [], outings: [], workAge: '13-14', checks: {}, devos: [devo], curDevo: devo.id };
 }
 function blankDevo() {
   return { id: uid(), title: '', date: today(), setting: 'Practice', leader: '', hook: '', scripture: '', bigIdea: '', points: '', questions: ['', '', ''], challenge: '', prayer: '' };
@@ -831,6 +844,8 @@ function loadState() {
       }
       delete s.game.roster;
       if (!s.game.lineup) s.game.lineup = [];
+      if (!s.outings) s.outings = [];
+      if (!s.workAge) s.workAge = '13-14';
       if (!s.devos?.length) { const d = blankDevo(); s.devos = [d]; s.curDevo = d.id; }
       return s;
     }
@@ -1028,8 +1043,8 @@ function libCards(list) {
 /* ========================== GAME DAY ========================== */
 function renderGame() {
   const g = state.game;
-  const tabs = [['plan', 'Game plan'], ['lineup', 'Lineup card'], ['signs', 'Signs'], ['track', 'Live tracker']];
-  const body = { plan: gamePlan, lineup: gameLineup, signs: gameSigns, track: gameTrack }[ui.gameTab]();
+  const tabs = [['plan', 'Game plan'], ['lineup', 'Lineup card'], ['pitchers', 'Pitchers'], ['signs', 'Signs'], ['track', 'Live tracker']];
+  const body = { plan: gamePlan, lineup: gameLineup, pitchers: gamePitchers, signs: gameSigns, track: gameTrack }[ui.gameTab]();
   return `
   <div class="view-head">
     <div class="eyebrow">Game day${g.opp ? ' · vs ' + esc(g.opp) : ''}</div>
@@ -1571,6 +1586,132 @@ function gameApproach() {
       </ul></div>
     </section>
   </div>`;
+}
+
+/* ---------- Pitcher workload ----------
+   Outings are saved on this device. Each record has a stable id and updatedAt, and deletes are
+   soft, so a future sync (team sharing / staff dashboard) can merge records from several phones. */
+// Pitch Smart (MLB / USA Baseball) defaults: daily max and the pitch counts that need 1, 2, 3… days of rest.
+const REST_RULES = {
+  '7-8':   { max: 50,  steps: [21, 36, 51, 66] },
+  '9-10':  { max: 75,  steps: [21, 36, 51, 66] },
+  '11-12': { max: 85,  steps: [21, 36, 51, 66] },
+  '13-14': { max: 95,  steps: [21, 36, 51, 66] },
+  '15-16': { max: 95,  steps: [31, 46, 61, 76] },
+  '17-18': { max: 105, steps: [31, 46, 61, 76] },
+  '19-22': { max: 120, steps: [31, 46, 61, 81, 106] },
+};
+const DAY = 864e5;
+const isoDay = d => new Date(d.getTime() - d.getTimezoneOffset() * 6e4).toISOString().slice(0, 10);
+const addDays = (iso, n) => isoDay(new Date(new Date(iso + 'T12:00:00').getTime() + n * DAY));
+const daysBetween = (a, b) => Math.round((new Date(b + 'T12:00:00') - new Date(a + 'T12:00:00')) / DAY);
+// Innings as outs, so 4.2 + 1.1 = 6.0: "4.2" (baseball notation), "4 2/3" or "4" all work.
+function outsFromIp(v) {
+  const s = String(v ?? '').trim(); if (!s) return 0;
+  let m = s.match(/^(\d+)\s+([12])\/3$/); if (m) return +m[1] * 3 + +m[2];
+  m = s.match(/^(\d*)\.([0-2])$/); if (m) return (+m[1] || 0) * 3 + +m[2];
+  m = s.match(/^([12])\/3$/); if (m) return +m[1];
+  return Math.max(0, Math.round(parseFloat(s) * 3)) || 0;
+}
+const ipFromOuts = o => `${Math.floor(o / 3)}${o % 3 ? '.' + (o % 3) : ''}`;
+
+const Workload = {
+  rules() { return REST_RULES[state.workAge] || REST_RULES['13-14']; },
+  restDays(pitches) { return this.rules().steps.filter(t => pitches >= t).length; },
+  outings(pid) { return (state.outings || []).filter(o => !o.deleted && (!pid || o.pid === pid)).sort((a, b) => b.date.localeCompare(a.date) || b.updatedAt - a.updatedAt); },
+  add(o) { state.outings.push({ id: uid(), updatedAt: Date.now(), ...o }); save(); },
+  remove(id) { const o = state.outings.find(x => x.id === id); if (o) { o.deleted = true; o.updatedAt = Date.now(); save(); } },
+  // Status on a given date, from the most recent day the pitcher threw on or before it.
+  status(pid, onDate) {
+    const list = this.outings(pid).filter(o => o.date <= onDate);
+    if (!list.length) return { state: 'fresh' };
+    const lastDate = list[0].date, sameDay = list.filter(o => o.date === lastDate);
+    const pitches = sameDay.reduce((s, o) => s + (+o.pitches || 0), 0);
+    const outs = sameDay.reduce((s, o) => s + (+o.outs || 0), 0);
+    const rest = this.restDays(pitches), availableOn = addDays(lastDate, rest + 1);
+    const last7 = list.filter(o => daysBetween(o.date, onDate) < 7).reduce((s, o) => s + (+o.pitches || 0), 0);
+    return { state: onDate >= availableOn ? 'ok' : 'rest', lastDate, pitches, outs, rest, availableOn, daysSince: daysBetween(lastDate, onDate), last7 };
+  },
+  season(pid) {
+    const list = this.outings(pid);
+    return { n: list.length, pitches: list.reduce((s, o) => s + (+o.pitches || 0), 0), outs: list.reduce((s, o) => s + (+o.outs || 0), 0), high: Math.max(0, ...list.map(o => +o.pitches || 0)) };
+  },
+};
+
+function workloadPitchers() {
+  const thrown = new Set(Workload.outings().map(o => o.pid));
+  return activeRoster().filter(p => canPlay(p, 'P') || thrown.has(p.id));
+}
+function gamePitchers() {
+  const g = state.game, day = ui.workDate || today(), R = activeRoster();
+  const pitchers = workloadPitchers();
+  const rules = Workload.rules();
+  const selectable = [...pitchers, ...R.filter(p => !pitchers.includes(p))];
+  const cards = pitchers.map(p => ({ p, st: Workload.status(p.id, day), se: Workload.season(p.id) }))
+    .sort((a, b) => (a.st.state === 'rest') - (b.st.state === 'rest') || (a.st.availableOn || '').localeCompare(b.st.availableOn || '') || a.p.name.localeCompare(b.p.name));
+  const card = ({ p, st, se }) => {
+    const pill = st.state === 'rest'
+      ? `<span class="pill bad">${st.daysSince === 0 ? 'Pitched today' : 'Rest'} · available ${esc(fmtDate(st.availableOn))}</span>`
+      : `<span class="pill good">Available</span>`;
+    const hist = Workload.outings(p.id);
+    return `<article class="wl-card ${st.state}">
+      <div class="row" style="justify-content:space-between;align-items:center">
+        <h3 class="wl-name">${esc(playerLabel(p))}</h3>${pill}
+      </div>
+      <div class="arm-stats">
+        <span>Days since<b>${st.state === 'fresh' ? '—' : st.daysSince}</b></span>
+        <span>Last outing<b>${st.state === 'fresh' ? '—' : st.pitches}<small> p</small></b><em>${st.state === 'fresh' ? 'No outings yet' : `${ipFromOuts(st.outs)} IP · ${esc(fmtDate(st.lastDate))}`}</em></span>
+        <span class="${st.last7 > rules.max ? 'warn' : ''}">Last 7 days<b>${st.last7 || 0}<small> p</small></b></span>
+        <span>Season<b>${ipFromOuts(se.outs)}<small> IP</small></b><em>${se.n} outing${se.n === 1 ? '' : 's'} · ${se.pitches} p</em></span>
+      </div>
+      ${hist.length ? `<details class="wl-history"><summary>Outing history (${hist.length})</summary>
+        <div class="table-wrap"><table class="signs"><tbody>${hist.map(o => `<tr>
+          <td>${esc(fmtDate(o.date))}${o.opp ? ` <small style="color:var(--muted)">vs ${esc(o.opp)}</small>` : ''}</td>
+          <td style="white-space:nowrap"><b>${o.pitches}</b> p · ${ipFromOuts(o.outs || 0)} IP</td>
+          <td style="width:40px"><button class="btn ghost sm danger" data-act="rmOuting" data-id="${o.id}" aria-label="Delete outing on ${esc(fmtDate(o.date))}">✕</button></td></tr>`).join('')}</tbody></table></div>
+      </details>` : ''}
+    </article>`;
+  };
+  return `
+  <section class="panel">
+    <h2 class="sec">Log an outing</h2>
+    ${R.length ? `<div class="row">
+      <label class="field" style="flex:2 1 200px"><span>Pitcher</span>
+        <select id="woP">${selectable.map(p => `<option value="${p.id}" ${ui.woP === p.id ? 'selected' : ''}>${esc(playerLabel(p))}</option>`).join('')}</select></label>
+      <label class="field" style="flex:1 1 140px"><span>Date</span><input type="date" id="woDate" value="${esc(ui.woDate || today())}"></label>
+      <label class="field" style="flex:1 1 90px"><span>Pitches</span><input type="number" inputmode="numeric" min="0" id="woPitches" placeholder="0"></label>
+      <label class="field" style="flex:1 1 90px"><span>Innings</span><input type="text" inputmode="decimal" id="woIp" placeholder="e.g. 3.2"></label>
+      <label class="field" style="flex:2 1 160px"><span>Opponent</span><input type="text" id="woOpp" value="${esc(g.opp || '')}" placeholder="Optional"></label>
+    </div>
+    <div class="row"><button class="btn primary" data-act="addOuting">Save outing</button>
+      <span class="lede" style="font-size:13px">Innings: 3.1 = 3⅓, 3.2 = 3⅔.</span></div>`
+    : `<p class="lede" style="font-size:15px">Add your team roster first (Lineup card tab). Players with P in their positions show up here as pitchers.</p>
+       <div><button class="btn" data-act="gameTab" data-k="lineup">Go to roster</button></div>`}
+  </section>
+
+  <section class="panel">
+    <div class="row" style="justify-content:space-between;align-items:end">
+      <h2 class="sec">Pitcher availability</h2>
+      <div class="row" style="gap:8px">
+        <label class="field" style="flex:0 1 150px"><span>For date</span><input type="date" id="workDate" value="${esc(day)}" data-workdate="1"></label>
+        <label class="field" style="flex:0 1 110px"><span>Age group</span>
+          <select id="workAge" data-workage="1">${Object.keys(REST_RULES).map(k => `<option ${(state.workAge || '13-14') === k ? 'selected' : ''}>${k}</option>`).join('')}</select></label>
+      </div>
+    </div>
+    <p class="lede" style="font-size:13px">Rest days follow Pitch Smart guidelines for ages ${esc(state.workAge || '13-14')}: up to ${rules.max} pitches a day; ${rules.steps.map((t, i) => `${t}+ pitches = ${i + 1} day${i ? 's' : ''} rest`).join(', ')}. Always follow your league’s rules if they’re stricter.</p>
+    ${cards.length ? `<div class="wl-grid">${cards.map(card).join('')}</div>`
+      : `<p class="empty">No pitchers yet. Mark players with P in your roster, or log an outing above.</p>`}
+    ${cards.length ? `<div class="row no-print"><button class="btn" data-act="copyAvail">Copy availability</button></div>` : ''}
+  </section>`;
+}
+function availabilityText() {
+  const day = ui.workDate || today();
+  const L = [`Pitcher availability · ${fmtDate(day)}`, ''];
+  workloadPitchers().forEach(p => {
+    const st = Workload.status(p.id, day);
+    L.push(`${playerLabel(p)}: ${st.state === 'rest' ? `REST, available ${fmtDate(st.availableOn)}` : 'Available'}${st.state !== 'fresh' ? ` (last: ${st.pitches} p, ${ipFromOuts(st.outs)} IP on ${fmtDate(st.lastDate)})` : ''}`);
+  });
+  return L.join('\n');
 }
 
 function gameTrack() {
@@ -2541,6 +2682,20 @@ const ACTIONS = {
   viewSharedDevo(el) { viewSharedDevo(el.dataset.id); },
   useSharedDevo(el) { const d = sharedToMine(sharedDevo(el.dataset.id)); state.devos.unshift(d); state.curDevo = d.id; save(); closeDialog(); render(); toast('Added to your devos. Edit it below.'); },
   copySharedDevo(el) { copyText(devoText(sharedToMine(sharedDevo(el.dataset.id))), 'Devo'); },
+  addOuting() {
+    const pid = document.getElementById('woP')?.value, date = document.getElementById('woDate').value || today();
+    const pitches = parseInt(document.getElementById('woPitches').value, 10), outs = outsFromIp(document.getElementById('woIp').value);
+    if (!pid) { toast('Pick a pitcher'); return; }
+    if (!(pitches > 0)) { toast('Enter the pitch count'); document.getElementById('woPitches').focus(); return; }
+    const opp = document.getElementById('woOpp').value.trim();
+    Workload.add({ pid, date, pitches, outs, opp });
+    ui.woP = pid; ui.woDate = date;
+    const p = rosterById()[pid], st = Workload.status(pid, date), max = Workload.rules().max;
+    render();
+    toast(`${p.name || 'Pitcher'}: ${st.pitches} pitches → ${st.rest} day${st.rest === 1 ? '' : 's'} rest, available ${fmtDate(st.availableOn)}${st.pitches > max ? ` · over the ${max}-pitch daily max` : ''}`);
+  },
+  rmOuting(el) { Workload.remove(el.dataset.id); render(); toast('Outing deleted'); },
+  copyAvail() { copyText(availabilityText(), 'Pitcher availability'); },
   pdf(el) { makePdf(el.dataset.kind, el.dataset.mode); },
   copyLineup() { copyText(lineupText(), 'Lineup'); },
   newDevo() { const d = blankDevo(); state.devos.unshift(d); state.curDevo = d.id; ui.confirm = null; save(); render(); document.getElementById('dv-title')?.focus(); },
@@ -2585,6 +2740,8 @@ document.addEventListener('change', e => {
   const el = e.target, d = el.dataset;
   if (d.change === 'selPlan') { state.cur = el.value; ui.confirm = null; save(); render(); }
   else if (d.change === 'selDevo') { state.curDevo = el.value; ui.confirm = null; save(); render(); }
+  else if (d.workdate) { ui.workDate = el.value || today(); render(); }
+  else if (d.workage) { state.workAge = el.value; save(); render(); }
   else if (d.slotpos) { const sl = lineupArr()[+d.slotpos]; if (sl) sl.pos = el.value; save(); render(); }
   else if (d.ro === 'name' || d.ro === 'num') { /* names update in place */ }
   else if (d.cell) { const g = state.game; (g.grid[d.pid] ||= [])[Number(d.cell)] = el.value; save(); render(); }
