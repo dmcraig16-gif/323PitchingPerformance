@@ -52,27 +52,6 @@ npm run build
 npm run preview
 ```
 
-## FCA Sports Way Coach Guide
+## FCA Sports Way Coach Guide (moved)
 
-`public/coach-guide/index.html` is a standalone, mobile-friendly tool for FCA Sports Idaho Clubs coaches, built from the *FCA Sports Way — FCA Coach Guide* PDF. It's a single HTML file with no build step, and deploys alongside the visualizer at `/coach-guide/`.
-
-- **Practice** – the guide's 1 / 1.5 / 2 / 2.5 hour templates as a clock-time timeline; add drills to each block, copy or print the plan
-- **Drills** – searchable library of every drill, routine and teaching point in the guide (with guide page numbers)
-- **Game Day** – game plan with pregame routine timed back from first pitch; lineup builder (team roster saved on the device, drag-and-drop or tap players into a 15-spot batting order, optional position chart by inning with bench rotation) that exports a 2-page PDF: the FCA scorecard with the lineup filled in plus a simple lineup sheet with the FCA Force logo; pitcher workload tracker (log pitches and innings per outing, days since last outing, last-7-day and season totals, required rest and next available date using Pitch Smart guidelines by age group); organization-wide signs; live QAB / freebie war / BASES2 / pitch-count tracker
-- **Devos** – blank team devotional template (hook, scripture, big idea, talk points, questions, live it out, prayer)
-- **Resources** – mission, team goals and Coach's Mandate; Get 'em Ready checklist; practice philosophy; game strategy (hitting/pitching approach, pitch calling, QAB, quality inning, lineup card terms); bunt defense with field diagrams per play; base running; signs; teaching points
-
-Practice plans (with optional drill sheets) and lineup cards export as FCA-branded, printable PDFs. They're generated in the browser with jsPDF 2.5.2 + jspdf-autotable 3.8.4, bundled in `public/coach-guide/vendor/` (MIT licenses alongside). The badge is `fca-sports-idaho-clubs.png`, taken from the guide's cover.
-
-### Adding drills, videos and devotionals (no code)
-
-Staff manage shared content in the Google Sheet **FCA Sports Way — Coach Guide Content** (owned by 323mperformance@gmail.com; ID set as `CONTENT_SHEET_ID` in `public/coach-guide/index.html`). Its **Start Here** tab explains everything; in short:
-
-- **Drills** tab: paste a YouTube link into `video_url` next to any drill; add a new row to add a drill; set `status` to Draft to hide one. Filling in any other cell on a guide drill replaces the guide's text.
-- **Devotionals** tab: add a row and set `status` to Published. It appears under "From FCA staff" on the Devos tab, where coaches can open it, watch its video, or copy it into their own devos.
-
-The sheet must be shared as **Anyone with the link → Viewer**. The site reads it on every visit, keeps the last copy for offline use, and falls back to the built-in guide drills if it can't reach the sheet.
-
-Plans, lineups and devos are saved in each coach's own browser (localStorage).
-
-On a phone, coaches can use Share → **Add to Home Screen** (iPhone) or the browser menu → **Install app / Add to Home screen** (Android) to open it full-screen like an app.
+The coach guide now lives in its own repository, **[FCAForce/Coachresource](https://github.com/FCAForce/Coachresource)**, at **https://fcaforce.github.io/Coachresource/**. `public/coach-guide/` here is only a forwarding page: it sends visitors (and the plans, roster and devos saved on their device) to the new address.
