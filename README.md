@@ -64,6 +64,15 @@ npm run preview
 
 Practice plans (with optional drill sheets) and lineup cards export as FCA-branded, printable PDFs. They're generated in the browser with jsPDF 2.5.2 + jspdf-autotable 3.8.4, bundled in `public/coach-guide/vendor/` (MIT licenses alongside). The badge is `fca-sports-idaho-clubs.png`, taken from the guide's cover.
 
+### Adding drills, videos and devotionals (no code)
+
+Staff manage shared content in the Google Sheet **FCA Sports Way — Coach Guide Content** (owned by 323mperformance@gmail.com; ID set as `CONTENT_SHEET_ID` in `public/coach-guide/index.html`). Its **Start Here** tab explains everything; in short:
+
+- **Drills** tab: paste a YouTube link into `video_url` next to any drill; add a new row to add a drill; set `status` to Draft to hide one. Filling in any other cell on a guide drill replaces the guide's text.
+- **Devotionals** tab: add a row and set `status` to Published. It appears under "From FCA staff" on the Devos tab, where coaches can open it, watch its video, or copy it into their own devos.
+
+The sheet must be shared as **Anyone with the link → Viewer**. The site reads it on every visit, keeps the last copy for offline use, and falls back to the built-in guide drills if it can't reach the sheet.
+
 Plans, lineups and devos are saved in each coach's own browser (localStorage).
 
 On a phone, coaches can use Share → **Add to Home Screen** (iPhone) or the browser menu → **Install app / Add to Home screen** (Android) to open it full-screen like an app.
