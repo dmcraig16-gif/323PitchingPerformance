@@ -316,6 +316,34 @@ textarea { resize: vertical; min-height: 80px; }
 .linkbtn { border: 0; background: none; padding: 0; color: var(--ink); text-decoration: underline; font-size: 14px; }
 .prose ol { margin: 0; padding-left: 22px; display: grid; gap: 4px; }
 
+/* Lineup builder */
+details.panel > summary { list-style: none; cursor: pointer; display: flex; align-items: baseline; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+details.panel > summary::-webkit-details-marker { display: none; }
+details.panel > summary h2::after { content: ' ▾'; font-size: 14px; color: var(--muted); }
+details.panel:not([open]) > summary h2::after { content: ' ▸'; }
+.bulk > summary { cursor: pointer; color: var(--muted); font-size: 15px; }
+.bulk[open] { display: grid; gap: 8px; }
+.builder { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr); gap: 16px; align-items: start; }
+@media (max-width: 720px) { .builder { grid-template-columns: minmax(0, 1fr); } }
+.pool { border: 2px dashed var(--line); border-radius: var(--radius); padding: 12px; display: grid; gap: 8px; min-height: 80px; }
+.pool.drop-over { border-color: var(--gold); background: var(--gold-soft); }
+.pchip { border: 1px solid var(--line); background: var(--surface); border-radius: 999px; padding: 8px 14px; font-size: 15px; touch-action: none; user-select: none; -webkit-user-select: none; cursor: grab; }
+.pchip small { color: var(--muted); font-family: var(--font-label); font-weight: 700; margin-left: 2px; }
+.pchip:hover { border-color: var(--gold); }
+.slots { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+.slot { display: grid; grid-template-columns: 22px 26px minmax(0, 1fr) 76px 32px; align-items: center; gap: 6px; border: 1px solid var(--line); background: var(--surface); border-radius: 8px; padding: 4px 6px; min-height: 46px; }
+.slot.empty { grid-template-columns: 22px 26px minmax(0, 1fr); border-style: dashed; background: none; }
+.slot.empty .ord { grid-column: 2; }
+.slot .ord { font-family: var(--font-label); font-weight: 700; font-size: 18px; text-align: center; font-variant-numeric: tabular-nums; }
+.slot .handle { cursor: grab; color: var(--muted); font-size: 20px; text-align: center; touch-action: none; user-select: none; -webkit-user-select: none; line-height: 1; padding: 8px 0; }
+.slot-name { border: 0; background: none; text-align: left; padding: 8px 4px; font-size: 16px; font-weight: 600; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.slot.empty .slot-name { color: var(--muted); font-weight: 400; font-size: 14px; }
+.slot select { padding: 6px 4px; font-family: var(--font-label); font-weight: 700; font-size: 16px; }
+.slot.selected { border-color: var(--gold); box-shadow: 0 0 0 2px var(--gold); }
+.slot.drop-over { border-color: var(--gold); background: var(--gold-soft); }
+.dragging { opacity: .35; }
+.drag-ghost { position: fixed; left: 0; top: 0; z-index: 100; pointer-events: none; opacity: .95; box-shadow: 0 10px 30px rgba(0,0,0,.25); background: var(--surface); }
+
 /* Team */
 .mandate { display: grid; gap: 10px; counter-reset: m; list-style: none; margin: 0; padding: 0; }
 .mandate li { display: grid; grid-template-columns: 34px 1fr; gap: 10px; }
@@ -744,8 +772,7 @@ function planFromTemplate(key, name) {
 function blankGame() {
   return {
     opp: '', date: today(), time: '18:00', loc: '', notes: '',
-    roster: Array.from({ length: 11 }, () => ({ id: uid(), num: '', name: '', pos: '' })),
-    innings: 6, rotate: true, grid: {}, order: [],
+    umps: '', lineup: [], innings: 6, rotate: true, grid: {}, order: [],
     arms: [{ id: uid(), name: '', role: 'Starter', limit: 60, log: [] }, { id: uid(), name: '', role: 'Relief', limit: 30, log: [] }],
     qab: 0, free: { us: {}, them: {} }, bases: {},
   };
@@ -760,7 +787,7 @@ function seedState() {
   ex.blocks[5].drills = ['foul-line', 'quarterbacks', 'spot-drill'];
   ex.notes = 'Example plan. Edit it or start a new one from a template.';
   const devo = blankDevo();
-  return { v: 1, plans: [ex], cur: ex.id, game: blankGame(), checks: {}, devos: [devo], curDevo: devo.id };
+  return { v: 1, plans: [ex], cur: ex.id, game: blankGame(), roster: [], checks: {}, devos: [devo], curDevo: devo.id };
 }
 function blankDevo() {
   return { id: uid(), title: '', date: today(), setting: 'Practice', leader: '', hook: '', scripture: '', bigIdea: '', points: '', questions: ['', '', ''], challenge: '', prayer: '' };
@@ -769,7 +796,15 @@ function loadState() {
   try {
     const s = JSON.parse(localStorage.getItem(KEY));
     if (s && s.v === 1 && s.plans?.length) {
-      if (!s.game?.roster) s.game = blankGame();
+      if (!s.game) s.game = blankGame();
+      if (!s.roster) {
+        // Move the per-game roster (older versions) to the saved team roster and seed the batting order from it.
+        s.roster = (s.game.roster || []).filter(p => (p.name || '').trim() || (p.num || '').trim());
+        if (!s.game.lineup) s.game.lineup = (s.game.order || []).filter(id => s.roster.some(p => p.id === id))
+          .map(id => ({ pid: id, pos: ((s.game.grid || {})[id] || [])[0] !== 'BN' ? ((s.game.grid || {})[id] || [])[0] || '' : '' }));
+      }
+      delete s.game.roster;
+      if (!s.game.lineup) s.game.lineup = [];
       if (!s.devos?.length) { const d = blankDevo(); s.devos = [d]; s.curDevo = d.id; }
       return s;
     }
@@ -1008,10 +1043,10 @@ function gamePlan() {
     </section>
     <section class="panel" style="align-content:start">
       <h2 class="sec">Lineup</h2>
-      ${g.order.length
-        ? `<ol class="prose" style="margin:0;padding-left:22px">${lineupRows().map(r => `<li>${esc(r.label)}${r.first !== 'BN' ? ` <small style="color:var(--muted)">${r.first}</small>` : ' <small style="color:var(--muted)">bench to start</small>'}</li>`).join('')}</ol>`
-        : `<p class="lede" style="font-size:15px">No lineup yet. Enter your roster and generate a batting order and position chart.</p>`}
-      <div><button class="btn" data-act="gameTab" data-k="lineup">${g.order.length ? 'Edit lineup card' : 'Build lineup card'}</button></div>
+      ${lineupSlots().length
+        ? `<ol class="prose" style="margin:0;padding-left:22px">${lineupSlots().map(x => `<li>${esc(playerLabel(x.p))}${x.pos ? ` <small style="color:var(--muted)">${x.pos}</small>` : ''}</li>`).join('')}</ol>`
+        : `<p class="lede" style="font-size:15px">No lineup yet. Add your team roster and drag players into the batting order.</p>`}
+      <div><button class="btn" data-act="gameTab" data-k="lineup">${lineupSlots().length ? 'Edit lineup' : 'Build lineup'}</button></div>
     </section>
   </div>
   <section class="panel">
@@ -1037,10 +1072,9 @@ function gameText() {
   const L = [`Game plan${g.opp ? ' vs ' + g.opp : ''}`, `${fmtDate(g.date)} · First pitch ${clock(fp)}${g.loc ? ' · ' + g.loc : ''}`, '', `Arrive by ${clock(fp - pgTotal)}`];
   let t = fp - pgTotal;
   PREGAME.forEach(([title, min]) => { L.push(`  ${clockShort(t)}  ${title}`); t += min; });
-  if (g.order.length) {
+  if (lineupSlots().length) {
     L.push('', 'Lineup');
-    lineupRows().forEach((r, i) => L.push(`  ${i + 1}. ${r.label} · ${r.cells.join(' ')}`));
-    L.push(`  (positions by inning, ${g.innings} innings)`);
+    lineupSlots().forEach((x, i) => L.push(`  ${i + 1}. ${playerLabel(x.p)}${x.pos ? ' · ' + x.pos : ''}`));
   }
   const arms = g.arms.filter(a => a.name.trim());
   if (arms.length) { L.push('', 'Pitching'); arms.forEach(a => L.push(`  ${a.name} · ${a.role}${a.limit ? ' · limit ' + a.limit : ''}`)); }
@@ -1048,39 +1082,75 @@ function gameText() {
   return L.join('\n');
 }
 
-/* ---------- Lineup card generator ---------- */
+/* ---------- Team roster + lineup builder ---------- */
 const POS = ['P', 'C', '1B', '2B', '3B', 'SS', 'LF', 'CF', 'RF'];
+const BAT_POS = [...POS, 'DH', 'EH'];
+const SLOTS = 15;
 const playerLabel = p => `${p.num ? '#' + p.num + ' ' : ''}${p.name || 'Unnamed player'}`;
-const canPlay = (p, pos) => String(p.pos || '').toUpperCase().split(/[\s,\/]+/).includes(pos);
-function activeRoster() { return state.game.roster.filter(p => p.name.trim() || p.num.trim()); }
+const posList = p => String(p.pos || '').toUpperCase().split(/[\s,\/]+/).filter(x => BAT_POS.includes(x));
+const canPlay = (p, pos) => posList(p).includes(pos);
+const rosterById = () => Object.fromEntries(state.roster.map(p => [p.id, p]));
+function activeRoster() { return state.roster.filter(p => p.name.trim() || p.num.trim()); }
+function lineupArr() {
+  const g = state.game;
+  if (!Array.isArray(g.lineup)) g.lineup = [];
+  while (g.lineup.length < SLOTS) g.lineup.push(null);
+  return g.lineup;
+}
+// Filled batting slots in order, skipping players removed from the roster.
+function lineupSlots() {
+  const byId = rosterById();
+  return lineupArr().map((s, i) => s && byId[s.pid] ? { i, p: byId[s.pid], pos: s.pos || '' } : null).filter(Boolean);
+}
+function defaultPos(pid) {
+  const used = new Set(lineupArr().filter(Boolean).map(s => s.pos));
+  const p = rosterById()[pid];
+  return posList(p).find(x => !used.has(x) || x === 'EH') || '';
+}
+function placeInSlot(pid, i) {
+  const L = lineupArr(), j = L.findIndex(s => s && s.pid === pid);
+  if (j === i) return;
+  if (j >= 0) [L[i], L[j]] = [L[j], L[i]];
+  else L[i] = { pid, pos: defaultPos(pid) };
+}
+function lineupIssues() {
+  const used = lineupSlots().map(s => s.pos).filter(x => POS.includes(x));
+  const dup = POS.filter(p => used.filter(x => x === p).length > 1);
+  const missing = lineupSlots().length >= 9 ? POS.filter(p => !used.includes(p)) : [];
+  return [...dup.map(p => `${p} is listed twice`), ...(missing.length && missing.length < 9 ? [`No ${missing.join(', ')}`] : [])];
+}
 
+/* Position chart by inning (optional), built from the batting order. */
 function generateLineup() {
-  const g = state.game, R = activeRoster();
-  if (R.length < 9) { toast(`Add at least 9 players (you have ${R.length})`); return false; }
+  const g = state.game, S = lineupSlots(), R = S.map(s => s.p);
+  if (R.length < 9) { toast(`Put at least 9 players in the batting order (you have ${R.length})`); return false; }
   const n = Math.max(1, Math.min(9, Number(g.innings) || 6));
   const byId = Object.fromEntries(R.map(p => [p.id, p]));
   const played = Object.fromEntries(R.map(p => [p.id, 0]));
   const grid = Object.fromEntries(R.map(p => [p.id, []]));
   let prev = null;
   for (let i = 0; i < n; i++) {
-    let playing;
-    if (i === 0) playing = R.slice(0, 9).map(p => p.id);
-    else if (!g.rotate || R.length === 9) playing = Object.values(prev);
+    let playing, assign = {};
+    if (i === 0) {
+      // Inning 1 uses the positions chosen in the batting order.
+      for (const s of S) if (POS.includes(s.pos) && !assign[s.pos]) assign[s.pos] = s.p.id;
+      const taken = new Set(Object.values(assign));
+      playing = [...taken, ...R.filter(p => !taken.has(p.id) && !['EH', 'DH'].includes(S.find(s => s.p === p).pos)).map(p => p.id)].slice(0, 9);
+      if (playing.length < 9) playing = [...playing, ...R.map(p => p.id).filter(id => !playing.includes(id))].slice(0, 9);
+    } else if (!g.rotate || R.length === 9) playing = Object.values(prev);
     else {
       // Pitcher and catcher stay in; everyone else sits in turn, fewest innings played goes in first.
       const sticky = new Set([prev.P, prev.C]);
       playing = [...R].sort((a, b) => (sticky.has(b.id) - sticky.has(a.id)) || (played[a.id] - played[b.id]) || (R.indexOf(a) - R.indexOf(b)))
         .slice(0, 9).map(p => p.id);
     }
-    const pool = new Set(playing), assign = {};
-    if (prev) for (const pos of POS) if (pool.has(prev[pos])) { assign[pos] = prev[pos]; pool.delete(prev[pos]); }
+    const pool = new Set(playing.filter(id => !Object.values(assign).includes(id)));
+    if (prev) for (const pos of POS) if (!assign[pos] && pool.has(prev[pos])) { assign[pos] = prev[pos]; pool.delete(prev[pos]); }
     for (const pos of POS) {
       if (assign[pos]) continue;
       const open = POS.filter(q => !assign[q] && q !== pos);
       const ids = [...pool];
-      const pick = ids.find(id => canPlay(byId[id], pos))
-        ?? ids.find(id => !open.some(q => canPlay(byId[id], q)))
-        ?? ids[0];
+      const pick = ids.find(id => canPlay(byId[id], pos)) ?? ids.find(id => !open.some(q => canPlay(byId[id], q))) ?? ids[0];
       assign[pos] = pick; pool.delete(pick);
     }
     const posOf = Object.fromEntries(Object.entries(assign).map(([pos, id]) => [id, pos]));
@@ -1092,9 +1162,8 @@ function generateLineup() {
   return true;
 }
 function lineupRows() {
-  const g = state.game, n = Number(g.innings) || 6;
-  const byId = Object.fromEntries(g.roster.map(p => [p.id, p]));
-  return g.order.filter(id => byId[id]).map(id => {
+  const g = state.game, n = Number(g.innings) || 6, byId = rosterById();
+  return (g.order || []).filter(id => byId[id]).map(id => {
     const cells = Array.from({ length: n }, (_, i) => (g.grid[id] || [])[i] || 'BN');
     return { id, label: playerLabel(byId[id]), cells, first: cells[0], innings: cells.filter(c => c !== 'BN').length };
   });
@@ -1106,63 +1175,183 @@ function inningIssues(rows, i) {
   return [...missing.map(p => `no ${p}`), ...dup.map(p => `2× ${p}`)];
 }
 
-function gameLineup() {
-  const g = state.game, n = Number(g.innings) || 6;
-  const rows = lineupRows();
-  const roster = g.roster.map((p, i) => `<tr>
+function rosterPanel() {
+  const R = state.roster;
+  const rows = R.map((p, i) => `<tr>
     <td><label class="sr" for="rn-${p.id}">Jersey number</label><input type="text" inputmode="numeric" id="rn-${p.id}" value="${esc(p.num)}" placeholder="#" data-ro="num" data-pid="${p.id}"></td>
     <td><label class="sr" for="rnm-${p.id}">Player name</label><input type="text" id="rnm-${p.id}" value="${esc(p.name)}" placeholder="Player ${i + 1}" data-ro="name" data-pid="${p.id}"></td>
     <td><label class="sr" for="rp-${p.id}">Positions</label><input type="text" id="rp-${p.id}" value="${esc(p.pos)}" placeholder="e.g. P, SS" data-ro="pos" data-pid="${p.id}"></td>
-    <td><button class="btn ghost sm danger" data-act="rmPlayer" data-pid="${p.id}" aria-label="Remove player">✕</button></td></tr>`).join('');
+    <td><button class="btn ghost sm danger" data-act="rmPlayer" data-pid="${p.id}" aria-label="Remove ${esc(p.name || 'player')}">✕</button></td></tr>`).join('');
+  return `<details class="panel roster-panel" ${R.length && !ui.rosterOpen ? '' : 'open'} data-toggle="rosterOpen">
+    <summary><h2 class="sec">Team roster</h2><span class="meta">${activeRoster().length} players · saved on this device</span></summary>
+    <p class="lede" style="font-size:14px">Enter your team once. It stays here for every game. List each player’s positions (P, C, 1B, 2B, 3B, SS, LF, CF, RF); the first one is their default.</p>
+    ${R.length ? `<div class="table-wrap"><table class="roster"><thead><tr><th>#</th><th>Name</th><th>Positions</th><th></th></tr></thead><tbody>${rows}</tbody></table></div>` : ''}
+    <div class="row"><button class="btn" data-act="addPlayer">+ Add player</button></div>
+    <details class="bulk">
+      <summary>Add several players at once</summary>
+      <label class="field"><span>One player per line: number, name, positions</span>
+        <textarea id="bulkRoster" rows="5" placeholder="12 Jake Smith P SS&#10;4 Ty Jones C&#10;Sam Lee 2B, SS"></textarea></label>
+      <div><button class="btn primary sm" data-act="bulkAdd">Add players</button></div>
+    </details>
+  </details>`;
+}
+
+function builderPanel() {
+  const L = lineupArr(), byId = rosterById();
+  const inLineup = new Set(L.filter(Boolean).map(s => s.pid));
+  const pool = activeRoster().filter(p => !inLineup.has(p.id));
+  const lastFilled = L.reduce((m, s, i) => s && byId[s.pid] ? i : m, -1);
+  const shown = Math.min(SLOTS, Math.max(9, lastFilled + 2));
+  const sel = ui.selSlot;
+  const slots = Array.from({ length: shown }, (_, i) => {
+    const s = L[i] && byId[L[i].pid] ? L[i] : null;
+    if (!s) return `<li class="slot empty${sel === i ? ' selected' : ''}" data-drop="${i}"><span class="ord">${i + 1}</span><button class="slot-name" data-act="pickSlot" data-i="${i}">Drop or tap a player</button></li>`;
+    const p = byId[s.pid];
+    return `<li class="slot${sel === i ? ' selected' : ''}" data-drop="${i}">
+      <span class="handle" data-drag="slot" data-drag-id="${i}" aria-hidden="true" title="Drag to reorder">⠿</span>
+      <span class="ord">${i + 1}</span>
+      <button class="slot-name" data-act="pickSlot" data-i="${i}">${p.num ? `<b>#${esc(p.num)}</b> ` : ''}${esc(p.name || 'Unnamed')}</button>
+      <label class="sr" for="sp-${i}">Position for ${esc(p.name)}</label>
+      <select id="sp-${i}" data-slotpos="${i}"><option value="">Pos</option>${BAT_POS.map(x => `<option ${x === s.pos ? 'selected' : ''}>${x}</option>`).join('')}</select>
+      <button class="btn ghost sm" data-act="rmSlot" data-i="${i}" aria-label="Take ${esc(p.name)} out of the lineup">✕</button>
+    </li>`;
+  }).join('');
+  const issues = lineupIssues();
+  return `<section class="panel">
+    <div class="row" style="justify-content:space-between;align-items:center">
+      <h2 class="sec">Batting order</h2>
+      <div class="row" style="gap:6px"><button class="btn sm" data-act="fillLineup">Fill from roster</button><button class="btn sm ghost" data-act="clearLineup">Clear</button></div>
+    </div>
+    <p class="lede" style="font-size:14px">Drag players into the order, or tap a player to add them to the next open spot. Drag ⠿ to reorder. Tap two names to swap them.</p>
+    <div class="builder">
+      <div class="pool" data-drop="pool" aria-label="Available players">
+        <h3 class="sub">Available · ${pool.length}</h3>
+        <div class="chips">${pool.length ? pool.map(p => `<button class="pchip" data-drag="player" data-drag-id="${p.id}" data-act="addToLineup" data-pid="${p.id}">${p.num ? `<b>#${esc(p.num)}</b> ` : ''}${esc(p.name || 'Unnamed')}${posList(p)[0] ? ` <small>${posList(p)[0]}</small>` : ''}</button>`).join('')
+          : `<p class="lede" style="font-size:14px;margin:0">${activeRoster().length ? 'Everyone is in the lineup. Drag a player here to take them out.' : 'Add players to your team roster first.'}</p>`}</div>
+      </div>
+      <ol class="slots">${slots}</ol>
+    </div>
+    ${issues.length ? `<p class="callout">${esc(issues.join(' · '))}</p>` : ''}
+    ${lineupSlots().length ? `<div class="row no-print">
+      <button class="btn primary" data-act="pdf" data-kind="lineup" data-mode="save">Save lineup card PDF</button>
+      <button class="btn" data-act="pdf" data-kind="lineup" data-mode="print">Print</button>
+      <button class="btn" data-act="copyLineup">Copy as text</button>
+    </div>
+    <p class="lede" style="font-size:13px">The PDF has two pages: the full FCA scorecard with your lineup filled in, and a simple lineup sheet${(state.game.order || []).length ? ', plus your position chart by inning' : ''}.</p>` : ''}
+  </section>`;
+}
+
+function rotationPanel() {
+  const g = state.game, n = Number(g.innings) || 6, rows = lineupRows();
   const issues = Array.from({ length: n }, (_, i) => rows.length ? inningIssues(rows, i) : []);
-  const card = rows.length ? `
+  const grid = rows.length ? `
     <div class="table-wrap"><table class="lcard">
-      <thead><tr><th>#</th><th>Batting order</th>${Array.from({ length: n }, (_, i) => `<th>${i + 1}</th>`).join('')}<th title="Innings in the field">Inn</th><th class="no-print"></th></tr></thead>
+      <thead><tr><th>#</th><th>Batting order</th>${Array.from({ length: n }, (_, i) => `<th>${i + 1}</th>`).join('')}<th title="Innings in the field">Inn</th></tr></thead>
       <tbody>${rows.map((r, k) => `<tr>
         <td class="ord">${k + 1}</td><td class="nm" data-nm="${r.id}">${esc(r.label)}</td>
-        ${r.cells.map((c, i) => `<td><label class="sr" for="gc-${r.id}-${i}">${esc(r.label)} inning ${i + 1}</label><select id="gc-${r.id}-${i}" class="${c === 'BN' ? 'bn' : ''}${issues[i].length && c !== 'BN' && issues[i].some(x => x === '2× ' + c) ? ' clash' : ''}" data-cell="${i}" data-pid="${r.id}">${[...POS, 'BN'].map(p => `<option ${p === c ? 'selected' : ''}>${p}</option>`).join('')}</select></td>`).join('')}
+        ${r.cells.map((c, i) => `<td><label class="sr" for="gc-${r.id}-${i}">${esc(r.label)} inning ${i + 1}</label><select id="gc-${r.id}-${i}" class="${c === 'BN' ? 'bn' : ''}${issues[i].some(x => x === '2× ' + c) ? ' clash' : ''}" data-cell="${i}" data-pid="${r.id}">${[...POS, 'BN'].map(p => `<option ${p === c ? 'selected' : ''}>${p}</option>`).join('')}</select></td>`).join('')}
         <td class="ord">${r.innings}</td>
-        <td class="no-print" style="white-space:nowrap"><button class="btn ghost sm" data-act="moveBat" data-pid="${r.id}" data-d="-1" ${k === 0 ? 'disabled' : ''} aria-label="Bat earlier">↑</button><button class="btn ghost sm" data-act="moveBat" data-pid="${r.id}" data-d="1" ${k === rows.length - 1 ? 'disabled' : ''} aria-label="Bat later">↓</button></td>
       </tr>`).join('')}</tbody>
-      <tfoot><tr><td></td><td class="nm">Check</td>${issues.map(x => `<td class="${x.length ? 'warnc' : 'okc'}" title="${esc(x.join(', '))}">${x.length ? '⚠' : '✓'}</td>`).join('')}<td></td><td class="no-print"></td></tr></tfoot>
+      <tfoot><tr><td></td><td class="nm">Check</td>${issues.map(x => `<td class="${x.length ? 'warnc' : 'okc'}" title="${esc(x.join(', '))}">${x.length ? '⚠' : '✓'}</td>`).join('')}<td></td></tr></tfoot>
     </table></div>
-    ${issues.some(x => x.length) ? `<p class="callout">${issues.map((x, i) => x.length ? `Inning ${i + 1}: ${x.join(', ')}` : '').filter(Boolean).join(' · ')}</p>` : ''}
-    <div class="card-foot">
-      <div><h3 class="sub">BASES2</h3><div class="boxes">${BASES2.map(([l, name]) => `<span><i></i>${l} · ${name}</span>`).join('')}</div></div>
-      <div><h3 class="sub">Freebie war</h3><div class="boxes">${FREEBIES.map(([k]) => `<span><i></i>${k}</span>`).join('')}</div></div>
-      <div><h3 class="sub">Goals</h3><div class="boxes"><span><i></i>18 QAB’s</span><span><i></i>.400+ OBP</span><span><i></i>Under 15 pitches / inning</span></div></div>
-    </div>`
-    : `<p class="empty">Enter your roster above, then generate the card.</p>`;
-  return `
-  <section class="panel no-print">
-    <h2 class="sec">Roster</h2>
-    <p class="lede" style="font-size:14px">List players in the order you want them to bat. The first 9 start. Add the positions each player can play (P, C, 1B, 2B, 3B, SS, LF, CF, RF) and the generator puts them there first.</p>
-    <div class="table-wrap"><table class="roster"><thead><tr><th>#</th><th>Name</th><th>Can play</th><th></th></tr></thead><tbody>${roster}</tbody></table></div>
-    <div><button class="btn" data-act="addPlayer">+ Add player</button></div>
+    ${issues.some(x => x.length) ? `<p class="callout">${issues.map((x, i) => x.length ? `Inning ${i + 1}: ${x.join(', ')}` : '').filter(Boolean).join(' · ')}</p>` : ''}` : '';
+  return `<details class="panel" ${rows.length || ui.chartOpen ? 'open' : ''} data-toggle="chartOpen">
+    <summary><h2 class="sec">Position chart by inning</h2><span class="meta">Optional · for playing-time rotation</span></summary>
+    <p class="lede" style="font-size:14px">Builds every inning’s defense from your batting order. Inning 1 uses the positions above. Rotate the bench keeps your pitcher and catcher in and sits everyone else in turn.</p>
     <div class="row" style="align-items:end">
       <label class="field" style="flex:0 1 120px"><span>Innings</span><select id="gInn" data-gf="innings" data-rerender="1">${[3, 4, 5, 6, 7, 9].map(k => `<option ${Number(g.innings) === k ? 'selected' : ''}>${k}</option>`).join('')}</select></label>
       <div class="field" style="flex:1 1 220px"><span>Playing time</span>
         <div class="seg" role="group" aria-label="Playing time"><button data-act="rotate" data-v="1" aria-pressed="${!!g.rotate}">Rotate the bench</button><button data-act="rotate" data-v="0" aria-pressed="${!g.rotate}">Same 9 all game</button></div>
       </div>
-      <button class="btn primary" data-act="genLineup">${rows.length ? 'Regenerate card' : 'Generate lineup card'}</button>
+      <button class="btn ${rows.length ? '' : 'primary'}" data-act="genLineup">${rows.length ? 'Rebuild chart' : 'Build chart'}</button>
+      ${rows.length ? '<button class="btn ghost danger" data-act="clearChart">Remove chart</button>' : ''}
     </div>
-    <p class="lede" style="font-size:13px">Rotate the bench keeps your pitcher and catcher in and sits everyone else in turn, so playing time stays even. Edit any cell after generating.</p>
-  </section>
+    ${grid}
+  </details>`;
+}
+
+function gameLineup() {
+  const g = state.game;
+  return `
   <section class="panel">
-    <div class="row" style="justify-content:space-between;align-items:center">
-      <h2 class="sec">Lineup card${g.opp ? ' vs ' + esc(g.opp) : ''}</h2>
-      <span class="meta">${esc(fmtDate(g.date))} · ${clock(toMin(g.time))}</span>
+    <div class="row">
+      <label class="field" style="flex-basis:100%"><span>Opponent</span><input type="text" id="lOpp" value="${esc(g.opp)}" data-gf="opp" placeholder="Opponent"></label>
+      <label class="field"><span>Date</span><input type="date" id="lDate" value="${esc(g.date)}" data-gf="date"></label>
+      <label class="field"><span>Umpires</span><input type="text" id="lUmps" value="${esc(g.umps || '')}" data-gf="umps" placeholder="Optional"></label>
     </div>
-    ${card}
-    ${rows.length ? `<div class="row no-print"><button class="btn primary" data-act="pdf" data-kind="lineup" data-mode="save">Save PDF</button><button class="btn" data-act="pdf" data-kind="lineup" data-mode="print">Print</button><button class="btn" data-act="copyLineup">Copy as text</button></div>` : ''}
-  </section>`;
+  </section>
+  ${rosterPanel()}
+  ${builderPanel()}
+  ${rotationPanel()}`;
 }
 function lineupText() {
   const g = state.game;
-  const L = [`Lineup${g.opp ? ' vs ' + g.opp : ''} · ${fmtDate(g.date)}`, `Positions by inning 1–${g.innings}`, ''];
-  lineupRows().forEach((r, i) => L.push(`${i + 1}. ${r.label}  ${r.cells.join(' · ')}`));
+  const L = [`Lineup${g.opp ? ' vs ' + g.opp : ''} · ${fmtDate(g.date)}`, ''];
+  lineupSlots().forEach((s, k) => L.push(`${k + 1}. ${playerLabel(s.p)}${s.pos ? '  ' + s.pos : ''}`));
+  const byId = new Set(lineupSlots().map(s => s.p.id));
+  const bench = activeRoster().filter(p => !byId.has(p.id));
+  if (bench.length) L.push('', 'Bench: ' + bench.map(playerLabel).join(', '));
+  const rows = lineupRows();
+  if (rows.length) { L.push('', `Positions by inning 1–${g.innings}`); rows.forEach((r, i) => L.push(`${i + 1}. ${r.label}  ${r.cells.join(' · ')}`)); }
   return L.join('\n');
 }
+function parseBulkRoster(text) {
+  return text.split('\n').map(l => l.trim()).filter(Boolean).map(l => {
+    const m = l.match(/^#?(\d{1,3})(?:[\s.,-]+(.*))?$/);
+    let num = '', rest = l;
+    if (m) { num = m[1]; rest = m[2] || ''; }
+    const words = rest.split(/[\s,\/]+/).filter(Boolean);
+    const pos = [];
+    // Positions come last ("2 Smith P SS"); the name keeps at least one word.
+    while (words.length > 1 && BAT_POS.includes(words[words.length - 1].toUpperCase())) pos.unshift(words.pop().toUpperCase());
+    return { id: uid(), num, name: words.join(' ').trim(), pos: pos.join(', ') };
+  }).filter(p => p.name || p.num);
+}
+
+/* ---------- Drag and drop (mouse and touch, via pointer events) ---------- */
+let drag = null, suppressClick = null;
+document.addEventListener('pointerdown', e => {
+  const src = e.target.closest('[data-drag]');
+  if (!src || e.button > 0) return;
+  drag = { src, kind: src.dataset.drag, id: src.dataset.dragId, x: e.clientX, y: e.clientY, pointer: e.pointerId, started: false };
+});
+document.addEventListener('pointermove', e => {
+  if (!drag || e.pointerId !== drag.pointer) return;
+  if (!drag.started) {
+    if (Math.hypot(e.clientX - drag.x, e.clientY - drag.y) < 6) return;
+    const from = drag.kind === 'slot' ? drag.src.closest('.slot') : drag.src;
+    const r = from.getBoundingClientRect();
+    drag.ghost = from.cloneNode(true);
+    drag.ghost.classList.add('drag-ghost');
+    drag.ghost.style.width = r.width + 'px';
+    drag.dx = drag.x - r.left; drag.dy = drag.y - r.top;
+    document.body.appendChild(drag.ghost);
+    from.classList.add('dragging'); drag.from = from;
+    drag.started = true;
+  }
+  e.preventDefault();
+  drag.ghost.style.transform = `translate(${e.clientX - drag.dx}px, ${e.clientY - drag.dy}px)`;
+  const t = document.elementFromPoint(e.clientX, e.clientY)?.closest('[data-drop]');
+  if (drag.over !== t) { drag.over?.classList.remove('drop-over'); t?.classList.add('drop-over'); drag.over = t; }
+  if (e.clientY < 90) window.scrollBy(0, -12); else if (e.clientY > innerHeight - 110) window.scrollBy(0, 12);
+}, { passive: false });
+function endDrag(e, cancel) {
+  if (!drag || (e && e.pointerId !== drag.pointer)) return;
+  const d = drag; drag = null;
+  if (!d.started) return;
+  suppressClick = { el: d.src, until: Date.now() + 350 };
+  d.ghost.remove(); d.from.classList.remove('dragging'); d.over?.classList.remove('drop-over');
+  if (cancel || !d.over) return;
+  const L = lineupArr(), target = d.over.dataset.drop;
+  if (target === 'pool') { if (d.kind === 'slot') L[+d.id] = null; }
+  else if (d.kind === 'player') placeInSlot(d.id, +target);
+  else if (d.kind === 'slot') { const i = +target, j = +d.id; [L[i], L[j]] = [L[j], L[i]]; }
+  ui.selSlot = null; save(); render();
+}
+document.addEventListener('pointerup', e => endDrag(e, false));
+document.addEventListener('pointercancel', e => endDrag(e, true));
+// A drag ends with a click on the dragged element; swallow only that one.
+document.addEventListener('click', e => { if (suppressClick && Date.now() < suppressClick.until && suppressClick.el.contains(e.target)) { e.stopPropagation(); e.preventDefault(); } suppressClick = null; }, true);
 
 /* ========================== DEVOS ========================== */
 const DEVO_SETTINGS = { Practice: 'Practice devo · about 10 min', Pregame: 'Pregame devotion · 3–5 min', Meeting: 'Team meeting · about 20 min' };
@@ -1983,10 +2172,154 @@ async function practicePdf(mode, win) {
   await deliverPdf(doc, `FCA-Practice-${fileSafe(plan.name) || 'Plan'}-${plan.date || ''}.pdf`, mode, win);
 }
 
-async function lineupPdf(mode, win) {
-  const g = state.game, rows = lineupRows(), n = Number(g.innings) || 6, doc = await newPdf();
-  const meta = [fmtDate(g.date), 'First pitch ' + clock(toMin(g.time)), g.loc].filter(Boolean).join('  ·  ');
-  let y = pdfHeader(doc, 'Lineup Card', g.opp ? `vs ${g.opp}` : 'Lineup Card', meta);
+const brandImgs = {};
+async function brandImage(name) {
+  if (!(name in brandImgs)) brandImgs[name] = await imageData('brand/' + name).catch(() => null);
+  return brandImgs[name];
+}
+function fitImage(doc, img, x, y, maxW, maxH, align = 'left') {
+  if (!img) return;
+  const p = doc.getImageProperties(img), r = Math.min(maxW / p.width, maxH / p.height);
+  const w = p.width * r, h = p.height * r;
+  doc.addImage(img, 'PNG', align === 'center' ? x + (maxW - w) / 2 : x, y, w, h);
+}
+
+/* Page 1: the FCA scorecard, laid out on the original card's 1294 × 2000 grid and scaled to letter. */
+async function scorecardPage(doc) {
+  const g = state.game, slots = lineupSlots();
+  const X = px => 18 + px * (576 / 1294), Y = py => 14 + py * (764 / 2000);
+  const ink = PDF.ink;
+  const line = (x1, y1, x2, y2, w = 0.8) => { doc.setLineWidth(w); doc.setDrawColor(...ink); doc.line(X(x1), Y(y1), X(x2), Y(y2)); };
+  const box = (x1, y1, x2, y2, w = 2) => { doc.setLineWidth(w); doc.setDrawColor(...ink); doc.rect(X(x1), Y(y1), X(x2) - X(x1), Y(y2) - Y(y1)); };
+  const text = (s, x, y, { size = 10, style = 'normal', align = 'center', underline = false, color = ink } = {}) => {
+    doc.setFont('helvetica', style); doc.setFontSize(size); doc.setTextColor(...color);
+    const str = pdfSafe(s); doc.text(str, X(x), Y(y), { align });
+    if (underline) {
+      const w = doc.getTextWidth(str), x0 = align === 'center' ? X(x) - w / 2 : align === 'right' ? X(x) - w : X(x);
+      doc.setLineWidth(0.7); doc.line(x0, Y(y) + 1.6, x0 + w, Y(y) + 1.6);
+    }
+  };
+  const fit = (s, maxPx, size) => { doc.setFontSize(size); let t = pdfSafe(s); while (t.length > 1 && doc.getTextWidth(t) > maxPx * (576 / 1294)) t = t.slice(0, -1); return t; };
+
+  // Header
+  fitImage(doc, await brandImage('fca-force.png'), X(55), Y(22), X(380) - X(55), Y(318) - Y(22));
+  [[73, 'DATE', fmtDate(g.date)], [160, 'OPPONENT', g.opp], [248, 'UMPIRES', g.umps]].forEach(([ly, label, val]) => {
+    line(815, ly, 1218, ly, 2);
+    text(label, 1016, ly + 24, { size: 10 });
+    if (val) text(fit(val, 400, 13), 1016, ly - 9, { size: 13, style: 'bold' });
+  });
+
+  // Line score
+  const cols = [288, 379, 470, 561, 652, 744, 835, 926, 1017, 1108, 1199, 1285];
+  ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'F'].forEach((n, i) => text(n, (cols[i] + cols[i + 1]) / 2, 347, { size: 11 }));
+  box(8, 357, 1285, 525, 3);
+  cols.slice(0, -1).forEach(c => line(c, 357, c, 525, 1.6));
+  line(8, 443, 1285, 443, 1.6);
+
+  // Section frame
+  box(8, 525, 1285, 1787, 3);
+  line(8, 1220, 1285, 1220, 3); line(8, 1552, 1285, 1552, 3);
+  line(562, 525, 562, 1220, 3); line(882, 525, 882, 905, 3); line(562, 905, 1285, 905, 3);
+  line(630, 1220, 630, 1552, 3); line(630, 1362, 1285, 1362, 3);
+  line(846, 1220, 846, 1362, 2); line(1067, 1220, 1067, 1362, 2);
+
+  // Lineup
+  text('LINEUP', 205, 553, { size: 11 }); text('POS', 420, 553, { size: 11 }); text('QAB', 520, 553, { size: 11 });
+  for (let k = 0; k < 15; k++) {
+    const ly = 604 + k * 34.9, s = slots[k];
+    text(`${k + 1}.`, 32, ly - 4, { size: 7, align: 'right' });
+    line(33, ly, 358, ly); line(387, ly, 461, ly); line(485, ly, 556, ly);
+    if (s) {
+      text(fit(playerLabel(s.p), 320, 10), 38, ly - 5, { size: 10, style: 'bold', align: 'left' });
+      if (s.pos) text(s.pos, 424, ly - 5, { size: 10, style: 'bold' });
+    }
+  }
+  text("TOTAL QAB's/TOTAL AB's", 30, 1156, { size: 9, style: 'bold', align: 'left' });
+  box(388, 1112, 547, 1181, 2); line(484, 1124, 456, 1170, 1);
+
+  // BASES2
+  text('B A S E S 2', 1085, 578, { size: 17, style: 'bold', underline: true });
+  ['Big Inning', 'Answer Back', 'Score First', 'Extend the Lead', 'Shutdown Inning', '2 Score with 2 Outs'].forEach((t, i) => {
+    const ly = 628 + i * 49;
+    const first = t.startsWith('2 ') ? '2' : t[0], rest = t.startsWith('2 ') ? t.slice(1) : t.slice(1);
+    text(first, 912, ly, { size: 12.5, style: 'bold', align: 'left' });
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(12.5); const w = doc.getTextWidth(first);
+    doc.setFont('helvetica', 'normal'); doc.text(pdfSafe(rest), X(912) + w, Y(ly));
+  });
+
+  // Freebie war
+  text('US', 672, 945, { size: 10.5, underline: true }); text('THEM', 1192, 945, { size: 10.5, underline: true });
+  text('FREEBIE WAR', 932, 944, { size: 14, style: 'bold' });
+  [968, 1010, 1062, 1113, 1165].forEach(fy => { line(565, fy, 777, fy, 2); line(1080, fy, 1285, fy, 2); });
+  line(777, 968, 777, 1220, 2); line(1080, 968, 1080, 1220, 2);
+  [['BB/HBP', 998], ['WP/PB', 1046], ['ERROR', 1096], ['BONEHEAD', 1146]].forEach(([t, ly]) => text(t, 928, ly, { size: 12.5 }));
+  text('TOTAL', 928, 1203, { size: 16, style: 'bold' });
+
+  // Pitchers
+  text('PITCHERS', 198, 1250, { size: 10.5 }); text('IP', 392, 1250, { size: 10.5 }); text('QINN', 480, 1250, { size: 10.5 }); text('LOBO', 577, 1250, { size: 10.5 });
+  const arms = g.arms.filter(a => a.name.trim());
+  [1291, 1335, 1379, 1421, 1463].forEach((ly, k) => {
+    text(`${k + 1}.`, 32, ly - 4, { size: 8, align: 'right' });
+    line(33, ly, 333, ly); line(356, ly, 430, ly); line(444, ly, 518, ly); line(534, ly, 610, ly);
+    if (arms[k]) text(fit(arms[k].name, 295, 10), 38, ly - 5, { size: 10, style: 'bold', align: 'left' });
+  });
+  text('TOTALS', 355, 1512, { size: 10.5, style: 'bold' });
+  box(443, 1474, 518, 1538, 2); box(535, 1474, 609, 1538, 2);
+
+  // BID's / Blocks / LOB
+  [["BID's", 745], ['Blocks', 961], ['LOB', 1176]].forEach(([t, x]) => { text(t, x, 1250, { size: 10, style: 'bold' }); line(x - 80, 1262, x + 78, 1262, 1); });
+
+  // Mental game
+  text('MENTAL GAME', 960, 1398, { size: 11, style: 'bold' });
+  text('Lose', 752, 1412, { size: 10, style: 'bold', underline: true }); text('Win', 1155, 1412, { size: 10, style: 'bold', underline: true });
+  text('Strikeouts:', 843, 1450, { size: 11, align: 'right' }); text('Mental Error:', 843, 1510, { size: 11, align: 'right' });
+  box(855, 1416, 1068, 1530, 2); line(961, 1416, 961, 1530, 2); line(855, 1473, 1068, 1473, 2);
+  text(':Dirt Bag', 1080, 1450, { size: 11, align: 'left' }); text(':Big Play', 1080, 1510, { size: 11, align: 'left' });
+
+  // Notes
+  text('Notes:', 630, 1584, { size: 10.5, underline: true });
+  [1626, 1665, 1705, 1745].forEach(ly => line(22, ly, 1272, ly));
+
+  // Footer logos
+  fitImage(doc, await brandImage('win-different.png'), X(195), Y(1797), X(520) - X(195), Y(1995) - Y(1797));
+  fitImage(doc, await brandImage('proven.png'), X(712), Y(1802), X(1070) - X(712), Y(1985) - Y(1802));
+}
+
+/* Page 2: a clean lineup sheet with the FCA Force logo. */
+async function simpleLineupPage(doc) {
+  const g = state.game, slots = lineupSlots();
+  fitImage(doc, await brandImage('fca-force.png'), 0, 30, PDF.W, 96, 'center');
+  doc.setTextColor(...PDF.ink); doc.setFont('helvetica', 'bold'); doc.setFontSize(26);
+  doc.setCharSpace(3); doc.text('LINEUP', PDF.W / 2, 160, { align: 'center' }); doc.setCharSpace(0);
+  const meta = [g.opp ? 'vs ' + g.opp : '', fmtDate(g.date), g.time ? clock(toMin(g.time)) : ''].filter(Boolean).join('   ·   ');
+  doc.setFont('helvetica', 'normal'); doc.setFontSize(12); doc.setTextColor(...PDF.muted); doc.text(pdfSafe(meta), PDF.W / 2, 180, { align: 'center' });
+  doc.setFillColor(...PDF.gold); doc.rect(PDF.W / 2 - 24, 190, 48, 3.5, 'F');
+  const big = slots.length <= 12;
+  doc.autoTable({
+    ...pdfTableBase(), startY: 206, margin: { left: 96, right: 96, bottom: 50 },
+    head: [['', 'Player', '#', 'Pos']],
+    body: slots.map((s, k) => [String(k + 1), pdfSafe(s.p.name || 'Unnamed'), s.p.num || '', s.pos || '']),
+    styles: { ...pdfTableBase().styles, fontSize: big ? 16 : 13, cellPadding: { top: big ? 9 : 6, bottom: big ? 9 : 6, left: 8, right: 8 } },
+    headStyles: { ...pdfTableBase().headStyles, fontSize: 10 },
+    columnStyles: { 0: { cellWidth: 34, halign: 'center', fontStyle: 'bold' }, 1: { fontStyle: 'bold' }, 2: { cellWidth: 46, halign: 'center' }, 3: { cellWidth: 56, halign: 'center', fontStyle: 'bold' } },
+    didParseCell: d => { if (d.section === 'head' && d.column.index !== 1) d.cell.styles.halign = 'center'; },
+  });
+  const inLineup = new Set(slots.map(s => s.p.id));
+  const bench = activeRoster().filter(p => !inLineup.has(p.id));
+  if (bench.length) {
+    let y = doc.lastAutoTable.finalY + 22;
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(10); doc.setTextColor(...PDF.ink); doc.setCharSpace(1.2); doc.text('BENCH', 96, y); doc.setCharSpace(0);
+    doc.setFont('helvetica', 'normal'); doc.setFontSize(12);
+    doc.text(doc.splitTextToSize(pdfSafe(bench.map(playerLabel).join(',  ')), PDF.W - 192), 96, y + 16);
+  }
+  doc.setFont('helvetica', 'normal'); doc.setFontSize(8); doc.setTextColor(...PDF.muted);
+  doc.text('FCA Sports Idaho Clubs', PDF.W / 2, PDF.H - 24, { align: 'center' });
+}
+
+/* Page 3 (only when built): positions by inning. */
+function rotationPage(doc) {
+  const g = state.game, rows = lineupRows(), n = Number(g.innings) || 6;
+  const y = pdfHeader(doc, 'Position Chart', g.opp ? `vs ${g.opp}` : 'Position Chart', [fmtDate(g.date), `${n} innings`].join('  ·  '));
   const innW = Math.min(40, (PDF.W - 2 * PDF.M - 24 - 150 - 34) / n);
   doc.autoTable({
     ...pdfTableBase(), startY: y,
@@ -2000,40 +2333,13 @@ async function lineupPdf(mode, win) {
       if (d.section === 'body' && d.cell.raw === 'BN') { d.cell.styles.textColor = PDF.muted; d.cell.styles.fontStyle = 'normal'; }
     },
   });
-  y = doc.lastAutoTable.finalY + 26;
+}
 
-  const arms = g.arms.filter(a => a.name.trim());
-  y = pdfRoom(doc, y, 60 + 24 * Math.max(4, arms.length));
-  y = pdfSection(doc, y, 'Pitching');
-  doc.autoTable({
-    ...pdfTableBase(), startY: y,
-    head: [['Pitcher', 'Role', 'Limit', 'Pitch count']],
-    body: [...arms.map(a => [pdfSafe(a.name), a.role, a.limit ? String(a.limit) : '', '']), ...Array.from({ length: Math.max(0, 4 - arms.length) }, () => ['', '', '', ''])],
-    columnStyles: { 1: { cellWidth: 80 }, 2: { cellWidth: 50, halign: 'center' }, 3: { cellWidth: 200 } },
-  });
-  y = doc.lastAutoTable.finalY + 22;
-
-  y = pdfRoom(doc, y, 112);
-  const colW = (PDF.W - 2 * PDF.M) / 3;
-  const cols = [
-    ['BASES2', BASES2.map(([l, name]) => `${l}  ${name}`)],
-    ['Freebie war', FREEBIES.map(([k, nm]) => `${k}  ${nm}`)],
-    ['Goals', ['18 quality at-bats', '.400+ OBP', 'Under 15 pitches / inning', 'No lead-off or 2-out walks', 'Win the freebie war']],
-  ];
-  cols.forEach(([label, items], c) => {
-    const x = PDF.M + c * colW;
-    doc.setFont('helvetica', 'bold'); doc.setFontSize(10); doc.setTextColor(...PDF.ink); doc.text(label.toUpperCase(), x, y);
-    if (label === 'Freebie war') {
-      // Tally columns: freebies we gave vs. freebies they gave.
-      doc.setFontSize(7.5); doc.setTextColor(...PDF.muted); doc.text('US', x + 92, y); doc.text('THEM', x + 132, y);
-      FREEBIES.forEach(([k], i) => {
-        const ty = y + 18 + i * 15.5;
-        doc.setFont('helvetica', 'bold'); doc.setFontSize(9.5); doc.setTextColor(...PDF.ink); doc.text(k, x, ty);
-        doc.setDrawColor(...PDF.ink); doc.setLineWidth(0.75); doc.line(x + 86, ty + 2, x + 122, ty + 2); doc.line(x + 130, ty + 2, x + 166, ty + 2);
-      });
-    } else items.forEach((it, i) => pdfBox(doc, x, y + 18 + i * 15.5, it));
-  });
-  pdfFooters(doc);
+async function lineupPdf(mode, win) {
+  const g = state.game, doc = await newPdf();
+  await scorecardPage(doc);
+  doc.addPage(); await simpleLineupPage(doc);
+  if (lineupRows().length) { doc.addPage(); rotationPage(doc); }
   await deliverPdf(doc, `FCA-Lineup-${fileSafe(g.opp) || 'Card'}-${g.date || ''}.pdf`, mode, win);
 }
 
@@ -2150,13 +2456,43 @@ const ACTIONS = {
   rmArm(el) { state.game.arms = state.game.arms.filter(a => a.id !== el.dataset.aid); save(); render(); },
   copyGame() { copyText(gameText(), 'Game plan'); },
   askNewGame() { ui.confirm = 'game'; render(); },
-  newGame() { state.game = blankGame(); ui.confirm = null; save(); render(); toast('Ready for a new game'); },
+  newGame() { const keep = state.game.lineup; state.game = blankGame(); state.game.lineup = keep || []; ui.confirm = null; save(); render(); toast('Ready for a new game. Your lineup carried over.'); },
   qab(el) { state.game.qab = Math.max(0, state.game.qab + Number(el.dataset.d)); save(); render(); },
   free(el) { const f = state.game.free[el.dataset.side]; f[el.dataset.k] = Math.max(0, (f[el.dataset.k] || 0) + Number(el.dataset.d)); save(); render(); },
   bases(el) { const g = state.game; g.bases[el.dataset.i] = !g.bases[el.dataset.i]; save(); render(); },
   pitch(el) { const a = arm(el.dataset.aid); if (el.dataset.v === 'undo') a.log.pop(); else a.log.push(el.dataset.v); save(); render(); },
-  addPlayer() { state.game.roster.push({ id: uid(), num: '', name: '', pos: '' }); save(); render(); },
-  rmPlayer(el) { const g = state.game; g.roster = g.roster.filter(p => p.id !== el.dataset.pid); g.order = g.order.filter(id => id !== el.dataset.pid); delete g.grid[el.dataset.pid]; save(); render(); },
+  addPlayer() { const p = { id: uid(), num: '', name: '', pos: '' }; state.roster.push(p); ui.rosterOpen = true; save(); render(); document.getElementById('rn-' + p.id)?.focus(); },
+  rmPlayer(el) {
+    const g = state.game, id = el.dataset.pid;
+    state.roster = state.roster.filter(p => p.id !== id);
+    g.lineup = lineupArr().map(s => s && s.pid === id ? null : s);
+    g.order = (g.order || []).filter(x => x !== id); delete g.grid[id]; save(); render();
+  },
+  bulkAdd() {
+    const ta = document.getElementById('bulkRoster'), list = parseBulkRoster(ta.value);
+    if (!list.length) { toast('Type one player per line first'); return; }
+    state.roster = state.roster.filter(p => p.name.trim() || p.num.trim()).concat(list); ui.rosterOpen = true;
+    save(); render(); toast(`Added ${list.length} player${list.length > 1 ? 's' : ''}`);
+  },
+  addToLineup(el) {
+    const L = lineupArr(), i = ui.selSlot != null ? ui.selSlot : L.findIndex(s => !s || !rosterById()[s.pid]);
+    if (i < 0) { toast('All 15 spots are full'); return; }
+    placeInSlot(el.dataset.pid, i); ui.selSlot = null; save(); render();
+  },
+  pickSlot(el) {
+    const i = +el.dataset.i, L = lineupArr();
+    if (ui.selSlot == null) { ui.selSlot = i; render(); return; }
+    if (ui.selSlot !== i) [L[i], L[ui.selSlot]] = [L[ui.selSlot], L[i]];
+    ui.selSlot = null; save(); render();
+  },
+  rmSlot(el) { lineupArr()[+el.dataset.i] = null; ui.selSlot = null; save(); render(); },
+  fillLineup() {
+    const L = lineupArr(), have = new Set(L.filter(Boolean).map(s => s.pid));
+    for (const p of activeRoster()) { if (have.has(p.id)) continue; const i = L.findIndex(s => !s); if (i < 0) break; L[i] = { pid: p.id, pos: defaultPos(p.id) }; }
+    save(); render();
+  },
+  clearLineup() { state.game.lineup = []; ui.selSlot = null; save(); render(); },
+  clearChart() { state.game.order = []; state.game.grid = {}; save(); render(); },
   rotate(el) { state.game.rotate = el.dataset.v === '1'; save(); render(); },
   genLineup() { if (generateLineup()) { save(); render(); toast('Lineup card generated'); } },
   moveBat(el) { const o = state.game.order, i = o.indexOf(el.dataset.pid), j = i + Number(el.dataset.d); if (j < 0 || j >= o.length) return; [o[i], o[j]] = [o[j], o[i]]; save(); render(); },
@@ -2194,7 +2530,7 @@ document.addEventListener('input', e => {
   else if (d.bf === 'title') { block(d.bid).title = el.value; save(); }
   else if (d.gf) { state.game[d.gf] = el.value; save(); }
   else if (d.ro) {
-    const p = state.game.roster.find(x => x.id === d.pid); p[d.ro] = el.value; save();
+    const p = state.roster.find(x => x.id === d.pid); p[d.ro] = el.value; save();
     const cell = document.querySelector(`[data-nm="${p.id}"]`); if (cell) cell.textContent = playerLabel(p);
   }
   else if (d.dv) {
@@ -2211,6 +2547,8 @@ document.addEventListener('change', e => {
   const el = e.target, d = el.dataset;
   if (d.change === 'selPlan') { state.cur = el.value; ui.confirm = null; save(); render(); }
   else if (d.change === 'selDevo') { state.curDevo = el.value; ui.confirm = null; save(); render(); }
+  else if (d.slotpos) { const sl = lineupArr()[+d.slotpos]; if (sl) sl.pos = el.value; save(); render(); }
+  else if (d.ro === 'name' || d.ro === 'num') { /* names update in place */ }
   else if (d.cell) { const g = state.game; (g.grid[d.pid] ||= [])[Number(d.cell)] = el.value; save(); render(); }
   else if (d.bf === 'min') { block(d.bid).min = Math.max(0, Number(el.value) || 0); save(); render(); }
   else if (d.pf === 'start') { render(); }
@@ -2219,6 +2557,7 @@ document.addEventListener('change', e => {
   else if (d.check) { state.checks[d.check] = el.checked; save(); render(); }
 });
 
+document.addEventListener('toggle', e => { const k = e.target.dataset?.toggle; if (k) ui[k] = e.target.open; }, true);
 go(location.hash.slice(1) || 'practice');
 loadContent();
 </script>
