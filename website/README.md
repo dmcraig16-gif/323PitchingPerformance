@@ -18,19 +18,18 @@ Open `index.html` and edit the `CONFIG` block near the bottom:
 
 If `formEndpoint` is empty, applications are **not sent anywhere**. If a booking link is empty, the athlete sees "We'll reach out within 48 hours" instead of a booking button.
 
-## Placeholders to replace before launch
+## Proof section
 
-- **Testimonials** in the Proof section are bracketed placeholders. Replace them with real quotes, or remove the cards. Don't launch with them.
-- **Logo row**: `[JUCO]` needs your school's name. To use real logos, swap each name for an `<img loading="lazy" alt="...">`; the CSS makes them greyscale.
+The testimonials section is in the page but hidden (`id="proof-quotes"`, `hidden` attribute). When you have real quotes from founding clients, replace the `QUOTE` and `FIRST NAME, AGE OR LEVEL` text, remove `hidden`, and delete any card you don't fill. Never publish placeholder text.
 
 ## Photos
 
-Hero photo: `assets/photos/mound-night-*`. It comes in WebP and JPEG at 800px and 1600px widths. The other two photos (`delivery-cmu-*`, `prayer-mound-*`) are compressed and ready but not used in this layout.
+Hero: `assets/photos/mound-night-*`. Story section: `assets/photos/delivery-cmu-*` (shown in black and white by CSS, lazy-loaded). Each comes in WebP and JPEG at 800px and 1600px. `prayer-mound-*` is ready but unused.
 
 ## Instagram
 
 - Bio link: `https://yoursite.com/?utm_source=instagram&utm_medium=bio`
-- Story links can deep-link to a section: `/#programs`, `/#program-remote`, `/#program-inperson`, `/#program-mental`, `/#proof`, `/#how`, `/#mission` or `/#apply` (opens the application). Older links (`/#coach`, `/#standard`, `/#inside`, `/#faq`) still resolve.
+- Story links can deep-link to a section: `/#how` (program vs mentor), `/#mission` (story), `/#programs` (what you get) or `/#apply` (opens the application). Older links (`/#proof`, `/#program-remote`, `/#program-inperson`, `/#program-mental`, `/#coach`, `/#standard`, `/#inside`, `/#faq`) still resolve.
 
 The UTM tags are saved with each application, so you can see which links bring in athletes.
 

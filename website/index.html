@@ -5,38 +5,40 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>3:23 Pitching Performance</title>
 <meta name="claude:viewport-fit-sides" content="cover">
-<meta name="description" content="Remote mentorship from a 97 mph pro pitcher. Velocity, command and a mind that holds up under pressure. Colossians 3:23.">
-<meta name="theme-color" content="#F5F1EA">
+<meta name="description" content="Programs train arms. Mentors build pitchers. One-on-one pitching mentorship from a pro pitcher who was cut, overlooked and built his way to 97 mph. Colossians 3:23.">
+<meta name="theme-color" content="#000000">
 <meta property="og:title" content="3:23 Pitching Performance">
-<meta property="og:description" content="Remote mentorship from a 97 mph pro pitcher. Apply for remote, in-person or mindset training.">
+<meta property="og:description" content="Programs train arms. Mentors build pitchers. Apply for mentorship.">
 <meta property="og:image" content="assets/og-image.jpg">
 <meta property="og:type" content="website">
 <link rel="icon" type="image/png" href="assets/favicon.png">
 <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Saira+Condensed:wght@700;800&family=Barlow:wght@400;500;600&display=swap">
-<link rel="preload" as="image" href="assets/photos/mound-night-800.webp" imagesrcset="assets/photos/mound-night-800.webp 800w, assets/photos/mound-night-1600.webp 1600w" imagesizes="(min-width: 900px) 45vw, 100vw">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=Cormorant+Garamond:ital,wght@1,500;1,600&family=Inter:wght@400;500;600&display=swap">
+<link rel="preload" as="image" href="assets/photos/mound-night-800.webp" imagesrcset="assets/photos/mound-night-800.webp 800w, assets/photos/mound-night-1600.webp 1600w" imagesizes="(min-width: 900px) 50vw, 100vw">
 <style>
-/* Layout: one light column. Hero (text + photo), then single-idea sections on an 8px grid. */
+/* Layout: one true-black column. Hero (headline + photo) → fact strip → single-idea sections.
+   Light blue is reserved for buttons, scripture and the mentor column. */
 :root {
-  --bg: #F5F1EA;
-  --ink: #111111;
-  --muted: #6B6B6B;
-  --accent: #0066CC;               /* the only accent: every button and link */
-  --surface: #FFFFFF;              /* form card and inputs */
-  --line: rgba(17, 17, 17, 0.14);
-  --error: #B42318;
-  --font-head: "Saira Condensed", "Arial Narrow", "Helvetica Neue", Arial, sans-serif;
-  --font-body: "Barlow", "Helvetica Neue", Arial, sans-serif;
+  --black: #000000;
+  --raised: #0B0B0B;                 /* cards, inputs */
+  --blue: #A4C8E1;                   /* buttons, scripture, mentor column only */
+  --bone: #EDE7DC;                   /* headlines and primary text */
+  --steel: #8E979F;                  /* secondary text, labels */
+  --line: rgba(237, 231, 220, 0.14);
+  --error: #FF8A80;
+  --font-head: "Anton", "Bebas Neue", Impact, "Arial Narrow", sans-serif;
+  --font-script: "Cormorant Garamond", Georgia, "Times New Roman", serif;
+  --font-body: "Inter", "Helvetica Neue", Arial, sans-serif;
   --space: 8px;
-  --section: calc(var(--space) * 7);   /* 56px mobile */
+  --section: calc(var(--space) * 8);      /* 64px mobile */
   --max: 1100px;
   --text: 640px;
   --radius: 4px;
-  color-scheme: light;
+  color-scheme: dark;
 }
-@media (min-width: 768px) { :root { --section: calc(var(--space) * 12); } }   /* 96px */
+@media (min-width: 768px) { :root { --section: calc(var(--space) * 13); } }   /* 104px */
 
 *, *::before, *::after { box-sizing: border-box; }
 [hidden] { display: none !important; }
@@ -45,19 +47,19 @@ html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
 @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } * { transition: none !important; } }
 body {
   margin: 0;
-  background: var(--bg);
-  color: var(--ink);
+  background: var(--black);
+  color: var(--bone);
   font-family: var(--font-body);
   font-size: 17px;
   line-height: 1.6;
 }
 @media (min-width: 768px) { body { font-size: 18px; } }
-body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 60; background: var(--bg); }
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 60; background: var(--black); }
 img { max-width: 100%; display: block; }
-a { color: var(--accent); text-underline-offset: 3px; transition: opacity .15s; }
+a { color: var(--bone); text-underline-offset: 3px; transition: opacity .15s; }
 a:hover { opacity: 0.7; }
-:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
-h1, h2, h3 { font-family: var(--font-head); font-weight: 800; line-height: 1; margin: 0; text-transform: uppercase; text-wrap: balance; }
+:focus-visible { outline: 2px solid var(--blue); outline-offset: 3px; }
+h1, h2, h3 { font-family: var(--font-head); font-weight: 400; line-height: 1; margin: 0; text-transform: uppercase; letter-spacing: 0.01em; text-wrap: balance; }
 p { margin: 0; }
 
 .wrap {
@@ -69,110 +71,140 @@ p { margin: 0; }
 }
 @media (min-width: 768px) { .wrap { padding-left: max(calc(var(--space) * 4), env(safe-area-inset-left, 0px)); padding-right: max(calc(var(--space) * 4), env(safe-area-inset-right, 0px)); } }
 .section { padding-block: var(--section); border-top: 1px solid var(--line); }
-.section-title { font-size: clamp(2rem, 1.3rem + 3vw, 3.25rem); max-width: var(--text); margin-bottom: calc(var(--space) * 5); }
-.section-cta { margin-top: calc(var(--space) * 5); }
+.section-title { font-size: clamp(2.25rem, 1.4rem + 3.4vw, 3.75rem); max-width: 14ch; margin-bottom: calc(var(--space) * 5); }
+.section-cta { margin-top: calc(var(--space) * 6); }
+.label { font-size: 0.8rem; font-weight: 600; letter-spacing: 0.16em; text-transform: uppercase; color: var(--steel); }
 
-/* One button, everywhere */
+/* One button, everywhere: same label, same style */
 .btn {
   display: inline-flex; align-items: center; justify-content: center;
-  min-height: 52px; padding: 0 calc(var(--space) * 4);
+  min-height: 52px; padding: 0 calc(var(--space) * 3.5);
   border: 0; border-radius: var(--radius);
-  background: var(--accent); color: #fff;
-  font-family: var(--font-head); font-weight: 700; font-size: 1.05rem;
+  background: var(--blue); color: var(--black);
+  font-family: var(--font-body); font-weight: 600; font-size: 0.95rem;
   letter-spacing: 0.06em; text-transform: uppercase; text-decoration: none;
   cursor: pointer; transition: opacity .15s;
 }
 .btn:hover { opacity: 0.85; }
 .btn:active { opacity: 0.75; }
 .btn:disabled { opacity: 0.5; cursor: progress; }
-.btn--ghost { background: transparent; color: var(--ink); box-shadow: inset 0 0 0 1px var(--line); }
+.btn--ghost { background: transparent; color: var(--bone); box-shadow: inset 0 0 0 1px var(--line); }
+
+.scripture { font-family: var(--font-script); font-style: italic; font-weight: 500; color: var(--blue); }
 
 /* Nav */
-.nav {
-  position: sticky; top: env(safe-area-inset-top, 0px); z-index: 50;
-  background: var(--bg); border-bottom: 1px solid var(--line);
-}
+.nav { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 50; background: var(--black); border-bottom: 1px solid var(--line); }
 .nav .wrap { display: flex; align-items: center; justify-content: space-between; gap: calc(var(--space) * 2); min-height: 64px; }
-.logo { display: flex; align-items: center; gap: var(--space); color: var(--ink); text-decoration: none; }
+.logo { display: flex; align-items: center; gap: var(--space); text-decoration: none; }
 .logo img { width: 32px; height: 32px; }
-.logo span { font-family: var(--font-head); font-weight: 800; font-size: 1.1rem; letter-spacing: 0.04em; text-transform: uppercase; }
+.logo span { font-family: var(--font-head); font-size: 1.2rem; letter-spacing: 0.03em; text-transform: uppercase; }
+@media (max-width: 419px) { .logo span { display: none; } }
 .nav-links { display: none; gap: calc(var(--space) * 4); }
-.nav-links a { color: var(--ink); text-decoration: none; font-weight: 500; font-size: 0.95rem; }
-.nav .btn { min-height: 40px; padding: 0 calc(var(--space) * 2.5); font-size: 0.95rem; }
+.nav-links a { text-decoration: none; font-weight: 500; font-size: 0.92rem; color: var(--steel); }
+.nav-links a:hover { color: var(--bone); opacity: 1; }
+.nav .btn { min-height: 40px; padding: 0 calc(var(--space) * 2); font-size: 0.8rem; }
 @media (min-width: 900px) { .nav-links { display: flex; } }
 
 /* Hero */
-.hero { padding-block: calc(var(--space) * 5) var(--section); }
-.hero .wrap { display: grid; gap: calc(var(--space) * 5); align-items: center; }
-@media (min-width: 900px) { .hero .wrap { grid-template-columns: 1.1fr 0.9fr; gap: calc(var(--space) * 8); } }
-.hero-copy { display: grid; gap: calc(var(--space) * 3); justify-items: start; }
-.hero h1 { font-size: clamp(2.75rem, 1.6rem + 5vw, 5.25rem); line-height: 0.95; letter-spacing: -0.005em; }
-.hero p { font-size: clamp(1.125rem, 1rem + 0.5vw, 1.3rem); color: var(--muted); max-width: 30rem; }
-.hero-photo { margin: 0; aspect-ratio: 4 / 5; max-width: 100%; overflow: hidden; border-radius: var(--radius); background: #1a1a1a; }
-.hero-photo img { width: 100%; height: 100%; object-fit: cover; object-position: 50% 45%; }
-@media (max-width: 899px) { .hero-photo { aspect-ratio: 4 / 3; } .hero-photo img { object-position: 50% 35%; } }
+.hero { position: relative; }
+.hero-photo { margin: 0; position: relative; aspect-ratio: 16 / 10; max-width: 100%; overflow: hidden; }
+.hero-photo img { width: 100%; height: 100%; object-fit: cover; object-position: 52% 30%; }
+.hero-photo::after { content: ""; position: absolute; inset: 0; background: linear-gradient(to bottom, rgba(0,0,0,0) 30%, rgba(0,0,0,0.75) 72%, var(--black) 100%); }
+.hero .wrap { position: relative; margin-top: calc(var(--space) * -5); padding-bottom: calc(var(--space) * 6); }
+.hero-copy { display: grid; gap: calc(var(--space) * 2.5); justify-items: start; max-width: 40rem; }
+.hero h1 { font-size: clamp(3rem, 1.7rem + 6vw, 6.25rem); line-height: 0.95; }
+.hero-sub { font-size: clamp(1.1rem, 1rem + 0.5vw, 1.35rem); color: var(--bone); max-width: 28rem; }
+.hero .btn { margin-top: var(--space); }
+.hero-verse { font-size: 1.2rem; line-height: 1.35; max-width: 31rem; text-wrap: balance; }
+.hero-verse cite { display: block; font-style: italic; font-weight: 600; margin-top: 2px; }
+@media (min-width: 900px) {
+  .hero { display: grid; grid-template-columns: 1fr; min-height: 640px; }
+  .hero-photo { position: absolute; inset: 0 0 0 auto; width: 52%; aspect-ratio: auto; }
+  .hero-photo img { object-position: 50% 35%; }
+  .hero-photo::after { background: linear-gradient(to right, var(--black) 0%, rgba(0,0,0,0) 40%), linear-gradient(to top, var(--black) 0%, rgba(0,0,0,0) 30%); }
+  .hero .wrap { margin-top: 0; display: flex; align-items: center; padding-block: calc(var(--space) * 12); }
+}
 
-/* Pillars */
-.pillars { list-style: none; margin: 0; padding: 0; display: grid; gap: calc(var(--space) * 4); }
-@media (min-width: 768px) { .pillars { grid-template-columns: repeat(3, 1fr); gap: calc(var(--space) * 5); } }
-.pillar { border-top: 2px solid var(--ink); padding-top: calc(var(--space) * 2.5); display: grid; gap: var(--space); align-content: start; }
-.pillar h3 { font-size: 1.75rem; }
-.pillar p { color: var(--muted); max-width: 22rem; }
+/* Credibility strip */
+.facts { border-block: 1px solid var(--line); }
+.facts ul { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: 1fr 1fr; }
+@media (min-width: 768px) { .facts ul { grid-template-columns: repeat(4, 1fr); } }
+.facts li {
+  padding: calc(var(--space) * 2.5) var(--space);
+  font-variant: all-small-caps; font-weight: 600; font-size: 1.05rem; letter-spacing: 0.1em; color: var(--steel);
+  text-align: center;
+}
+.facts li:nth-child(odd) { border-right: 1px solid var(--line); }
+.facts li:nth-child(-n+2) { border-bottom: 1px solid var(--line); }
+@media (min-width: 768px) {
+  .facts li { border-bottom: 0 !important; border-right: 1px solid var(--line); padding-block: calc(var(--space) * 3); }
+  .facts li:last-child { border-right: 0; }
+}
 
-/* Proof */
+/* Program vs mentor */
+.versus { display: grid; gap: calc(var(--space) * 2); }
+@media (min-width: 768px) { .versus { grid-template-columns: 1fr 1fr; gap: calc(var(--space) * 3); } }
+.side { padding: calc(var(--space) * 3.5) calc(var(--space) * 3); border: 1px solid var(--line); border-radius: var(--radius); display: grid; gap: calc(var(--space) * 2); align-content: start; }
+.side ul { list-style: none; margin: 0; padding: 0; display: grid; }
+.side li { padding-block: calc(var(--space) * 1.5); border-top: 1px solid var(--line); }
+.side li:first-child { border-top: 0; padding-top: 0; }
+.side--program { color: var(--steel); }
+.side--program li { text-decoration: line-through; text-decoration-color: rgba(142, 151, 159, 0.6); }
+.side--mentor { border-color: var(--blue); box-shadow: inset 0 0 0 1px var(--blue); color: var(--bone); }
+.side--mentor .label { color: var(--blue); }
+.side--mentor li { font-weight: 500; }
+
+/* Story */
+.story { display: grid; gap: calc(var(--space) * 5); align-items: start; }
+@media (min-width: 900px) { .story { grid-template-columns: 0.8fr 1.2fr; gap: calc(var(--space) * 8); } }
+.story-photo { margin: 0; aspect-ratio: 4 / 5; max-width: 100%; overflow: hidden; border-radius: var(--radius); background: var(--raised); }
+.story-photo img { width: 100%; height: 100%; object-fit: cover; object-position: 38% 40%; filter: grayscale(1) contrast(1.08) brightness(0.9); }
+@media (max-width: 899px) { .story-photo { order: 2; aspect-ratio: 4 / 3; } }
+.story-copy { display: grid; gap: calc(var(--space) * 2.5); max-width: var(--text); }
+.story-copy .section-title { margin-bottom: var(--space); }
+.story-copy p { color: var(--bone); }
+.story-copy p + p { color: var(--bone); }
+.pull { margin: calc(var(--space) * 2) 0 0; padding-top: calc(var(--space) * 3); border-top: 1px solid var(--line); font-family: var(--font-script); font-style: italic; font-weight: 500; font-size: clamp(2.2rem, 1.5rem + 3vw, 3.5rem); line-height: 1.05; color: var(--bone); }
+
+/* What you get */
+.gets { list-style: none; margin: 0; padding: 0; display: grid; gap: calc(var(--space) * 4); }
+@media (min-width: 768px) { .gets { grid-template-columns: repeat(3, 1fr); gap: calc(var(--space) * 5); } }
+.get { border-top: 2px solid var(--bone); padding-top: calc(var(--space) * 2.5); display: grid; gap: var(--space); align-content: start; }
+.get h3 { font-size: 2rem; }
+.get p { color: var(--steel); max-width: 22rem; }
+
+/* Proof (hidden until real quotes exist) */
 .quotes { list-style: none; margin: 0; padding: 0; display: grid; gap: calc(var(--space) * 3); }
 @media (min-width: 768px) { .quotes { grid-template-columns: repeat(3, 1fr); } }
-.quote { margin: 0; display: grid; gap: calc(var(--space) * 2); align-content: space-between; padding: calc(var(--space) * 3); background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); }
-.quote p { font-size: 1.1rem; }
-.quote footer { font-size: 0.9rem; color: var(--muted); }
-.quote footer b { color: var(--ink); font-weight: 600; }
-.logos { list-style: none; margin: calc(var(--space) * 5) 0 0; padding: calc(var(--space) * 3) 0 0; border-top: 1px solid var(--line); display: flex; flex-wrap: wrap; align-items: center; gap: calc(var(--space) * 2) calc(var(--space) * 5); }
-.logos li { font-family: var(--font-head); font-weight: 800; font-size: 1.15rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
-.logos img { height: 40px; width: auto; filter: grayscale(1); opacity: 0.6; }
-
-/* How it works */
-.steps { list-style: none; margin: 0; padding: 0; display: grid; gap: calc(var(--space) * 3); counter-reset: step; }
-@media (min-width: 768px) { .steps { grid-template-columns: repeat(2, 1fr); gap: calc(var(--space) * 4); } }
-@media (min-width: 1100px) { .steps { grid-template-columns: repeat(4, 1fr); } }
-.step { counter-increment: step; display: grid; gap: var(--space); align-content: start; }
-.step::before { content: counter(step, decimal-leading-zero); font-family: var(--font-head); font-weight: 800; font-size: 1rem; color: var(--accent); letter-spacing: 0.06em; }
-.step h3 { font-size: 1.5rem; }
-.step p { color: var(--muted); }
-
-/* Mission */
-.mission { padding-block: calc(var(--section) * 1.25); background: var(--ink); color: var(--bg); text-align: center; }
-.mission .wrap > div { max-width: var(--text); margin-inline: auto; display: grid; gap: calc(var(--space) * 3); justify-items: center; }
-.mission h2 { font-size: clamp(2.25rem, 1.4rem + 3.6vw, 3.75rem); line-height: 1; }
-.mission cite { font-style: normal; font-family: var(--font-head); font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; font-size: 0.95rem; opacity: 0.7; }
-.mission p { font-size: clamp(1.15rem, 1rem + 0.6vw, 1.4rem); line-height: 1.5; }
-.mission .btn { margin-top: var(--space); }
+.quote { margin: 0; padding: calc(var(--space) * 3); border: 1px solid var(--line); border-radius: var(--radius); display: grid; gap: calc(var(--space) * 2); }
+.quote footer { font-size: 0.9rem; color: var(--steel); }
 
 /* Final CTA + application */
-.cta-band { padding-block: var(--section); border-top: 1px solid var(--line); }
-.cta-band .wrap { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: calc(var(--space) * 3); }
-.cta-band h2 { font-size: clamp(2rem, 1.3rem + 3vw, 3.25rem); max-width: 18ch; }
+.cta-band { padding-block: calc(var(--section) * 1.2); border-top: 1px solid var(--line); text-align: center; }
+.cta-band .wrap { display: grid; justify-items: center; gap: calc(var(--space) * 4); }
+.cta-band h2 { font-size: clamp(3rem, 1.6rem + 6vw, 6rem); }
 .apply-panel { padding-bottom: var(--section); }
-.form-card { max-width: 720px; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: clamp(20px, 3vw, 40px); min-width: 0; }
+.form-card { max-width: 720px; margin-inline: auto; background: var(--raised); border: 1px solid var(--line); border-radius: var(--radius); padding: clamp(20px, 3vw, 40px); min-width: 0; }
 
-/* Form (markup unchanged; restyled for the light theme) */
+/* Form (markup unchanged; restyled for the dark theme) */
 .progress { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-bottom: var(--space); }
 .progress span { height: 3px; background: var(--line); }
-.progress span.on { background: var(--accent); }
-.progress-label { font-size: 0.8rem; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); margin-bottom: calc(var(--space) * 3); }
+.progress span.on { background: var(--blue); }
+.progress-label { font-size: 0.78rem; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: var(--steel); margin-bottom: calc(var(--space) * 3); }
 fieldset { border: 0; margin: 0; padding: 0; min-width: 0; display: grid; gap: calc(var(--space) * 2.5); }
-legend { font-family: var(--font-head); font-weight: 800; font-size: 1.6rem; line-height: 1.1; text-transform: uppercase; margin-bottom: var(--space); padding: 0; }
+legend { font-family: var(--font-head); font-size: 1.75rem; line-height: 1.1; text-transform: uppercase; margin-bottom: var(--space); padding: 0; }
 .field { display: grid; gap: 6px; min-width: 0; }
 .field-row { display: grid; gap: calc(var(--space) * 2.5); }
 @media (min-width: 560px) { .field-row { grid-template-columns: 1fr 1fr; } }
-label, .label { font-weight: 600; font-size: 0.95rem; }
-.hint { font-size: 0.85rem; color: var(--muted); font-weight: 400; }
+form label, form .label { font-weight: 600; font-size: 0.92rem; letter-spacing: 0; text-transform: none; color: var(--bone); }
+.hint { font-size: 0.85rem; color: var(--steel); font-weight: 400; }
 input[type="text"], input[type="email"], input[type="tel"], input[type="number"], select, textarea {
   width: 100%; min-height: 48px; padding: 10px 12px;
-  background: var(--surface); color: var(--ink); border: 1px solid var(--line); border-radius: var(--radius);
+  background: var(--black); color: var(--bone); border: 1px solid var(--line); border-radius: var(--radius);
   font: inherit; font-size: 1rem;
 }
 textarea { min-height: 104px; resize: vertical; }
-input:focus, select:focus, textarea:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(0, 102, 204, 0.18); }
+input:focus, select:focus, textarea:focus { outline: none; border-color: var(--blue); box-shadow: 0 0 0 3px rgba(164, 200, 225, 0.2); }
 .invalid { border-color: var(--error) !important; }
 .error-msg { color: var(--error); font-size: 0.9rem; min-height: 1.2em; }
 .track-options { display: grid; gap: var(--space); }
@@ -181,47 +213,47 @@ input:focus, select:focus, textarea:focus { outline: none; border-color: var(--a
 .track-option label { display: grid; grid-template-columns: 44px 1fr 20px; gap: calc(var(--space) * 1.5); align-items: center; padding: calc(var(--space) * 1.5); border: 1px solid var(--line); border-radius: var(--radius); cursor: pointer; transition: opacity .15s; }
 .track-option label:hover { opacity: 0.85; }
 .track-option img { width: 44px; height: 44px; border-radius: var(--radius); }
-.track-option .t-title { display: block; font-family: var(--font-head); font-weight: 800; font-size: 1.1rem; text-transform: uppercase; letter-spacing: 0.03em; }
-.track-option .t-sub { display: block; font-weight: 400; color: var(--muted); font-size: 0.9rem; }
+.track-option .t-title { display: block; font-family: var(--font-head); font-weight: 400; font-size: 1.15rem; text-transform: uppercase; letter-spacing: 0.03em; }
+.track-option .t-sub { display: block; font-weight: 400; color: var(--steel); font-size: 0.9rem; }
 .track-option .t-check { width: 20px; height: 20px; border-radius: 50%; border: 1.5px solid var(--line); }
-.track-option input:checked + label { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); }
-.track-option input:checked + label .t-check { border-color: var(--accent); background: var(--accent) radial-gradient(circle, #fff 30%, transparent 34%); }
-.track-option input:focus-visible + label { outline: 2px solid var(--accent); outline-offset: 2px; }
+.track-option input:checked + label { border-color: var(--blue); box-shadow: inset 0 0 0 1px var(--blue); }
+.track-option input:checked + label .t-check { border-color: var(--blue); background: var(--blue) radial-gradient(circle, var(--black) 30%, transparent 34%); }
+.track-option input:focus-visible + label { outline: 2px solid var(--blue); outline-offset: 2px; }
 .chips { display: flex; flex-wrap: wrap; gap: var(--space); }
 .chip { position: relative; }
 .chip input { position: absolute; opacity: 0; inset: 0; cursor: pointer; }
 .chip label { display: inline-flex; align-items: center; min-height: 40px; padding: 0 calc(var(--space) * 2); border: 1px solid var(--line); border-radius: var(--radius); font-weight: 500; cursor: pointer; transition: opacity .15s; }
 .chip label:hover { opacity: 0.8; }
-.chip input:checked + label { border-color: var(--accent); background: var(--accent); color: #fff; }
-.chip input:focus-visible + label { outline: 2px solid var(--accent); outline-offset: 2px; }
+.chip input:checked + label { border-color: var(--blue); background: var(--blue); color: var(--black); }
+.chip input:focus-visible + label { outline: 2px solid var(--blue); outline-offset: 2px; }
 .form-nav { display: flex; gap: var(--space); justify-content: space-between; margin-top: calc(var(--space) * 3); flex-wrap: wrap; }
 .form-nav .btn { flex: 1 1 160px; }
-.form-foot { margin-top: calc(var(--space) * 2); font-size: 0.85rem; color: var(--muted); }
+.form-foot { margin-top: calc(var(--space) * 2); font-size: 0.85rem; color: var(--steel); }
 .done { display: grid; gap: calc(var(--space) * 2); text-align: center; justify-items: center; padding-block: var(--space); }
 .done img { width: 72px; }
-.done h3 { font-size: 2rem; }
-.done p { color: var(--muted); max-width: 30rem; }
+.done h3 { font-size: 2.25rem; }
+.done p { color: var(--steel); max-width: 30rem; }
 
 /* Footer */
 .site-footer { border-top: 1px solid var(--line); padding-block: calc(var(--space) * 7) calc(var(--space) * 5 + env(safe-area-inset-bottom, 0px)); }
 .site-footer .wrap { display: grid; gap: calc(var(--space) * 5); }
 @media (min-width: 768px) { .site-footer .wrap { grid-template-columns: 1fr 1fr 1.4fr; } }
-.f-label { font-family: var(--font-head); font-weight: 700; font-size: 0.9rem; letter-spacing: 0.12em; color: var(--muted); margin-bottom: calc(var(--space) * 2); white-space: pre; }
+.f-label { font-weight: 600; font-size: 0.8rem; letter-spacing: 0.14em; color: var(--steel); margin-bottom: calc(var(--space) * 2); white-space: pre; }
 .f-links { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--space); }
-.f-links a { color: var(--ink); text-decoration: none; }
+.f-links a { text-decoration: none; }
 .socials { display: flex; gap: calc(var(--space) * 1.5); }
-.socials a { display: grid; place-items: center; width: 44px; height: 44px; border: 1px solid var(--line); border-radius: var(--radius); color: var(--ink); }
+.socials a { display: grid; place-items: center; width: 44px; height: 44px; border: 1px solid var(--line); border-radius: var(--radius); }
 .socials svg { width: 20px; height: 20px; }
 .newsletter { display: flex; gap: var(--space); flex-wrap: wrap; }
 .newsletter input { flex: 1 1 200px; }
 .newsletter .btn { flex: 0 0 auto; min-height: 48px; }
-.nl-msg { margin-top: var(--space); font-size: 0.9rem; color: var(--muted); min-height: 1.2em; }
+.nl-msg { margin-top: var(--space); font-size: 0.9rem; color: var(--steel); min-height: 1.2em; }
 
 /* Sticky apply on phones */
 .mobile-cta {
   position: fixed; left: 0; right: 0; bottom: 0; z-index: 40;
   padding: var(--space) max(calc(var(--space) * 2.5), env(safe-area-inset-right, 0px)) calc(var(--space) + env(safe-area-inset-bottom, 0px)) max(calc(var(--space) * 2.5), env(safe-area-inset-left, 0px));
-  background: var(--bg); border-top: 1px solid var(--line);
+  background: var(--black); border-top: 1px solid var(--line);
   transform: translateY(110%); transition: transform .25s;
 }
 .mobile-cta.show { transform: none; }
@@ -240,126 +272,140 @@ input:focus, select:focus, textarea:focus { outline: none; border-color: var(--a
       <span>3:23 Pitching</span>
     </a>
     <nav class="nav-links" aria-label="Main">
-      <a href="#programs">Programs</a>
-      <a href="#proof">Proof</a>
-      <a href="#how">How it works</a>
-      <a href="#mission">Mission</a>
+      <a href="#how">Mentorship</a>
+      <a href="#mission">Story</a>
+      <a href="#programs">What you get</a>
     </nav>
-    <a class="btn" href="#apply">Apply</a>
+    <a class="btn" href="#apply">Apply for Mentorship</a>
   </div>
 </header>
 
 <main id="top">
 
-  <!-- HERO -->
+  <!-- 1. HERO -->
   <section class="hero" aria-labelledby="hero-title">
+    <figure class="hero-photo">
+      <picture>
+        <source type="image/webp" srcset="assets/photos/mound-night-800.webp 800w, assets/photos/mound-night-1600.webp 1600w" sizes="(min-width: 900px) 50vw, 100vw">
+        <img src="assets/photos/mound-night-800.jpg" srcset="assets/photos/mound-night-800.jpg 800w, assets/photos/mound-night-1600.jpg 1600w" sizes="(min-width: 900px) 50vw, 100vw" width="800" height="534" fetchpriority="high" alt="David Craig on the mound during a night game, head down between pitches">
+      </picture>
+    </figure>
     <div class="wrap">
       <div class="hero-copy">
-        <h1 id="hero-title">Your arm is ready for the next level. Your plan isn't.</h1>
-        <p>Remote mentorship from a 97 mph pro pitcher. Velocity, command and a mind that holds up under pressure.</p>
-        <a class="btn" href="#apply">Apply</a>
+        <h1 id="hero-title">Programs train arms. Mentors build pitchers.</h1>
+        <p class="hero-sub">I was cut and overlooked. Nobody invested in me, so I invest in you.</p>
+        <a class="btn" href="#apply">Apply for Mentorship</a>
+        <p class="hero-verse scripture">&ldquo;Whatever you do, work heartily, as for the Lord and not for men.&rdquo; <cite>Colossians 3:23</cite></p>
       </div>
-      <figure class="hero-photo">
-        <picture>
-          <source type="image/webp" srcset="assets/photos/mound-night-800.webp 800w, assets/photos/mound-night-1600.webp 1600w" sizes="(min-width: 900px) 45vw, 100vw">
-          <img src="assets/photos/mound-night-800.jpg" srcset="assets/photos/mound-night-800.jpg 800w, assets/photos/mound-night-1600.jpg 1600w" sizes="(min-width: 900px) 45vw, 100vw" width="800" height="534" fetchpriority="high" alt="David Craig on the mound during a night game, head down between pitches">
-        </picture>
-      </figure>
     </div>
   </section>
 
-  <!-- PILLARS: the three programs (ids kept for existing links) -->
-  <section class="section" id="programs" aria-labelledby="programs-title">
+  <!-- 2. CREDIBILITY STRIP (old #proof links land here) -->
+  <section class="facts" aria-label="David's background">
+    <span id="proof" aria-hidden="true"></span>
     <div class="wrap">
-      <h2 class="section-title" id="programs-title">Three ways to train</h2>
-      <ul class="pillars">
-        <li class="pillar" id="program-remote">
-          <h3>Remote</h3>
-          <p>Your program, video review and weekly check-ins. Train anywhere.</p>
-        </li>
-        <li class="pillar" id="program-inperson">
-          <h3>In-Person</h3>
-          <p>Bullpens and mechanics, face to face. Every throw gets feedback.</p>
-        </li>
-        <li class="pillar" id="program-mental">
-          <h3>Mindset</h3>
-          <p>Routines that hold up under pressure. Compete from worth, not for it.</p>
-        </li>
+      <ul>
+        <li>Cut from HS team</li>
+        <li>JUCO to D2</li>
+        <li>97 mph</li>
+        <li>Playing pro now</li>
       </ul>
-      <div class="section-cta"><a class="btn" href="#apply">Apply</a></div>
     </div>
   </section>
 
-  <!-- PROOF -->
-  <section class="section" id="proof" aria-labelledby="proof-title">
-    <div class="wrap">
-      <h2 class="section-title" id="proof-title">What athletes say</h2>
-      <!-- PLACEHOLDERS: replace with real quotes from real athletes or parents. Do not publish as is. -->
-      <ul class="quotes">
-        <li>
-          <blockquote class="quote">
-            <p>[Real testimonial from an athlete or parent goes here.]</p>
-            <footer><b>[First name]</b>, [age or level]</footer>
-          </blockquote>
-        </li>
-        <li>
-          <blockquote class="quote">
-            <p>[Real testimonial from an athlete or parent goes here.]</p>
-            <footer><b>[First name]</b>, [age or level]</footer>
-          </blockquote>
-        </li>
-        <li>
-          <blockquote class="quote">
-            <p>[Real testimonial from an athlete or parent goes here.]</p>
-            <footer><b>[First name]</b>, [age or level]</footer>
-          </blockquote>
-        </li>
-      </ul>
-      <!-- Swap each name for <img src="assets/logos/..." alt="..." loading="lazy">; CSS turns them greyscale. -->
-      <ul class="logos" aria-label="Where David has pitched">
-        <li>[JUCO]</li>
-        <li>Colorado Mesa</li>
-        <li>USPBL</li>
-      </ul>
-      <div class="section-cta"><a class="btn" href="#apply">Apply</a></div>
-    </div>
-  </section>
-
-  <!-- HOW IT WORKS (old #inside and #faq links land here) -->
+  <!-- 3. PROGRAM VS MENTOR (old #inside and #faq links land here) -->
   <section class="section" id="how" aria-labelledby="how-title">
     <span id="inside" aria-hidden="true"></span><span id="faq" aria-hidden="true"></span>
     <div class="wrap">
-      <h2 class="section-title" id="how-title">How it works</h2>
-      <ol class="steps">
-        <li class="step"><h3>Apply</h3><p>Five minutes. Tell me where you are and where you want to go.</p></li>
-        <li class="step"><h3>Call</h3><p>You, your parents and me. We make sure it's a fit.</p></li>
-        <li class="step"><h3>Plan</h3><p>Video and a conversation become a plan built around your season.</p></li>
-        <li class="step"><h3>Train</h3><p>Do the work. Send video. Get feedback every week.</p></li>
-      </ol>
-      <div class="section-cta"><a class="btn" href="#apply">Apply</a></div>
+      <h2 class="section-title" id="how-title">Here's the difference.</h2>
+      <div class="versus">
+        <div class="side side--program">
+          <p class="label">A program</p>
+          <ul>
+            <li>Same PDF for everyone.</li>
+            <li>No one knows your name.</li>
+            <li>You figure it out alone.</li>
+          </ul>
+        </div>
+        <div class="side side--mentor">
+          <p class="label">A mentor</p>
+          <ul>
+            <li>A weekly call.</li>
+            <li>Daily feedback.</li>
+            <li>Parents in the loop.</li>
+            <li>A text after every outing.</li>
+            <li>One plan for throwing, movement and mental game.</li>
+          </ul>
+        </div>
+      </div>
+      <div class="section-cta"><a class="btn" href="#apply">Apply for Mentorship</a></div>
     </div>
   </section>
 
-  <!-- MISSION (old #coach and #standard links land here) -->
-  <section class="mission" id="mission" aria-labelledby="mission-title">
+  <!-- 4. WHY I INVEST (old #coach and #standard links land here) -->
+  <section class="section" id="mission" aria-labelledby="mission-title">
     <span id="coach" aria-hidden="true"></span><span id="standard" aria-hidden="true"></span>
-    <div class="wrap">
-      <div>
-        <h2 id="mission-title">Whatever you do, work heartily, as for the Lord and not for men.</h2>
-        <cite>Colossians 3:23</cite>
-        <p>I'm David Craig. JUCO. Division II at Colorado Mesa. I kept working until the gun read 97 and I signed to pitch pro.</p>
-        <p>That verse is the name. It's how I pitch and how I coach. Not for the radar gun. Not for the scouts. For the King.</p>
-        <a class="btn" href="#apply">Apply</a>
+    <div class="wrap story">
+      <figure class="story-photo">
+        <picture>
+          <source type="image/webp" srcset="assets/photos/delivery-cmu-800.webp 800w, assets/photos/delivery-cmu-1600.webp 1600w" sizes="(min-width: 900px) 40vw, 100vw">
+          <img src="assets/photos/delivery-cmu-800.jpg" srcset="assets/photos/delivery-cmu-800.jpg 800w, assets/photos/delivery-cmu-1600.jpg 1600w" sizes="(min-width: 900px) 40vw, 100vw" width="800" height="533" loading="lazy" decoding="async" alt="David Craig in a Colorado Mesa baseball shirt, mid-delivery on the mound">
+        </picture>
+      </figure>
+      <div class="story-copy">
+        <h2 class="section-title" id="mission-title">Why I invest</h2>
+        <p>I got cut from my high school team. Overlooked. Nobody was in my corner.</p>
+        <p>So I built it the long way. JUCO. Then Division II at Colorado Mesa. Rep after rep until the gun read 97 and I signed a pro contract. I'm still pitching pro today.</p>
+        <p>I coach because nobody invested in me. The name comes from Colossians 3:23. I work for the Lord, not the radar gun. I'll teach you to do the same.</p>
+        <blockquote class="pull">&ldquo;Freedom is the real swag.&rdquo;</blockquote>
+        <div class="section-cta" style="margin-top: var(--space)"><a class="btn" href="#apply">Apply for Mentorship</a></div>
       </div>
     </div>
   </section>
 
-  <!-- FINAL CTA + APPLICATION -->
+  <!-- 5. WHAT YOU GET (old #programs and #program-* links land here) -->
+  <section class="section" id="programs" aria-labelledby="programs-title">
+    <span id="program-remote" aria-hidden="true"></span><span id="program-inperson" aria-hidden="true"></span><span id="program-mental" aria-hidden="true"></span>
+    <div class="wrap">
+      <h2 class="section-title" id="programs-title">What you get</h2>
+      <ul class="gets">
+        <li class="get">
+          <h3>Throwing</h3>
+          <p>Velocity, command and movement in one plan. Built for your body. Adjusted every week.</p>
+        </li>
+        <li class="get">
+          <h3>Mind</h3>
+          <p>A routine for pressure. A reset after the bad inning. You learn to compete.</p>
+        </li>
+        <li class="get">
+          <h3>Identity</h3>
+          <p>Your worth isn't your ERA. You play from who God says you are.</p>
+        </li>
+      </ul>
+      <div class="section-cta"><a class="btn" href="#apply">Apply for Mentorship</a></div>
+    </div>
+  </section>
+
+  <!-- 6. PROOF: hidden until real founding-client quotes exist.
+       To show it: remove `hidden`, replace each quote, and delete any card you don't fill. Never publish placeholder text. -->
+  <section class="section" id="proof-quotes" aria-labelledby="proof-title" hidden>
+    <div class="wrap">
+      <h2 class="section-title" id="proof-title">From the first athletes</h2>
+      <ul class="quotes">
+        <li><blockquote class="quote"><p>QUOTE</p><footer>FIRST NAME, AGE OR LEVEL</footer></blockquote></li>
+        <li><blockquote class="quote"><p>QUOTE</p><footer>FIRST NAME, AGE OR LEVEL</footer></blockquote></li>
+        <li><blockquote class="quote"><p>QUOTE</p><footer>FIRST NAME, AGE OR LEVEL</footer></blockquote></li>
+      </ul>
+      <div class="section-cta"><a class="btn" href="#apply">Apply for Mentorship</a></div>
+    </div>
+  </section>
+
+  <!-- 7. FINAL CTA + APPLICATION -->
   <section id="apply" aria-labelledby="apply-title">
     <div class="cta-band">
       <div class="wrap">
-        <h2 id="apply-title">Your next level starts with an application.</h2>
-        <a class="btn" href="#apply">Apply</a>
+        <h2 id="apply-title">Nobody rises alone.</h2>
+        <a class="btn" href="#apply">Apply for Mentorship</a>
       </div>
     </div>
     <div class="apply-panel" id="apply-panel" hidden>
@@ -510,9 +556,9 @@ input:focus, select:focus, textarea:focus { outline: none; border-color: var(--a
     <div>
       <p class="f-label">[ ABOUT ]</p>
       <ul class="f-links">
-        <li><a href="#programs">Programs</a></li>
-        <li><a href="#how">How it works</a></li>
-        <li><a href="#mission">Mission</a></li>
+        <li><a href="#how">Mentorship</a></li>
+        <li><a href="#mission">Story</a></li>
+        <li><a href="#programs">What you get</a></li>
       </ul>
     </div>
     <div>
@@ -535,7 +581,7 @@ input:focus, select:focus, textarea:focus { outline: none; border-color: var(--a
   </div>
 </footer>
 
-<div class="mobile-cta" id="mobile-cta"><a class="btn" href="#apply">Apply</a></div>
+<div class="mobile-cta" id="mobile-cta"><a class="btn" href="#apply">Apply for Mentorship</a></div>
 
 <script>
 /* ============================================================
