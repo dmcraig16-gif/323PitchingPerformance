@@ -5,407 +5,223 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>3:23 Pitching Performance</title>
 <meta name="claude:viewport-fit-sides" content="cover">
-<meta name="description" content="Remote mentorship, in-person training and mental game coaching for pitchers. Developing elite pitchers. Honoring the King. Colossians 3:23.">
-<meta name="theme-color" content="#07080b">
+<meta name="description" content="Remote mentorship from a 97 mph pro pitcher. Velocity, command and a mind that holds up under pressure. Colossians 3:23.">
+<meta name="theme-color" content="#F5F1EA">
 <meta property="og:title" content="3:23 Pitching Performance">
-<meta property="og:description" content="Remote mentorship. Mental game. Faith driven. Purpose focused. Apply for in-person, remote or mental game training.">
+<meta property="og:description" content="Remote mentorship from a 97 mph pro pitcher. Apply for remote, in-person or mindset training.">
 <meta property="og:image" content="assets/og-image.jpg">
 <meta property="og:type" content="website">
 <link rel="icon" type="image/png" href="assets/favicon.png">
 <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Saira:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,800&family=Barlow:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Saira+Condensed:wght@700;800&family=Barlow:wght@400;500;600&display=swap">
+<link rel="preload" as="image" href="assets/photos/mound-night-800.webp" imagesrcset="assets/photos/mound-night-800.webp 800w, assets/photos/mound-night-1600.webp 1600w" imagesizes="(min-width: 900px) 45vw, 100vw">
 <style>
-/* Layout: one dark column of full-bleed bands. Mobile first: quick links up top for
-   Instagram visitors, then programs → how it works → coach → application. */
+/* Layout: one light column. Hero (text + photo), then single-idea sections on an 8px grid. */
 :root {
-  --ink: #07080b;          /* brand near-black ground */
-  --ink-2: #0d1117;        /* raised band */
-  --ink-3: #141a23;        /* cards, inputs */
-  --line: #1f2834;         /* hairlines, blue-biased */
-  --blue: #0276e1;         /* brand primary */
-  --blue-hi: #2b8ef0;      /* hover */
-  --ice: #87bdf0;          /* brand light blue */
-  --red: #e92428;          /* brand accent, used sparingly */
-  --white: #f5f5f5;
-  --muted: #9aa7b8;
-  --font-display: "Saira", "Arial Narrow", "Helvetica Neue", Arial, sans-serif;
+  --bg: #F5F1EA;
+  --ink: #111111;
+  --muted: #6B6B6B;
+  --accent: #0066CC;               /* the only accent: every button and link */
+  --surface: #FFFFFF;              /* form card and inputs */
+  --line: rgba(17, 17, 17, 0.14);
+  --error: #B42318;
+  --font-head: "Saira Condensed", "Arial Narrow", "Helvetica Neue", Arial, sans-serif;
   --font-body: "Barlow", "Helvetica Neue", Arial, sans-serif;
-  --step--1: 0.8125rem;
-  --step-0: 1rem;
-  --step-1: 1.1875rem;
-  --step-2: 1.5rem;
-  --step-3: clamp(1.75rem, 1.2rem + 2.4vw, 2.5rem);
-  --step-4: clamp(2.25rem, 1.4rem + 3.8vw, 3.5rem);
-  --seam: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='10'%3E%3Cpath d='M3 1.5 L9 5 L3 8.5' fill='none' stroke='%23e92428' stroke-width='1.8' stroke-linecap='round'/%3E%3C/svg%3E");
-  --radius: 14px;
-  --wrap: 1120px;
-  color-scheme: dark;
+  --space: 8px;
+  --section: calc(var(--space) * 7);   /* 56px mobile */
+  --max: 1100px;
+  --text: 640px;
+  --radius: 4px;
+  color-scheme: light;
 }
+@media (min-width: 768px) { :root { --section: calc(var(--space) * 12); } }   /* 96px */
+
 *, *::before, *::after { box-sizing: border-box; }
 [hidden] { display: none !important; }
 html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
-@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } *, *::before, *::after { animation: none !important; transition: none !important; } }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } * { transition: none !important; } }
 body {
   margin: 0;
-  background: var(--ink);
-  color: var(--white);
+  background: var(--bg);
+  color: var(--ink);
   font-family: var(--font-body);
-  font-size: var(--step-0);
+  font-size: 17px;
   line-height: 1.6;
-  overflow-x: hidden;
 }
-body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 60; background: var(--ink); }
+@media (min-width: 768px) { body { font-size: 18px; } }
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 60; background: var(--bg); }
 img { max-width: 100%; display: block; }
-a { color: inherit; }
-:focus-visible { outline: 2px solid var(--ice); outline-offset: 3px; border-radius: 6px; }
-h1, h2, h3, h4 { font-family: var(--font-display); line-height: 1.1; margin: 0; text-wrap: balance; }
+a { color: var(--accent); text-underline-offset: 3px; transition: opacity .15s; }
+a:hover { opacity: 0.7; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+h1, h2, h3 { font-family: var(--font-head); font-weight: 800; line-height: 1; margin: 0; text-transform: uppercase; text-wrap: balance; }
 p { margin: 0; }
 
 .wrap {
   width: 100%;
-  max-width: calc(var(--wrap) + 2 * 24px);
+  max-width: calc(var(--max) + 2 * var(--space) * 4);
   margin-inline: auto;
-  padding-left: max(16px, env(safe-area-inset-left, 0px));
-  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-left: max(calc(var(--space) * 2.5), env(safe-area-inset-left, 0px));
+  padding-right: max(calc(var(--space) * 2.5), env(safe-area-inset-right, 0px));
 }
-@media (min-width: 720px) { .wrap { padding-left: max(24px, env(safe-area-inset-left, 0px)); padding-right: max(24px, env(safe-area-inset-right, 0px)); } }
+@media (min-width: 768px) { .wrap { padding-left: max(calc(var(--space) * 4), env(safe-area-inset-left, 0px)); padding-right: max(calc(var(--space) * 4), env(safe-area-inset-right, 0px)); } }
+.section { padding-block: var(--section); border-top: 1px solid var(--line); }
+.section-title { font-size: clamp(2rem, 1.3rem + 3vw, 3.25rem); max-width: var(--text); margin-bottom: calc(var(--space) * 5); }
+.section-cta { margin-top: calc(var(--space) * 5); }
 
-.band { padding-block: clamp(56px, 8vw, 96px); }
-.band--raised { background: var(--ink-2); border-block: 1px solid var(--line); }
-
-.eyebrow {
-  font-family: var(--font-display);
-  font-weight: 600;
-  font-size: var(--step--1);
-  letter-spacing: 0.22em;
-  text-transform: uppercase;
-  color: var(--blue);
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-}
-.eyebrow::before { content: ""; width: 22px; height: 2px; background: var(--red); }
-.section-head { display: grid; gap: 14px; max-width: 46rem; margin-bottom: clamp(28px, 4vw, 44px); }
-.section-head h2 { font-size: var(--step-4); font-weight: 800; text-transform: uppercase; letter-spacing: 0.01em; }
-.section-head p { color: var(--muted); font-size: var(--step-1); max-width: 40rem; }
-
-/* Buttons */
+/* One button, everywhere */
 .btn {
-  --bg: var(--blue);
-  display: inline-flex; align-items: center; justify-content: center; gap: 10px;
-  min-height: 52px; padding: 0 26px;
-  border: 0; border-radius: 999px;
-  background: var(--bg); color: #fff;
-  font-family: var(--font-display); font-weight: 700; font-size: 0.95rem;
-  letter-spacing: 0.14em; text-transform: uppercase; text-decoration: none;
-  cursor: pointer; transition: background .2s, transform .2s;
+  display: inline-flex; align-items: center; justify-content: center;
+  min-height: 52px; padding: 0 calc(var(--space) * 4);
+  border: 0; border-radius: var(--radius);
+  background: var(--accent); color: #fff;
+  font-family: var(--font-head); font-weight: 700; font-size: 1.05rem;
+  letter-spacing: 0.06em; text-transform: uppercase; text-decoration: none;
+  cursor: pointer; transition: opacity .15s;
 }
-.btn:hover { --bg: var(--blue-hi); transform: translateY(-1px); }
-.btn--ghost { background: transparent; color: var(--white); box-shadow: inset 0 0 0 1.5px var(--line); }
-.btn--ghost:hover { background: var(--ink-3); box-shadow: inset 0 0 0 1.5px var(--ice); }
-.btn svg { width: 18px; height: 18px; flex: none; }
+.btn:hover { opacity: 0.85; }
+.btn:active { opacity: 0.75; }
+.btn:disabled { opacity: 0.5; cursor: progress; }
+.btn--ghost { background: transparent; color: var(--ink); box-shadow: inset 0 0 0 1px var(--line); }
 
-/* Header */
-.topbar {
+/* Nav */
+.nav {
   position: sticky; top: env(safe-area-inset-top, 0px); z-index: 50;
-  background: rgba(7, 8, 11, 0.86);
-  backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
-  border-bottom: 1px solid var(--line);
+  background: var(--bg); border-bottom: 1px solid var(--line);
 }
-.topbar .wrap { display: flex; align-items: center; justify-content: space-between; gap: 16px; min-height: 64px; }
-.brand { display: flex; align-items: center; gap: 10px; text-decoration: none; }
-.brand img { width: 38px; height: 38px; }
-.brand span { font-family: var(--font-display); font-weight: 800; letter-spacing: 0.08em; font-size: 0.95rem; text-transform: uppercase; }
-.brand span b { color: var(--blue); font-weight: 900; }
-.nav { display: none; gap: 26px; }
-.nav a { text-decoration: none; font-family: var(--font-display); font-weight: 600; font-size: 0.85rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); }
-.nav a:hover { color: var(--white); }
-.topbar .btn { min-height: 42px; padding: 0 18px; font-size: 0.8rem; }
-@media (min-width: 900px) { .nav { display: flex; } }
+.nav .wrap { display: flex; align-items: center; justify-content: space-between; gap: calc(var(--space) * 2); min-height: 64px; }
+.logo { display: flex; align-items: center; gap: var(--space); color: var(--ink); text-decoration: none; }
+.logo img { width: 32px; height: 32px; }
+.logo span { font-family: var(--font-head); font-weight: 800; font-size: 1.1rem; letter-spacing: 0.04em; text-transform: uppercase; }
+.nav-links { display: none; gap: calc(var(--space) * 4); }
+.nav-links a { color: var(--ink); text-decoration: none; font-weight: 500; font-size: 0.95rem; }
+.nav .btn { min-height: 40px; padding: 0 calc(var(--space) * 2.5); font-size: 0.95rem; }
+@media (min-width: 900px) { .nav-links { display: flex; } }
 
-/* Hero: the verse is the headline; a giant outlined 3:23 sits behind it */
-.hero { position: relative; overflow: hidden; padding-block: clamp(36px, 6vw, 80px) 0; isolation: isolate; }
-.hero-watermark {
-  position: absolute; z-index: -1; right: -4vw; top: 50%; transform: translateY(-58%);
-  font-family: var(--font-display); font-weight: 900; font-style: italic; line-height: 0.8;
-  font-size: clamp(14rem, 42vw, 40rem); letter-spacing: -0.04em;
-  color: transparent; -webkit-text-stroke: 1.5px rgba(135, 189, 240, 0.10);
-  pointer-events: none; user-select: none; white-space: nowrap;
-}
-.hero::after {
-  content: ""; position: absolute; z-index: -1; inset: auto -10% 0 -10%; height: 70%;
-  background: radial-gradient(55% 60% at 50% 100%, rgba(2,118,225,0.28), transparent 70%);
-  pointer-events: none;
-}
-.hero .wrap { display: grid; gap: clamp(28px, 4vw, 56px); align-items: center; padding-bottom: clamp(40px, 6vw, 72px); }
-@media (min-width: 960px) { .hero .wrap { grid-template-columns: 1.15fr 0.85fr; } }
-.hero-logo { width: min(78%, 420px); margin-inline: auto; }
-@media (min-width: 960px) { .hero-logo { order: 2; width: min(100%, 420px); } }
-.hero-copy { display: grid; gap: 22px; }
-.hero-ref { font-family: var(--font-display); font-weight: 700; font-size: var(--step--1); letter-spacing: 0.32em; text-transform: uppercase; color: var(--red); display: flex; align-items: center; gap: 12px; }
-.hero-ref::after { content: ""; flex: 0 1 120px; height: 10px; background: var(--seam) left center / 14px 10px repeat-x; }
-.hero h1 {
-  font-size: clamp(2.35rem, 1.2rem + 4.6vw, 4.6rem);
-  font-weight: 900; font-style: italic; text-transform: uppercase; letter-spacing: -0.01em; line-height: 0.95;
-}
-.hero h1 span { display: block; }
-.hero h1 .lord { color: var(--blue); }
-.hero h1 .men { color: transparent; -webkit-text-stroke: 1.5px var(--ice); }
-.hero-sub { font-size: var(--step-1); color: #c9d2de; max-width: 34rem; }
-.hero-sub b { color: var(--white); font-weight: 600; }
-.hero-ctas { display: flex; flex-wrap: wrap; gap: 12px; }
-.ridge { display: block; width: 100%; height: clamp(48px, 7vw, 96px); margin-bottom: -1px; }
+/* Hero */
+.hero { padding-block: calc(var(--space) * 5) var(--section); }
+.hero .wrap { display: grid; gap: calc(var(--space) * 5); align-items: center; }
+@media (min-width: 900px) { .hero .wrap { grid-template-columns: 1.1fr 0.9fr; gap: calc(var(--space) * 8); } }
+.hero-copy { display: grid; gap: calc(var(--space) * 3); justify-items: start; }
+.hero h1 { font-size: clamp(2.75rem, 1.6rem + 5vw, 5.25rem); line-height: 0.95; letter-spacing: -0.005em; }
+.hero p { font-size: clamp(1.125rem, 1rem + 0.5vw, 1.3rem); color: var(--muted); max-width: 30rem; }
+.hero-photo { margin: 0; aspect-ratio: 4 / 5; max-width: 100%; overflow: hidden; border-radius: var(--radius); background: #1a1a1a; }
+.hero-photo img { width: 100%; height: 100%; object-fit: cover; object-position: 50% 45%; }
+@media (max-width: 899px) { .hero-photo { aspect-ratio: 4 / 3; } .hero-photo img { object-position: 50% 35%; } }
 
-/* Marquee in brand blue */
-.marquee { background: var(--blue); color: #fff; overflow: hidden; border-block: 1px solid rgba(255,255,255,0.15); }
-.marquee-track { display: flex; width: max-content; animation: marquee 38s linear infinite; }
-.marquee-track span { flex: none; display: inline-flex; align-items: center; gap: 22px; padding: 14px 11px; font-family: var(--font-display); font-weight: 800; font-style: italic; font-size: 1.05rem; letter-spacing: 0.16em; text-transform: uppercase; white-space: nowrap; }
-.marquee-track span::after { content: ""; width: 7px; height: 7px; background: var(--ink); transform: rotate(45deg); }
-.marquee-track span.ref { color: var(--ink); }
-@keyframes marquee { to { transform: translateX(-50%); } }
+/* Pillars */
+.pillars { list-style: none; margin: 0; padding: 0; display: grid; gap: calc(var(--space) * 4); }
+@media (min-width: 768px) { .pillars { grid-template-columns: repeat(3, 1fr); gap: calc(var(--space) * 5); } }
+.pillar { border-top: 2px solid var(--ink); padding-top: calc(var(--space) * 2.5); display: grid; gap: var(--space); align-content: start; scroll-margin-top: 96px; }
+.pillar h3 { font-size: 1.75rem; }
+.pillar p { color: var(--muted); max-width: 22rem; }
 
-/* Baseball-seam stitch divider */
-.seam-rule { height: 12px; background: var(--seam) left center / 14px 10px repeat-x; opacity: 0.9; }
+/* Proof */
+.quotes { list-style: none; margin: 0; padding: 0; display: grid; gap: calc(var(--space) * 3); }
+@media (min-width: 768px) { .quotes { grid-template-columns: repeat(3, 1fr); } }
+.quote { margin: 0; display: grid; gap: calc(var(--space) * 2); align-content: space-between; padding: calc(var(--space) * 3); background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); }
+.quote p { font-size: 1.1rem; }
+.quote footer { font-size: 0.9rem; color: var(--muted); }
+.quote footer b { color: var(--ink); font-weight: 600; }
+.logos { list-style: none; margin: calc(var(--space) * 5) 0 0; padding: calc(var(--space) * 3) 0 0; border-top: 1px solid var(--line); display: flex; flex-wrap: wrap; align-items: center; gap: calc(var(--space) * 2) calc(var(--space) * 5); }
+.logos li { font-family: var(--font-head); font-weight: 800; font-size: 1.15rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
+.logos img { height: 40px; width: auto; filter: grayscale(1); opacity: 0.6; }
 
-/* Quick links (Instagram link-in-bio) */
-.quick { padding-block: clamp(36px, 5vw, 56px) clamp(48px, 6vw, 72px); }
-.quick-grid { display: grid; gap: 10px; }
-@media (min-width: 640px) { .quick-grid { grid-template-columns: 1fr 1fr; } }
-@media (min-width: 1000px) { .quick-grid { grid-template-columns: repeat(3, 1fr); } }
-.quick a {
-  display: flex; align-items: center; gap: 14px;
-  min-height: 72px; padding: 12px 18px 12px 12px;
-  background: var(--ink-3); border: 1px solid var(--line); border-radius: var(--radius);
-  text-decoration: none; transition: border-color .2s, background .2s, transform .2s;
-}
-.quick a:hover { border-color: var(--blue); background: #17202c; transform: translateY(-2px); }
-.quick a.is-primary { background: var(--blue); border-color: var(--blue); }
-.quick a.is-primary:hover { background: var(--blue-hi); }
-.quick img { width: 48px; height: 48px; flex: none; border-radius: 12px; }
-.quick .q-icon { width: 48px; height: 48px; flex: none; border-radius: 12px; display: grid; place-items: center; background: #0a0e14; color: var(--ice); }
-.quick a.is-primary .q-icon { background: rgba(255,255,255,0.14); color: #fff; }
-.quick .q-icon svg { width: 24px; height: 24px; }
-.quick .q-text { display: grid; min-width: 0; flex: 1; }
-.quick .q-title { font-family: var(--font-display); font-weight: 700; font-size: 1.02rem; letter-spacing: 0.06em; text-transform: uppercase; }
-.quick .q-sub { font-size: 0.9rem; color: var(--muted); }
-.quick a.is-primary .q-sub { color: rgba(255,255,255,0.82); }
-.quick .q-arrow { color: var(--muted); flex: none; }
-.quick a.is-primary .q-arrow { color: #fff; }
+/* How it works */
+.steps { list-style: none; margin: 0; padding: 0; display: grid; gap: calc(var(--space) * 3); counter-reset: step; }
+@media (min-width: 768px) { .steps { grid-template-columns: repeat(2, 1fr); gap: calc(var(--space) * 4); } }
+@media (min-width: 1100px) { .steps { grid-template-columns: repeat(4, 1fr); } }
+.step { counter-increment: step; display: grid; gap: var(--space); align-content: start; }
+.step::before { content: counter(step, decimal-leading-zero); font-family: var(--font-head); font-weight: 800; font-size: 1rem; color: var(--accent); letter-spacing: 0.06em; }
+.step h3 { font-size: 1.5rem; }
+.step p { color: var(--muted); }
 
-/* The Standard: Colossians 3:23 phrase by phrase */
-.standard { position: relative; overflow: hidden; }
-.verse-lines { list-style: none; margin: 0; padding: 0; display: grid; }
-.verse-line { display: grid; gap: 10px 40px; padding-block: clamp(22px, 3vw, 34px); border-top: 1px solid var(--line); align-items: baseline; }
-.verse-line:last-child { border-bottom: 1px solid var(--line); }
-@media (min-width: 900px) { .verse-line { grid-template-columns: 1.25fr 0.75fr; } }
-.vl-phrase { font-family: var(--font-display); font-weight: 900; font-style: italic; text-transform: uppercase; line-height: 0.95; letter-spacing: -0.01em; font-size: clamp(2.3rem, 1rem + 5.4vw, 5.4rem); }
-.verse-line:nth-child(3) .vl-phrase { color: var(--blue); }
-.verse-line:nth-child(4) .vl-phrase { color: transparent; -webkit-text-stroke: 1.5px var(--ice); }
-.vl-pillar { display: grid; gap: 6px; max-width: 30rem; }
-.vl-pillar h3 { font-size: var(--step--1); font-weight: 700; letter-spacing: 0.24em; text-transform: uppercase; color: var(--ice); display: flex; gap: 10px; align-items: center; }
-.vl-pillar h3::before { content: ""; width: 18px; height: 2px; background: var(--red); }
-.vl-pillar p { color: var(--muted); }
-.verse-cite { margin-top: 22px; display: flex; flex-wrap: wrap; justify-content: space-between; gap: 10px; font-family: var(--font-display); font-weight: 700; letter-spacing: 0.28em; text-transform: uppercase; font-size: var(--step--1); color: var(--red); }
-.verse-cite span:last-child { color: var(--muted); letter-spacing: 0.12em; }
+/* Mission */
+.mission { padding-block: calc(var(--section) * 1.25); background: var(--ink); color: var(--bg); text-align: center; }
+.mission .wrap > div { max-width: var(--text); margin-inline: auto; display: grid; gap: calc(var(--space) * 3); justify-items: center; }
+.mission h2 { font-size: clamp(2.25rem, 1.4rem + 3.6vw, 3.75rem); line-height: 1; }
+.mission cite { font-style: normal; font-family: var(--font-head); font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; font-size: 0.95rem; opacity: 0.7; }
+.mission p { font-size: clamp(1.15rem, 1rem + 0.6vw, 1.4rem); line-height: 1.5; }
+.mission .btn { margin-top: var(--space); }
 
-/* Full-bleed blue call to action */
-.cta-band { background: var(--blue); color: #fff; position: relative; overflow: hidden; isolation: isolate; }
-.cta-band .wrap { padding-block: clamp(56px, 8vw, 104px); display: grid; gap: 22px; justify-items: start; }
-.cta-band::before {
-  content: "3:23"; position: absolute; z-index: -1; right: -2vw; bottom: -0.18em;
-  font-family: var(--font-display); font-weight: 900; font-style: italic; line-height: 1; font-size: clamp(10rem, 30vw, 26rem);
-  color: transparent; -webkit-text-stroke: 2px rgba(255,255,255,0.18); pointer-events: none;
-}
-.cta-band h2 { font-size: clamp(2.4rem, 1.2rem + 5vw, 5rem); font-weight: 900; font-style: italic; text-transform: uppercase; line-height: 0.95; max-width: 14ch; }
-.cta-band p { font-size: var(--step-1); max-width: 34rem; color: rgba(255,255,255,0.88); }
-.cta-band .kicker { font-family: var(--font-display); font-weight: 700; letter-spacing: 0.3em; text-transform: uppercase; font-size: var(--step--1); color: var(--ink); }
-.btn--light { --bg: #fff; color: var(--ink); }
-.btn--light:hover { --bg: var(--ink); color: #fff; }
+/* Final CTA + application */
+.cta-band { padding-block: var(--section); border-top: 1px solid var(--line); }
+.cta-band .wrap { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: calc(var(--space) * 3); }
+.cta-band h2 { font-size: clamp(2rem, 1.3rem + 3vw, 3.25rem); max-width: 18ch; }
+.apply-panel { padding-bottom: var(--section); }
+.form-card { max-width: 720px; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: clamp(20px, 3vw, 40px); min-width: 0; }
 
-/* Programs */
-.programs { display: grid; gap: 18px; }
-@media (min-width: 960px) { .programs { grid-template-columns: repeat(3, 1fr); } }
-.program {
-  position: relative; display: flex; flex-direction: column; gap: 18px;
-  padding: 28px 24px 24px; background: var(--ink-3); border: 1px solid var(--line); border-radius: 18px;
-}
-.program-tag { font-family: var(--font-display); font-weight: 600; font-size: var(--step--1); letter-spacing: 0.2em; text-transform: uppercase; color: var(--ice); }
-.program h3 { font-size: var(--step-3); font-weight: 900; text-transform: uppercase; }
-.program > p { color: #c3ccd8; }
-.program dl { margin: 0; display: grid; gap: 4px; padding: 14px 16px; background: #0b0f15; border-radius: 10px; border: 1px solid var(--line); }
-.program dl div { display: flex; justify-content: space-between; gap: 12px; font-size: 0.92rem; }
-.program dt { color: var(--muted); }
-.program dd { margin: 0; font-weight: 600; text-align: right; }
-.program ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
-.program li { display: grid; grid-template-columns: 18px 1fr; gap: 10px; align-items: start; font-size: 0.97rem; }
-.program li::before { content: ""; width: 10px; height: 10px; margin-top: 8px; border-radius: 2px; background: var(--blue); transform: rotate(45deg); }
-.program .btn { margin-top: auto; width: 100%; }
-.program--featured { border-color: var(--blue); box-shadow: 0 0 0 1px var(--blue), 0 30px 80px -40px rgba(2,118,225,0.6); }
-.program-badge {
-  position: absolute; top: -12px; right: 20px;
-  padding: 4px 12px; border-radius: 999px; background: var(--red);
-  font-family: var(--font-display); font-weight: 700; font-size: 0.72rem; letter-spacing: 0.16em; text-transform: uppercase;
-}
-
-/* Inside the program */
-.inside { display: grid; gap: clamp(28px, 4vw, 48px); align-items: center; }
-@media (min-width: 960px) { .inside { grid-template-columns: 1fr 1fr; } }
-.features { display: grid; gap: 14px; }
-.feature { display: grid; grid-template-columns: 44px 1fr; gap: 14px; align-items: start; }
-.feature .f-icon { width: 44px; height: 44px; border-radius: 12px; display: grid; place-items: center; background: rgba(2,118,225,0.14); color: var(--ice); }
-.feature .f-icon svg { width: 22px; height: 22px; }
-.feature h3 { font-size: 1.05rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 2px; }
-.feature p { color: var(--muted); font-size: 0.97rem; }
-
-.report { background: var(--ink-3); border: 1px solid var(--line); border-radius: 18px; padding: 20px; display: grid; gap: 14px; min-width: 0; }
-.report-head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; flex-wrap: wrap; }
-.report-head h3 { font-size: 1rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; }
-.report-head span { font-size: var(--step--1); color: var(--muted); }
-.example-chip { font-family: var(--font-display); font-size: 0.7rem; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase; padding: 3px 9px; border-radius: 999px; border: 1px solid var(--line); color: var(--muted); }
-.report svg { width: 100%; height: auto; max-width: 100%; }
-.report svg text { font-family: var(--font-body); }
-.report-table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; font-size: 0.9rem; }
-.report-table th { text-align: right; font-weight: 500; color: var(--muted); padding: 6px 8px; border-bottom: 1px solid var(--line); font-size: 0.78rem; letter-spacing: 0.08em; text-transform: uppercase; }
-.report-table td { text-align: right; padding: 7px 8px; border-bottom: 1px solid var(--line); }
-.report-table th:first-child, .report-table td:first-child { text-align: left; }
-.report-table tr:last-child td { border-bottom: 0; }
-.swatch { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 8px; vertical-align: 0; }
-.table-scroll { overflow-x: auto; }
-
-/* Process */
-.steps { list-style: none; margin: 0; padding: 0; display: grid; gap: 14px; counter-reset: step; }
-@media (min-width: 720px) { .steps { grid-template-columns: repeat(2, 1fr); } }
-@media (min-width: 1040px) { .steps { grid-template-columns: repeat(4, 1fr); } }
-.step { counter-increment: step; padding: 22px; border-top: 2px solid var(--blue); background: var(--ink-2); border-radius: 0 0 var(--radius) var(--radius); display: grid; gap: 8px; align-content: start; }
-.step::before { content: counter(step, decimal-leading-zero); font-family: var(--font-display); font-weight: 900; font-size: 2.2rem; line-height: 1; color: var(--blue); }
-.step h3 { font-size: var(--step-1); font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; }
-.step p { color: var(--muted); font-size: 0.97rem; }
-.step small { font-family: var(--font-display); font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: var(--ice); font-size: 0.75rem; }
-
-/* Coach */
-.coach { display: grid; gap: clamp(28px, 4vw, 56px); align-items: center; }
-@media (min-width: 900px) { .coach { grid-template-columns: 0.85fr 1.15fr; } }
-.coach-photo {
-  position: relative; aspect-ratio: 4 / 5; max-width: 100%; width: 100%;
-  border-radius: 20px; overflow: hidden; background: linear-gradient(160deg, #0f1824, #07080b);
-  border: 1px solid var(--line); display: grid; place-items: center;
-}
-.coach-photo img.photo { width: 100%; height: 100%; object-fit: cover; }
-.coach-photo img.fallback { width: 64%; }
-.coach-photo::after { content: ""; position: absolute; inset: auto 0 0 0; height: 30%; background: linear-gradient(transparent, rgba(7,8,11,0.85)); }
-.coach-photo figcaption { position: absolute; left: 18px; bottom: 16px; z-index: 1; font-family: var(--font-display); font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; font-size: 0.85rem; }
-.coach-copy { display: grid; gap: 18px; }
-.coach-copy h2 { font-size: var(--step-4); font-weight: 900; text-transform: uppercase; }
-.coach-copy p { color: #c9d2de; max-width: 38rem; }
-.creed { display: grid; gap: 10px; margin: 6px 0 0; padding: 0; list-style: none; }
-.creed li { display: flex; gap: 12px; align-items: baseline; }
-.creed b { font-family: var(--font-display); color: var(--blue); letter-spacing: 0.12em; text-transform: uppercase; font-size: 0.85rem; flex: none; width: 5.5rem; }
-.creed span { color: #c9d2de; }
-
-/* Audience */
-.levels { display: flex; flex-wrap: wrap; gap: 10px; }
-.levels span { padding: 8px 16px; border-radius: 999px; border: 1px solid var(--line); background: var(--ink-3); font-family: var(--font-display); font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; font-size: 0.82rem; }
-
-/* FAQ */
-.faq { display: grid; gap: 10px; max-width: 52rem; }
-.faq details { background: var(--ink-3); border: 1px solid var(--line); border-radius: var(--radius); }
-.faq summary {
-  list-style: none; cursor: pointer; padding: 18px 20px; display: flex; justify-content: space-between; gap: 16px; align-items: center;
-  font-family: var(--font-display); font-weight: 700; font-size: 1.05rem; letter-spacing: 0.02em;
-}
-.faq summary::-webkit-details-marker { display: none; }
-.faq summary::after { content: "+"; font-size: 1.5rem; line-height: 1; color: var(--blue); transition: transform .2s; flex: none; }
-.faq details[open] summary::after { transform: rotate(45deg); }
-.faq details p { padding: 0 20px 20px; color: var(--muted); max-width: 44rem; }
-
-/* Application */
-.apply-grid { display: grid; gap: clamp(28px, 4vw, 56px); }
-@media (min-width: 960px) { .apply-grid { grid-template-columns: 0.8fr 1.2fr; align-items: start; } }
-.apply-aside { display: grid; gap: 18px; }
-.apply-aside h2 { font-size: var(--step-4); font-weight: 900; text-transform: uppercase; }
-.apply-aside p { color: #c9d2de; }
-.apply-aside ul { margin: 0; padding: 0; list-style: none; display: grid; gap: 10px; }
-.apply-aside li { display: flex; gap: 10px; color: #c9d2de; }
-.apply-aside li svg { width: 20px; height: 20px; color: var(--blue); flex: none; margin-top: 3px; }
-@media (min-width: 960px) { .apply-aside { position: sticky; top: 96px; } }
-
-.form-card { background: var(--ink-3); border: 1px solid var(--line); border-radius: 20px; padding: clamp(20px, 3vw, 32px); min-width: 0; }
-.progress { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-bottom: 8px; }
-.progress span { height: 4px; border-radius: 4px; background: var(--line); transition: background .3s; }
-.progress span.on { background: var(--blue); }
-.progress-label { font-family: var(--font-display); font-weight: 600; font-size: var(--step--1); letter-spacing: 0.18em; text-transform: uppercase; color: var(--muted); margin-bottom: 22px; }
-fieldset { border: 0; margin: 0; padding: 0; min-width: 0; display: grid; gap: 18px; }
-legend { font-family: var(--font-display); font-weight: 800; font-size: var(--step-2); text-transform: uppercase; letter-spacing: 0.02em; margin-bottom: 4px; padding: 0; }
+/* Form (markup unchanged; restyled for the light theme) */
+.progress { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-bottom: var(--space); }
+.progress span { height: 3px; background: var(--line); }
+.progress span.on { background: var(--accent); }
+.progress-label { font-size: 0.8rem; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); margin-bottom: calc(var(--space) * 3); }
+fieldset { border: 0; margin: 0; padding: 0; min-width: 0; display: grid; gap: calc(var(--space) * 2.5); }
+legend { font-family: var(--font-head); font-weight: 800; font-size: 1.6rem; line-height: 1.1; text-transform: uppercase; margin-bottom: var(--space); padding: 0; }
 .field { display: grid; gap: 6px; min-width: 0; }
-.field-row { display: grid; gap: 18px; }
+.field-row { display: grid; gap: calc(var(--space) * 2.5); }
 @media (min-width: 560px) { .field-row { grid-template-columns: 1fr 1fr; } }
-label, .label { font-weight: 600; font-size: 0.92rem; }
+label, .label { font-weight: 600; font-size: 0.95rem; }
 .hint { font-size: 0.85rem; color: var(--muted); font-weight: 400; }
 input[type="text"], input[type="email"], input[type="tel"], input[type="number"], select, textarea {
-  width: 100%; min-height: 50px; padding: 12px 14px;
-  background: #0a0e14; color: var(--white); border: 1px solid var(--line); border-radius: 10px;
+  width: 100%; min-height: 48px; padding: 10px 12px;
+  background: var(--surface); color: var(--ink); border: 1px solid var(--line); border-radius: var(--radius);
   font: inherit; font-size: 1rem;
 }
-textarea { min-height: 110px; resize: vertical; }
-input:focus, select:focus, textarea:focus { outline: none; border-color: var(--blue); box-shadow: 0 0 0 3px rgba(2,118,225,0.25); }
-.invalid { border-color: var(--red) !important; }
-.error-msg { color: #ff8a8c; font-size: 0.88rem; min-height: 1.2em; }
-
-.track-options { display: grid; gap: 10px; }
+textarea { min-height: 104px; resize: vertical; }
+input:focus, select:focus, textarea:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(0, 102, 204, 0.18); }
+.invalid { border-color: var(--error) !important; }
+.error-msg { color: var(--error); font-size: 0.9rem; min-height: 1.2em; }
+.track-options { display: grid; gap: var(--space); }
 .track-option { position: relative; }
 .track-option input { position: absolute; opacity: 0; inset: 0; cursor: pointer; }
-.track-option label {
-  display: grid; grid-template-columns: 52px 1fr 22px; gap: 14px; align-items: center;
-  padding: 14px; border: 1.5px solid var(--line); border-radius: 14px; background: #0a0e14; cursor: pointer;
-  transition: border-color .2s, background .2s;
-}
-.track-option img { width: 52px; height: 52px; border-radius: 12px; }
-.track-option .t-title { display: block; font-family: var(--font-display); font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; }
+.track-option label { display: grid; grid-template-columns: 44px 1fr 20px; gap: calc(var(--space) * 1.5); align-items: center; padding: calc(var(--space) * 1.5); border: 1px solid var(--line); border-radius: var(--radius); cursor: pointer; transition: opacity .15s; }
+.track-option label:hover { opacity: 0.85; }
+.track-option img { width: 44px; height: 44px; border-radius: var(--radius); }
+.track-option .t-title { display: block; font-family: var(--font-head); font-weight: 800; font-size: 1.1rem; text-transform: uppercase; letter-spacing: 0.03em; }
 .track-option .t-sub { display: block; font-weight: 400; color: var(--muted); font-size: 0.9rem; }
-.track-option .t-check { width: 22px; height: 22px; border-radius: 50%; border: 2px solid var(--line); }
-.track-option input:checked + label { border-color: var(--blue); background: rgba(2,118,225,0.08); }
-.track-option input:checked + label .t-check { border-color: var(--blue); background: var(--blue) radial-gradient(circle, #fff 30%, transparent 34%); }
-.track-option input:focus-visible + label { outline: 2px solid var(--ice); outline-offset: 2px; }
-
-.chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.track-option .t-check { width: 20px; height: 20px; border-radius: 50%; border: 1.5px solid var(--line); }
+.track-option input:checked + label { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); }
+.track-option input:checked + label .t-check { border-color: var(--accent); background: var(--accent) radial-gradient(circle, #fff 30%, transparent 34%); }
+.track-option input:focus-visible + label { outline: 2px solid var(--accent); outline-offset: 2px; }
+.chips { display: flex; flex-wrap: wrap; gap: var(--space); }
 .chip { position: relative; }
 .chip input { position: absolute; opacity: 0; inset: 0; cursor: pointer; }
-.chip label { display: inline-flex; align-items: center; min-height: 40px; padding: 0 14px; border-radius: 999px; border: 1px solid var(--line); background: #0a0e14; font-weight: 500; cursor: pointer; }
-.chip input:checked + label { border-color: var(--blue); background: rgba(2,118,225,0.16); color: #fff; }
-.chip input:focus-visible + label { outline: 2px solid var(--ice); outline-offset: 2px; }
-
-.form-nav { display: flex; gap: 10px; justify-content: space-between; margin-top: 26px; flex-wrap: wrap; }
+.chip label { display: inline-flex; align-items: center; min-height: 40px; padding: 0 calc(var(--space) * 2); border: 1px solid var(--line); border-radius: var(--radius); font-weight: 500; cursor: pointer; transition: opacity .15s; }
+.chip label:hover { opacity: 0.8; }
+.chip input:checked + label { border-color: var(--accent); background: var(--accent); color: #fff; }
+.chip input:focus-visible + label { outline: 2px solid var(--accent); outline-offset: 2px; }
+.form-nav { display: flex; gap: var(--space); justify-content: space-between; margin-top: calc(var(--space) * 3); flex-wrap: wrap; }
 .form-nav .btn { flex: 1 1 160px; }
-.form-foot { margin-top: 14px; font-size: 0.82rem; color: var(--muted); }
-
-.done { display: grid; gap: 16px; text-align: center; justify-items: center; padding-block: 12px; }
-.done img { width: 96px; }
-.done h3 { font-size: var(--step-3); font-weight: 900; text-transform: uppercase; }
-.done p { color: #c9d2de; max-width: 30rem; }
+.form-foot { margin-top: calc(var(--space) * 2); font-size: 0.85rem; color: var(--muted); }
+.done { display: grid; gap: calc(var(--space) * 2); text-align: center; justify-items: center; padding-block: var(--space); }
+.done img { width: 72px; }
+.done h3 { font-size: 2rem; }
+.done p { color: var(--muted); max-width: 30rem; }
 
 /* Footer */
-footer { position: relative; padding-block: 0 calc(32px + env(safe-area-inset-bottom, 0px)); background: linear-gradient(var(--ink), #050d18); }
-.waves { display: block; width: 100%; height: clamp(44px, 6vw, 84px); margin-bottom: clamp(36px, 5vw, 56px); }
-.foot-verse { font-family: var(--font-display); font-weight: 800; font-style: italic; text-transform: uppercase; font-size: clamp(1.4rem, 0.9rem + 2.2vw, 2.5rem); line-height: 1.05; max-width: 24ch; margin-bottom: 40px; text-wrap: balance; }
-.foot-verse span { color: var(--blue); }
-.foot-verse cite { display: block; margin-top: 14px; font-style: normal; font-weight: 700; font-size: var(--step--1); letter-spacing: 0.3em; color: var(--red); }
-.foot { display: grid; gap: 28px; }
-@media (min-width: 800px) { .foot { grid-template-columns: 1fr auto; align-items: end; } }
-.foot img { width: 220px; }
-.foot-tag { font-family: var(--font-display); font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; font-size: 0.85rem; margin-top: 10px; }
-.foot-pillars { display: flex; flex-wrap: wrap; gap: 6px 16px; color: var(--muted); font-family: var(--font-display); font-size: 0.78rem; letter-spacing: 0.18em; text-transform: uppercase; margin-top: 10px; }
-.foot-links { display: flex; gap: 12px; flex-wrap: wrap; }
-.foot-small { margin-top: 28px; font-size: 0.82rem; color: var(--muted); display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.site-footer { border-top: 1px solid var(--line); padding-block: calc(var(--space) * 7) calc(var(--space) * 5 + env(safe-area-inset-bottom, 0px)); }
+.site-footer .wrap { display: grid; gap: calc(var(--space) * 5); }
+@media (min-width: 768px) { .site-footer .wrap { grid-template-columns: 1fr 1fr 1.4fr; } }
+.f-label { font-family: var(--font-head); font-weight: 700; font-size: 0.9rem; letter-spacing: 0.12em; color: var(--muted); margin-bottom: calc(var(--space) * 2); white-space: pre; }
+.f-links { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--space); }
+.f-links a { color: var(--ink); text-decoration: none; }
+.socials { display: flex; gap: calc(var(--space) * 1.5); }
+.socials a { display: grid; place-items: center; width: 44px; height: 44px; border: 1px solid var(--line); border-radius: var(--radius); color: var(--ink); }
+.socials svg { width: 20px; height: 20px; }
+.newsletter { display: flex; gap: var(--space); flex-wrap: wrap; }
+.newsletter input { flex: 1 1 200px; }
+.newsletter .btn { flex: 0 0 auto; min-height: 48px; }
+.nl-msg { margin-top: var(--space); font-size: 0.9rem; color: var(--muted); min-height: 1.2em; }
 
-/* Mobile sticky apply bar */
+/* Sticky apply on phones */
 .mobile-cta {
   position: fixed; left: 0; right: 0; bottom: 0; z-index: 40;
-  padding: 10px max(16px, env(safe-area-inset-right, 0px)) calc(10px + env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px));
-  background: rgba(7, 8, 11, 0.92); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
-  border-top: 1px solid var(--line);
-  transform: translateY(110%); transition: transform .3s;
+  padding: var(--space) max(calc(var(--space) * 2.5), env(safe-area-inset-right, 0px)) calc(var(--space) + env(safe-area-inset-bottom, 0px)) max(calc(var(--space) * 2.5), env(safe-area-inset-left, 0px));
+  background: var(--bg); border-top: 1px solid var(--line);
+  transform: translateY(110%); transition: transform .25s;
 }
 .mobile-cta.show { transform: none; }
 .mobile-cta .btn { width: 100%; }
@@ -416,351 +232,137 @@ footer { position: relative; padding-block: 0 calc(32px + env(safe-area-inset-bo
 </head>
 <body>
 
-<header class="topbar">
+<header class="nav">
   <div class="wrap">
-    <a class="brand" href="#top" aria-label="3:23 Pitching Performance home">
-      <img src="assets/mark-323-wave.png" alt="" width="38" height="38">
-      <span><b>3:23</b> Pitching</span>
+    <a class="logo" href="#top" aria-label="3:23 Pitching Performance, back to top">
+      <img src="assets/icon-323.png" alt="" width="32" height="32">
+      <span>3:23 Pitching</span>
     </a>
-    <nav class="nav" aria-label="Main">
-      <a href="#standard">3:23</a>
+    <nav class="nav-links" aria-label="Main">
       <a href="#programs">Programs</a>
-      <a href="#inside">Inside</a>
-      <a href="#coach">Coach</a>
-      <a href="#faq">FAQ</a>
+      <a href="#proof">Proof</a>
+      <a href="#how">How it works</a>
+      <a href="#mission">Mission</a>
     </nav>
-    <a class="btn" href="#apply" data-track-link="">Apply</a>
+    <a class="btn" href="#apply">Apply</a>
   </div>
 </header>
 
 <main id="top">
 
-  <!-- HERO: the verse is the headline -->
-  <section class="hero">
-    <div class="hero-watermark" aria-hidden="true">3:23</div>
+  <!-- HERO -->
+  <section class="hero" aria-labelledby="hero-title">
     <div class="wrap">
-      <img class="hero-logo" src="assets/logo-primary.png" alt="3:23 Pitching Performance logo: a pitcher on a mountain ridge above ocean waves, with Colossians 3:23" width="425" height="415">
       <div class="hero-copy">
-        <span class="hero-ref">Colossians 3:23</span>
-        <h1><span>Whatever you do,</span> <span>work heartily,</span> <span class="lord">as for the Lord</span> <span class="men">and not for men.</span></h1>
-        <p class="hero-sub"><b>3:23 Pitching Performance</b> develops elite pitchers through in-person training, remote mentorship and mental game coaching. We train the arm and the mind, and we do it for the King.</p>
-        <div class="hero-ctas">
-          <a class="btn" href="#apply">Apply for training
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
-          </a>
-          <a class="btn btn--ghost" href="#programs">See programs</a>
-        </div>
+        <h1 id="hero-title">Your arm is ready for the next level. Your plan isn't.</h1>
+        <p>Remote mentorship from a 97 mph pro pitcher. Velocity, command and a mind that holds up under pressure.</p>
+        <a class="btn" href="#apply">Apply</a>
       </div>
-    </div>
-    <svg class="ridge" viewBox="0 0 1440 100" preserveAspectRatio="none" aria-hidden="true">
-      <polygon fill="#87bdf0" fill-opacity="0.18" points="0,100 0,70 140,38 230,62 360,12 470,54 560,30 690,66 800,22 930,58 1040,8 1150,50 1260,28 1360,60 1440,40 1440,100"/>
-      <polygon fill="#0276e1" points="0,100 0,82 120,60 250,84 380,44 500,78 640,52 760,86 900,48 1010,76 1120,40 1240,74 1340,56 1440,72 1440,100"/>
-    </svg>
-  </section>
-
-  <div class="marquee" aria-hidden="true">
-    <div class="marquee-track">
-      <span>Remote mentorship</span><span>Mental game</span><span>Faith driven</span><span>Purpose focused</span><span class="ref">Colossians 3:23</span><span>Developing elite pitchers</span><span>Honoring the King</span><span class="ref">Colossians 3:23</span>
-      <span>Remote mentorship</span><span>Mental game</span><span>Faith driven</span><span>Purpose focused</span><span class="ref">Colossians 3:23</span><span>Developing elite pitchers</span><span>Honoring the King</span><span class="ref">Colossians 3:23</span>
-    </div>
-  </div>
-
-  <!-- QUICK LINKS: the Instagram link-in-bio menu -->
-  <section class="quick" aria-labelledby="quick-title">
-    <div class="wrap">
-      <h2 id="quick-title" class="sr-only">Quick links</h2>
-      <div class="quick-grid">
-        <a class="is-primary" href="#apply">
-          <span class="q-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></span>
-          <span class="q-text"><span class="q-title">Apply now</span><span class="q-sub">5-minute application, then book your call</span></span>
-          <span class="q-arrow" aria-hidden="true">&rarr;</span>
-        </a>
-        <a href="#program-inperson" data-track-link="inperson">
-          <img src="assets/mark-pitcher.png" alt="">
-          <span class="q-text"><span class="q-title">In-person training</span><span class="q-sub">Bullpens, mechanics, arm care</span></span>
-          <span class="q-arrow" aria-hidden="true">&rarr;</span>
-        </a>
-        <a href="#program-remote" data-track-link="remote">
-          <img src="assets/icon-pitcher.png" alt="">
-          <span class="q-text"><span class="q-title">Remote mentorship</span><span class="q-sub">Your program, video review, data</span></span>
-          <span class="q-arrow" aria-hidden="true">&rarr;</span>
-        </a>
-        <a href="#program-mental" data-track-link="mental">
-          <img src="assets/icon-wave.png" alt="">
-          <span class="q-text"><span class="q-title">Mental game</span><span class="q-sub">Routines, confidence, identity</span></span>
-          <span class="q-arrow" aria-hidden="true">&rarr;</span>
-        </a>
-        <a href="#coach">
-          <img src="assets/icon-323.png" alt="">
-          <span class="q-text"><span class="q-title">Meet the coach</span><span class="q-sub">Why 3:23 exists</span></span>
-          <span class="q-arrow" aria-hidden="true">&rarr;</span>
-        </a>
-        <a href="#" data-instagram target="_blank" rel="noopener">
-          <span class="q-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor"/></svg></span>
-          <span class="q-text"><span class="q-title">Instagram</span><span class="q-sub" data-instagram-handle>@323pitchingperformance</span></span>
-          <span class="q-arrow" aria-hidden="true">&nearr;</span>
-        </a>
-      </div>
+      <figure class="hero-photo">
+        <picture>
+          <source type="image/webp" srcset="assets/photos/mound-night-800.webp 800w, assets/photos/mound-night-1600.webp 1600w" sizes="(min-width: 900px) 45vw, 100vw">
+          <img src="assets/photos/mound-night-800.jpg" srcset="assets/photos/mound-night-800.jpg 800w, assets/photos/mound-night-1600.jpg 1600w" sizes="(min-width: 900px) 45vw, 100vw" width="800" height="534" fetchpriority="high" alt="David Craig on the mound during a night game, head down between pitches">
+        </picture>
+      </figure>
     </div>
   </section>
 
-  <!-- THE STANDARD: Colossians 3:23 phrase by phrase, each tied to a pillar -->
-  <section class="band band--raised standard" id="standard" aria-labelledby="standard-title">
+  <!-- PILLARS: the three programs (ids kept for existing links) -->
+  <section class="section" id="programs" aria-labelledby="programs-title">
     <div class="wrap">
-      <div class="section-head">
-        <span class="eyebrow">Our name is our standard</span>
-        <h2 id="standard-title">One verse. Four ways we compete.</h2>
-        <p>The 3:23 in our name comes from Colossians 3:23. Every part of how we coach traces back to a phrase of it.</p>
-      </div>
-      <ol class="verse-lines">
-        <li class="verse-line">
-          <span class="vl-phrase">Whatever you do,</span>
-          <div class="vl-pillar"><h3>Purpose focused</h3><p>Bullpens, lifts, recovery, schoolwork. No rep is throwaway. Every drill ties back to a clear goal, and you'll always know why you're doing it.</p></div>
+      <h2 class="section-title" id="programs-title">Three ways to train</h2>
+      <ul class="pillars">
+        <li class="pillar" id="program-remote">
+          <h3>Remote</h3>
+          <p>Your program, video review and weekly check-ins. Train anywhere.</p>
         </li>
-        <li class="verse-line">
-          <span class="vl-phrase">work heartily,</span>
-          <div class="vl-pillar"><h3>Remote mentorship</h3><p>Full effort, every day, wherever you live. Your plan, your video and your data, reviewed by a coach who knows your name.</p></div>
+        <li class="pillar" id="program-inperson">
+          <h3>In-Person</h3>
+          <p>Bullpens and mechanics, face to face. Every throw gets feedback.</p>
         </li>
-        <li class="verse-line">
-          <span class="vl-phrase">as for the Lord</span>
-          <div class="vl-pillar"><h3>Faith driven</h3><p>The work itself is worship. We compete hard because of who we play for, and your worth was settled before you threw a pitch.</p></div>
+        <li class="pillar" id="program-mental">
+          <h3>Mindset</h3>
+          <p>Routines that hold up under pressure. Compete from worth, not for it.</p>
         </li>
-        <li class="verse-line">
-          <span class="vl-phrase">and not for men.</span>
-          <div class="vl-pillar"><h3>Mental game</h3><p>Not for the radar gun, the scouts or the box score. Pitchers who stop performing for approval are free to compete. We train that like any other skill.</p></div>
-        </li>
-      </ol>
-      <p class="verse-cite"><span>Colossians 3:23</span><span>Developing elite pitchers. Honoring the King.</span></p>
+      </ul>
+      <div class="section-cta"><a class="btn" href="#apply">Apply</a></div>
     </div>
   </section>
 
-  <!-- PROGRAMS -->
-  <section class="band" id="programs" aria-labelledby="programs-title">
+  <!-- PROOF -->
+  <section class="section" id="proof" aria-labelledby="proof-title">
     <div class="wrap">
-      <div class="section-head">
-        <span class="eyebrow">Programs</span>
-        <h2 id="programs-title">Three ways to train</h2>
-        <p>Every athlete starts with an application and a call. From there we build the plan that fits your level, your season and your goals.</p>
-      </div>
-      <div class="programs">
-
-        <article class="program" id="program-inperson">
-          <span class="program-tag">Train with me</span>
-          <h3>In-person training</h3>
-          <p>Hands-on sessions where we see every throw, fix what matters and build a delivery that holds up.</p>
-          <dl>
-            <div><dt>Format</dt><dd>1-on-1 or small group</dd></div>
-            <div><dt>Best for</dt><dd>Local athletes</dd></div>
-          </dl>
-          <ul>
-            <li>Mechanical evaluation with high-speed video</li>
-            <li>Bullpen sessions with pitch-by-pitch feedback</li>
-            <li>Pitch design and grip work using movement data</li>
-            <li>Throwing program, arm care and recovery plan</li>
-            <li>Pre-game and between-innings routines</li>
-          </ul>
-          <a class="btn" href="#apply" data-track-link="inperson">Apply for in-person</a>
-        </article>
-
-        <article class="program program--featured" id="program-remote">
-          <span class="program-badge">Most popular</span>
-          <span class="program-tag">Train from anywhere</span>
-          <h3>Remote mentorship</h3>
-          <p>A complete program in your pocket and a coach in your corner, wherever you live and play.</p>
-          <dl>
-            <div><dt>Format</dt><dd>App + video + calls</dd></div>
-            <div><dt>Best for</dt><dd>Any location</dd></div>
-          </dl>
-          <ul>
-            <li>Custom throwing, lifting and mobility program in the athlete app</li>
-            <li>Video breakdowns of your bullpens and outings</li>
-            <li>Trackman or Baseball Savant data reports on your arsenal</li>
-            <li>Regular check-in calls and direct coach messaging</li>
-            <li>Mental game work, journaling and habit tracking included</li>
-          </ul>
-          <a class="btn" href="#apply" data-track-link="remote">Apply for remote</a>
-        </article>
-
-        <article class="program" id="program-mental">
-          <span class="program-tag">Win the 60 feet, 6 inches between your ears</span>
-          <h3>Mental game</h3>
-          <p>For pitchers who have the stuff but leave it in the bullpen. Learn to compete with a clear head and a settled identity.</p>
-          <dl>
-            <div><dt>Format</dt><dd>1-on-1 calls + app</dd></div>
-            <div><dt>Best for</dt><dd>Any level, any location</dd></div>
-          </dl>
-          <ul>
-            <li>Pre-pitch routine and breathing reset</li>
-            <li>Handling walks, errors and the big inning</li>
-            <li>Daily journal prompts and reflection</li>
-            <li>Sleep, sunlight and nutrition habits that support performance</li>
-            <li>Faith-based identity: compete from worth, not for it</li>
-          </ul>
-          <a class="btn" href="#apply" data-track-link="mental">Apply for mental game</a>
-        </article>
-
-      </div>
+      <h2 class="section-title" id="proof-title">What athletes say</h2>
+      <!-- PLACEHOLDERS: replace with real quotes from real athletes or parents. Do not publish as is. -->
+      <ul class="quotes">
+        <li>
+          <blockquote class="quote">
+            <p>[Real testimonial from an athlete or parent goes here.]</p>
+            <footer><b>[First name]</b>, [age or level]</footer>
+          </blockquote>
+        </li>
+        <li>
+          <blockquote class="quote">
+            <p>[Real testimonial from an athlete or parent goes here.]</p>
+            <footer><b>[First name]</b>, [age or level]</footer>
+          </blockquote>
+        </li>
+        <li>
+          <blockquote class="quote">
+            <p>[Real testimonial from an athlete or parent goes here.]</p>
+            <footer><b>[First name]</b>, [age or level]</footer>
+          </blockquote>
+        </li>
+      </ul>
+      <!-- Swap each name for <img src="assets/logos/..." alt="..." loading="lazy">; CSS turns them greyscale. -->
+      <ul class="logos" aria-label="Where David has pitched">
+        <li>[JUCO]</li>
+        <li>Colorado Mesa</li>
+        <li>USPBL</li>
+      </ul>
+      <div class="section-cta"><a class="btn" href="#apply">Apply</a></div>
     </div>
   </section>
 
-  <!-- INSIDE THE PROGRAM -->
-  <section class="band band--raised" id="inside" aria-labelledby="inside-title">
+  <!-- HOW IT WORKS (old #inside and #faq links land here) -->
+  <section class="section" id="how" aria-labelledby="how-title">
+    <span id="inside" aria-hidden="true"></span><span id="faq" aria-hidden="true"></span>
     <div class="wrap">
-      <div class="section-head">
-        <span class="eyebrow">Inside the program</span>
-        <h2 id="inside-title">Everything in one place</h2>
-        <p>Athletes get their own login to the 3:23 athlete hub. Your coach builds your plan there, and you check in every day.</p>
-      </div>
-      <div class="inside">
-        <div class="features">
-          <div class="feature">
-            <span class="f-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg></span>
-            <div><h3>Your daily program</h3><p>Throwing, lifting and arm care for today, with sets, reps and a video demo for every exercise. Log as you go.</p></div>
-          </div>
-          <div class="feature">
-            <span class="f-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 3v18h18"/><circle cx="9" cy="14" r="1.6"/><circle cx="14" cy="9" r="1.6"/><circle cx="17" cy="15" r="1.6"/></svg></span>
-            <div><h3>Pitch data breakdowns</h3><p>Upload a Trackman or Baseball Savant file and see velocity, spin, release and movement by pitch type, including how your break changes at altitude.</p></div>
-          </div>
-          <div class="feature">
-            <span class="f-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></span>
-            <div><h3>Journal and devotionals</h3><p>A daily prompt and a short devotional to start the day with the right focus.</p></div>
-          </div>
-          <div class="feature">
-            <span class="f-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg></span>
-            <div><h3>Habit tracking</h3><p>Sleep window, morning light, meals and recovery. Small daily wins, tracked as streaks.</p></div>
-          </div>
-        </div>
-
-        <figure class="report" style="margin:0">
-          <div class="report-head">
-            <h3>Pitch movement</h3>
-            <span class="example-chip">Example report</span>
-          </div>
-          <svg id="movement-chart" viewBox="0 0 340 330" role="img" aria-label="Example pitch movement chart: induced vertical break versus horizontal break for four pitch types"></svg>
-          <div class="table-scroll">
-            <table class="report-table" id="movement-table">
-              <thead><tr><th>Pitch</th><th>Velo</th><th>Spin</th><th>iVB</th><th>HB</th></tr></thead>
-              <tbody></tbody>
-            </table>
-          </div>
-          <figcaption class="hint">Sample right-handed pitcher, pitcher's view. Velo in mph, spin in rpm, break in inches.</figcaption>
-        </figure>
-      </div>
-    </div>
-  </section>
-
-  <!-- PROCESS -->
-  <section class="band" aria-labelledby="process-title">
-    <div class="wrap">
-      <div class="section-head">
-        <span class="eyebrow">How it works</span>
-        <h2 id="process-title">From Instagram to your first session</h2>
-      </div>
+      <h2 class="section-title" id="how-title">How it works</h2>
       <ol class="steps">
-        <li class="step"><small>5 minutes</small><h3>Apply</h3><p>Tell us about your arm, your season and your goals. Pick in-person, remote or mental game.</p></li>
-        <li class="step"><small>15 minutes</small><h3>Book your call</h3><p>Choose a time right after you apply. We talk through where you are and where you want to go.</p></li>
-        <li class="step"><small>Week 1</small><h3>Evaluate and plan</h3><p>Video, data and a conversation become a written plan built around your schedule.</p></li>
-        <li class="step"><small>Every week</small><h3>Train and check in</h3><p>Do the work, log it in the app, and get feedback. We adjust as you grow.</p></li>
+        <li class="step"><h3>Apply</h3><p>Five minutes. Tell me where you are and where you want to go.</p></li>
+        <li class="step"><h3>Call</h3><p>You, your parents and me. We make sure it's a fit.</p></li>
+        <li class="step"><h3>Plan</h3><p>Video and a conversation become a plan built around your season.</p></li>
+        <li class="step"><h3>Train</h3><p>Do the work. Send video. Get feedback every week.</p></li>
       </ol>
+      <div class="section-cta"><a class="btn" href="#apply">Apply</a></div>
     </div>
   </section>
 
-  <!-- COACH -->
-  <section class="band band--raised" id="coach" aria-labelledby="coach-title">
+  <!-- MISSION (old #coach and #standard links land here) -->
+  <section class="mission" id="mission" aria-labelledby="mission-title">
+    <span id="coach" aria-hidden="true"></span><span id="standard" aria-hidden="true"></span>
     <div class="wrap">
-      <div class="coach">
-        <figure class="coach-photo" style="margin:0">
-          <!-- Drop your photo at assets/photos/coach.jpg. Until then the brand mark shows. -->
-          <img class="photo" src="assets/photos/coach.jpg" alt="Coach portrait" data-fallback="assets/mark-pitcher.png">
-          <figcaption data-coach-name>Founder &amp; Pitching Coach</figcaption>
-        </figure>
-        <div class="coach-copy">
-          <span class="eyebrow">Meet your coach</span>
-          <h2 id="coach-title">Why 3:23?</h2>
-          <p>3:23 Pitching Performance is named for Colossians 3:23. It's a reminder that how we work matters as much as what we accomplish. Every bullpen, every lift and every tough outing is a chance to give full effort for something bigger than a radar gun reading.</p>
-          <p>I coach pitchers the way I'd want my own kid coached: honest feedback, a plan backed by real data, and care for the whole person. We chase velocity and strikeouts, and we build character while we do it.</p>
-          <ul class="creed">
-            <li><b>Mountain</b><span>The climb is the point. Steady, daily work.</span></li>
-            <li><b>Wave</b><span>Pressure will come. Stay anchored when it does.</span></li>
-            <li><b>The King</b><span>We compete from worth, not for it.</span></li>
-          </ul>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- BLUE CALL TO ACTION -->
-  <section class="cta-band" aria-labelledby="cta-title">
-    <div class="wrap">
-      <span class="kicker">Whatever you do</span>
-      <h2 id="cta-title">Work heartily. Start here.</h2>
-      <p>In-person, remote or mental game. Apply in five minutes, then book your intro call.</p>
-      <a class="btn btn--light" href="#apply">Apply for training
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
-      </a>
-    </div>
-  </section>
-
-  <!-- WHO IT'S FOR + FAQ -->
-  <section class="band" id="faq" aria-labelledby="faq-title">
-    <div class="wrap" style="display:grid;gap:clamp(40px,6vw,64px)">
-      <div class="section-head" style="margin-bottom:0">
-        <span class="eyebrow">Who we train</span>
-        <h2>Serious pitchers, every level</h2>
-        <div class="levels" style="margin-top:8px">
-          <span>12U &ndash; 14U</span><span>High school</span><span>Travel ball</span><span>JUCO</span><span>College</span><span>Pro / independent</span>
-        </div>
-      </div>
       <div>
-        <div class="section-head">
-          <span class="eyebrow">FAQ</span>
-          <h2 id="faq-title">Common questions</h2>
-        </div>
-        <div class="faq">
-          <details>
-            <summary>How does remote training actually work?</summary>
-            <p>You get a login to the athlete app with your full program. You film bullpens and outings on your phone and upload them for review, send data files if you have them, and we meet on scheduled check-in calls. You can message your coach between calls.</p>
-          </details>
-          <details>
-            <summary>Do I need a Trackman or Rapsodo?</summary>
-            <p>No. Phone video is enough to start. If you throw in front of Trackman, or your outings show up on Baseball Savant, send the file and we'll break down your movement, spin and release by pitch type.</p>
-          </details>
-          <details>
-            <summary>What does it cost?</summary>
-            <p>Pricing depends on the program and how often we meet. We'll go through options on your call, after we know what you need. There's no cost to apply.</p>
-          </details>
-          <details>
-            <summary>Do I have to be a Christian to train here?</summary>
-            <p>No. Every athlete is welcome. Faith shapes how we coach and how we treat people, and devotionals are part of the app, but no athlete is ever required to share our beliefs.</p>
-          </details>
-          <details>
-            <summary>My athlete is under 18. Can I apply for them?</summary>
-            <p>Yes. A parent or guardian can fill out the application. We include parents in the intro call and keep them in the loop on the plan.</p>
-          </details>
-          <details>
-            <summary>How fast will I see results?</summary>
-            <p>Most athletes notice better command and a calmer approach within the first few weeks. Velocity gains depend on age, training history and consistency. We'll set realistic targets on your call.</p>
-          </details>
-        </div>
+        <h2 id="mission-title">Whatever you do, work heartily, as for the Lord and not for men.</h2>
+        <cite>Colossians 3:23</cite>
+        <p>I'm David Craig. JUCO. Division II at Colorado Mesa. I kept working until the gun read 97 and I signed to pitch pro.</p>
+        <p>That verse is the name. It's how I pitch and how I coach. Not for the radar gun. Not for the scouts. For the King.</p>
+        <a class="btn" href="#apply">Apply</a>
       </div>
     </div>
   </section>
 
-  <!-- APPLICATION -->
-  <section class="band band--raised" id="apply" aria-labelledby="apply-title">
-    <div class="wrap">
-      <div class="apply-grid">
-        <div class="apply-aside">
-          <span class="eyebrow">Apply</span>
-          <h2 id="apply-title">Start your application</h2>
-          <p>Spots are limited so every athlete gets real attention. Apply in about five minutes, then pick a time for your intro call.</p>
-          <ul>
-            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>Free to apply, no commitment</li>
-            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>Book your call right after you submit</li>
-            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>Parents welcome to apply for athletes under 18</li>
-          </ul>
-        </div>
-
+  <!-- FINAL CTA + APPLICATION -->
+  <section id="apply" aria-labelledby="apply-title">
+    <div class="cta-band">
+      <div class="wrap">
+        <h2 id="apply-title">Your next level starts with an application.</h2>
+        <a class="btn" href="#apply">Apply</a>
+      </div>
+    </div>
+    <div class="apply-panel" id="apply-panel" hidden>
+      <div class="wrap">
         <div class="form-card">
           <form id="apply-form" novalidate>
             <div class="progress" aria-hidden="true"><span class="on"></span><span></span><span></span><span></span></div>
@@ -902,29 +504,37 @@ footer { position: relative; padding-block: 0 calc(32px + env(safe-area-inset-bo
   </section>
 </main>
 
-<footer>
-  <svg class="waves" id="waves" viewBox="0 0 1440 90" preserveAspectRatio="none" aria-hidden="true"></svg>
+<footer class="site-footer">
   <div class="wrap">
-    <p class="foot-verse">&ldquo;Whatever you do, work heartily, <span>as for the Lord</span> and not for men.&rdquo; <cite>Colossians 3:23</cite></p>
-    <div class="foot">
-      <div>
-        <img src="assets/logo-wordmark.png" alt="3:23 Pitching Performance" width="385" height="200">
-        <p class="foot-tag">Developing elite pitchers. Honoring the King.</p>
-        <div class="foot-pillars"><span>Remote mentorship</span><span>Mental game</span><span>Faith driven</span><span>Purpose focused</span></div>
-      </div>
-      <div class="foot-links">
-        <a class="btn" href="#apply">Apply</a>
-        <a class="btn btn--ghost" href="#" data-instagram target="_blank" rel="noopener">Instagram</a>
+    <div>
+      <p class="f-label">[ ABOUT ]</p>
+      <ul class="f-links">
+        <li><a href="#programs">Programs</a></li>
+        <li><a href="#how">How it works</a></li>
+        <li><a href="#mission">Mission</a></li>
+      </ul>
+    </div>
+    <div>
+      <p class="f-label">[ SOCIALS ]</p>
+      <div class="socials">
+        <a href="#" data-instagram target="_blank" rel="noopener" aria-label="Instagram">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor"/></svg>
+        </a>
       </div>
     </div>
-    <div class="foot-small">
-      <span>&copy; <span id="year">2026</span> 3:23 Pitching Performance</span>
-      <span>Colossians 3:23</span>
+    <div>
+      <p class="f-label">[ NEWSLETTER ]</p>
+      <form class="newsletter" id="newsletter-form" novalidate>
+        <label class="sr-only" for="nl-email">Email address</label>
+        <input type="email" id="nl-email" name="email" autocomplete="email" placeholder="Email address" required>
+        <button type="submit" class="btn">Subscribe</button>
+      </form>
+      <p class="nl-msg" id="nl-msg" role="status"></p>
     </div>
   </div>
 </footer>
 
-<div class="mobile-cta" id="mobile-cta"><a class="btn" href="#apply">Apply for training</a></div>
+<div class="mobile-cta" id="mobile-cta"><a class="btn" href="#apply">Apply</a></div>
 
 <script>
 /* ============================================================
@@ -936,6 +546,8 @@ const CONFIG = {
   // Where applications are sent. Create a free form at formspree.io (or similar)
   // and paste its endpoint here, e.g. "https://formspree.io/f/abcdwxyz".
   formEndpoint: "",
+  // Newsletter sign-up endpoint (Mailchimp, ConvertKit, Formspree...). Empty = shows "opens soon".
+  newsletterEndpoint: "",
   // Booking pages (Calendly, Cal.com, Acuity, TidyCal...). After submitting,
   // athletes are sent to the link for the program they chose.
   bookingLinks: {
@@ -949,90 +561,37 @@ const CONFIG = {
   const $ = (s, el = document) => el.querySelector(s);
   const $$ = (s, el = document) => Array.from(el.querySelectorAll(s));
 
-  // Instagram + coach + year
   $$("[data-instagram]").forEach(a => a.href = "https://www.instagram.com/" + CONFIG.instagramHandle + "/");
-  $$("[data-instagram-handle]").forEach(el => el.textContent = "@" + CONFIG.instagramHandle);
-  if (CONFIG.coachName) $$("[data-coach-name]").forEach(el => el.textContent = CONFIG.coachName);
-  $("#year").textContent = new Date().getFullYear();
 
-  // Photo fallback to brand mark
-  $$("img[data-fallback]").forEach(img => {
-    const swap = () => { img.onerror = null; img.src = img.dataset.fallback; img.className = "fallback"; img.alt = ""; };
-    img.onerror = swap;
-    if (img.complete && img.naturalWidth === 0) swap();
-  });
+  // Every Apply button opens the application under the final CTA band
+  const panel = $("#apply-panel");
+  const openApply = () => { panel.hidden = false; };
+  $$('a[href="#apply"]').forEach(a => a.addEventListener("click", openApply));
+  if (location.hash === "#apply") openApply();
+  window.addEventListener("hashchange", () => { if (location.hash === "#apply") openApply(); });
 
-  // Program CTAs preselect the program in the form
-  const trackMap = { inperson: "prog-inperson", remote: "prog-remote", mental: "prog-mental" };
-  $$('a.btn[data-track-link]').forEach(a => a.addEventListener("click", () => {
-    const id = trackMap[a.dataset.trackLink];
-    if (id) { $("#" + id).checked = true; }
-  }));
-
-  // Mobile sticky CTA appears after the hero, hides at the form
+  // Mobile sticky Apply: shows after the hero, hides at the application
   const cta = $("#mobile-cta");
-  const hero = $(".hero");
-  const apply = $("#apply");
   let heroOut = false, applyIn = false;
   const sync = () => cta.classList.toggle("show", heroOut && !applyIn);
   if ("IntersectionObserver" in window) {
-    new IntersectionObserver(([e]) => { heroOut = !e.isIntersecting; sync(); }).observe(hero);
-    new IntersectionObserver(([e]) => { applyIn = e.isIntersecting; sync(); }, { threshold: 0.05 }).observe(apply);
+    new IntersectionObserver(([e]) => { heroOut = !e.isIntersecting; sync(); }).observe($(".hero"));
+    new IntersectionObserver(([e]) => { applyIn = e.isIntersecting; sync(); }, { threshold: 0.05 }).observe($("#apply"));
   }
 
-  // Footer waves (layered sine curves in brand blues)
-  (function drawWaves() {
-    const svg = $("#waves"); if (!svg) return;
-    const W = 1440, H = 90;
-    const layers = [
-      { amp: 10, len: 360, y: 34, phase: 0,   fill: "#87bdf0", op: 0.22 },
-      { amp: 12, len: 280, y: 50, phase: 1.3, fill: "#0276e1", op: 0.55 },
-      { amp: 8,  len: 220, y: 66, phase: 2.4, fill: "#0276e1", op: 1 }
-    ];
-    svg.innerHTML = layers.map(l => {
-      let d = `M0 ${H} L0 ${l.y}`;
-      for (let x = 0; x <= W; x += 12) d += ` L${x} ${(l.y + Math.sin(x / l.len * Math.PI * 2 + l.phase) * l.amp).toFixed(1)}`;
-      return `<path d="${d} L${W} ${H} Z" fill="${l.fill}" fill-opacity="${l.op}"/>`;
-    }).join("");
-  })();
-
-  // ---------- Example movement chart (sample data, clearly labeled) ----------
-  const PITCHES = [
-    { name: "4-Seam",    color: "#0276e1", velo: 88.4, spin: 2310, ivb: 17.2, hb: 8.6 },
-    { name: "Slider",    color: "#87bdf0", velo: 79.1, spin: 2450, ivb: 2.4,  hb: -6.1 },
-    { name: "Changeup",  color: "#f5f5f5", velo: 80.3, spin: 1720, ivb: 7.9,  hb: 14.3 },
-    { name: "Curveball", color: "#e92428", velo: 73.6, spin: 2580, ivb: -12.8, hb: -9.4 }
-  ];
-  (function drawChart() {
-    const svg = $("#movement-chart");
-    const NS = "http://www.w3.org/2000/svg";
-    const L = 44, T = 12, S = 270, R = 24;           // plot box: x 44..314, y 12..282
-    const sx = v => L + (v + R) / (2 * R) * S;
-    const sy = v => T + (R - v) / (2 * R) * S;
-    const mk = (tag, attrs, text) => { const n = document.createElementNS(NS, tag); for (const k in attrs) n.setAttribute(k, attrs[k]); if (text != null) n.textContent = text; svg.appendChild(n); return n; };
-    mk("rect", { x: L, y: T, width: S, height: S, fill: "#0b0f15", stroke: "#1f2834" });
-    [-20, -10, 0, 10, 20].forEach(t => {
-      const strong = t === 0;
-      mk("line", { x1: sx(t), x2: sx(t), y1: T, y2: T + S, stroke: strong ? "#3a4a5e" : "#1a2230", "stroke-width": strong ? 1.2 : 1 });
-      mk("line", { x1: L, x2: L + S, y1: sy(t), y2: sy(t), stroke: strong ? "#3a4a5e" : "#1a2230", "stroke-width": strong ? 1.2 : 1 });
-      mk("text", { x: sx(t), y: T + S + 16, "text-anchor": "middle", "font-size": 11, fill: "#9aa7b8" }, t);
-      mk("text", { x: L - 8, y: sy(t) + 4, "text-anchor": "end", "font-size": 11, fill: "#9aa7b8" }, t);
-    });
-    mk("text", { x: L + S / 2, y: T + S + 34, "text-anchor": "middle", "font-size": 11.5, fill: "#c9d2de" }, "Horizontal break (in)");
-    mk("text", { x: 12, y: T + S / 2, "text-anchor": "middle", "font-size": 11.5, fill: "#c9d2de", transform: `rotate(-90 12 ${T + S / 2})` }, "Induced vertical break (in)");
-    // seeded scatter around each pitch's average
-    let seed = 323;
-    const rnd = () => { seed = (seed * 16807) % 2147483647; return seed / 2147483647; };
-    const gauss = () => { let u = 0; for (let i = 0; i < 6; i++) u += rnd(); return (u - 3) / 1.2; };
-    PITCHES.forEach(p => {
-      for (let i = 0; i < 14; i++) {
-        mk("circle", { cx: sx(p.hb + gauss() * 1.6), cy: sy(p.ivb + gauss() * 1.6), r: 3.6, fill: p.color, "fill-opacity": 0.45 });
-      }
-      mk("circle", { cx: sx(p.hb), cy: sy(p.ivb), r: 7, fill: p.color, stroke: "#07080b", "stroke-width": 2 });
-    });
-    const tb = $("#movement-table tbody");
-    tb.innerHTML = PITCHES.map(p => `<tr><td><span class="swatch" style="background:${p.color}"></span>${p.name}</td><td>${p.velo.toFixed(1)}</td><td>${p.spin.toLocaleString()}</td><td>${p.ivb.toFixed(1)}</td><td>${p.hb.toFixed(1)}</td></tr>`).join("");
-  })();
+  // Newsletter: only says "subscribed" when an endpoint actually accepted it
+  const nl = $("#newsletter-form"), nlMsg = $("#nl-msg");
+  nl.addEventListener("submit", async e => {
+    e.preventDefault();
+    const email = $("#nl-email");
+    if (!email.checkValidity()) { nlMsg.textContent = "Enter a valid email address."; email.focus(); return; }
+    if (!CONFIG.newsletterEndpoint) { nlMsg.textContent = "Sign-ups open soon. Follow on Instagram for now."; return; }
+    try {
+      const res = await fetch(CONFIG.newsletterEndpoint, { method: "POST", headers: { "Content-Type": "application/json", "Accept": "application/json" }, body: JSON.stringify({ email: email.value }) });
+      nlMsg.textContent = res.ok ? "You're in." : "That didn't go through. Try again.";
+      if (res.ok) nl.reset();
+    } catch (_) { nlMsg.textContent = "That didn't go through. Check your connection and try again."; }
+  });
 
   // ---------- Multi-step application ----------
   const form = $("#apply-form");
