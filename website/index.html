@@ -40,6 +40,7 @@
 
 *, *::before, *::after { box-sizing: border-box; }
 [hidden] { display: none !important; }
+[id] { scroll-margin-top: 80px; }   /* keep headings clear of the sticky nav */
 html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
 @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } * { transition: none !important; } }
 body {
@@ -114,7 +115,7 @@ p { margin: 0; }
 /* Pillars */
 .pillars { list-style: none; margin: 0; padding: 0; display: grid; gap: calc(var(--space) * 4); }
 @media (min-width: 768px) { .pillars { grid-template-columns: repeat(3, 1fr); gap: calc(var(--space) * 5); } }
-.pillar { border-top: 2px solid var(--ink); padding-top: calc(var(--space) * 2.5); display: grid; gap: var(--space); align-content: start; scroll-margin-top: 96px; }
+.pillar { border-top: 2px solid var(--ink); padding-top: calc(var(--space) * 2.5); display: grid; gap: var(--space); align-content: start; }
 .pillar h3 { font-size: 1.75rem; }
 .pillar p { color: var(--muted); max-width: 22rem; }
 
