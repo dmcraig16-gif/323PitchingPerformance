@@ -38,6 +38,7 @@
   --step-2: 1.5rem;
   --step-3: clamp(1.75rem, 1.2rem + 2.4vw, 2.5rem);
   --step-4: clamp(2.25rem, 1.4rem + 3.8vw, 3.5rem);
+  --seam: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='10'%3E%3Cpath d='M3 1.5 L9 5 L3 8.5' fill='none' stroke='%23e92428' stroke-width='1.8' stroke-linecap='round'/%3E%3C/svg%3E");
   --radius: 14px;
   --wrap: 1120px;
   color-scheme: dark;
@@ -124,34 +125,52 @@ p { margin: 0; }
 .topbar .btn { min-height: 42px; padding: 0 18px; font-size: 0.8rem; }
 @media (min-width: 900px) { .nav { display: flex; } }
 
-/* Hero */
-.hero { position: relative; overflow: hidden; padding-block: clamp(32px, 6vw, 72px) clamp(48px, 7vw, 88px); }
+/* Hero: the verse is the headline; a giant outlined 3:23 sits behind it */
+.hero { position: relative; overflow: hidden; padding-block: clamp(36px, 6vw, 80px) 0; isolation: isolate; }
+.hero-watermark {
+  position: absolute; z-index: -1; right: -4vw; top: 50%; transform: translateY(-58%);
+  font-family: var(--font-display); font-weight: 900; font-style: italic; line-height: 0.8;
+  font-size: clamp(14rem, 42vw, 40rem); letter-spacing: -0.04em;
+  color: transparent; -webkit-text-stroke: 1.5px rgba(135, 189, 240, 0.10);
+  pointer-events: none; user-select: none; white-space: nowrap;
+}
 .hero::after {
-  content: ""; position: absolute; inset: auto -10% -40% -10%; height: 70%;
-  background: radial-gradient(60% 60% at 50% 100%, rgba(2,118,225,0.22), transparent 70%);
+  content: ""; position: absolute; z-index: -1; inset: auto -10% 0 -10%; height: 70%;
+  background: radial-gradient(55% 60% at 50% 100%, rgba(2,118,225,0.28), transparent 70%);
   pointer-events: none;
 }
-.hero .wrap { position: relative; z-index: 1; display: grid; gap: clamp(28px, 4vw, 56px); align-items: center; }
-@media (min-width: 900px) { .hero .wrap { grid-template-columns: 1.05fr 0.95fr; } }
-.hero-logo { width: min(100%, 440px); margin-inline: auto; }
-@media (min-width: 900px) { .hero-logo { order: 2; } }
-.hero-copy { display: grid; gap: 20px; }
+.hero .wrap { display: grid; gap: clamp(28px, 4vw, 56px); align-items: center; padding-bottom: clamp(40px, 6vw, 72px); }
+@media (min-width: 960px) { .hero .wrap { grid-template-columns: 1.15fr 0.85fr; } }
+.hero-logo { width: min(78%, 420px); margin-inline: auto; }
+@media (min-width: 960px) { .hero-logo { order: 2; width: min(100%, 420px); } }
+.hero-copy { display: grid; gap: 22px; }
+.hero-ref { font-family: var(--font-display); font-weight: 700; font-size: var(--step--1); letter-spacing: 0.32em; text-transform: uppercase; color: var(--red); display: flex; align-items: center; gap: 12px; }
+.hero-ref::after { content: ""; flex: 0 1 120px; height: 10px; background: var(--seam) left center / 14px 10px repeat-x; }
 .hero h1 {
-  font-size: clamp(2.4rem, 1.4rem + 5vw, 4.4rem);
-  font-weight: 900; text-transform: uppercase; letter-spacing: -0.005em; line-height: 0.98;
+  font-size: clamp(2.35rem, 1.2rem + 4.6vw, 4.6rem);
+  font-weight: 900; font-style: italic; text-transform: uppercase; letter-spacing: -0.01em; line-height: 0.95;
 }
-.hero h1 em { font-style: italic; color: var(--blue); }
+.hero h1 span { display: block; }
+.hero h1 .lord { color: var(--blue); }
+.hero h1 .men { color: transparent; -webkit-text-stroke: 1.5px var(--ice); }
 .hero-sub { font-size: var(--step-1); color: #c9d2de; max-width: 34rem; }
+.hero-sub b { color: var(--white); font-weight: 600; }
 .hero-ctas { display: flex; flex-wrap: wrap; gap: 12px; }
-.verse {
-  display: grid; gap: 4px; margin-top: 6px; padding-left: 16px; border-left: 2px solid var(--red);
-  max-width: 32rem;
-}
-.verse q { font-style: italic; color: #d8dee7; quotes: "\201C" "\201D"; }
-.verse cite { font-style: normal; font-family: var(--font-display); font-weight: 600; font-size: var(--step--1); letter-spacing: 0.2em; text-transform: uppercase; color: var(--red); }
+.ridge { display: block; width: 100%; height: clamp(48px, 7vw, 96px); margin-bottom: -1px; }
+
+/* Marquee in brand blue */
+.marquee { background: var(--blue); color: #fff; overflow: hidden; border-block: 1px solid rgba(255,255,255,0.15); }
+.marquee-track { display: flex; width: max-content; animation: marquee 38s linear infinite; }
+.marquee-track span { flex: none; display: inline-flex; align-items: center; gap: 22px; padding: 14px 11px; font-family: var(--font-display); font-weight: 800; font-style: italic; font-size: 1.05rem; letter-spacing: 0.16em; text-transform: uppercase; white-space: nowrap; }
+.marquee-track span::after { content: ""; width: 7px; height: 7px; background: var(--ink); transform: rotate(45deg); }
+.marquee-track span.ref { color: var(--ink); }
+@keyframes marquee { to { transform: translateX(-50%); } }
+
+/* Baseball-seam stitch divider */
+.seam-rule { height: 12px; background: var(--seam) left center / 14px 10px repeat-x; opacity: 0.9; }
 
 /* Quick links (Instagram link-in-bio) */
-.quick { padding-block: 0 clamp(48px, 6vw, 72px); }
+.quick { padding-block: clamp(36px, 5vw, 56px) clamp(48px, 6vw, 72px); }
 .quick-grid { display: grid; gap: 10px; }
 @media (min-width: 640px) { .quick-grid { grid-template-columns: 1fr 1fr; } }
 @media (min-width: 1000px) { .quick-grid { grid-template-columns: repeat(3, 1fr); } }
@@ -175,14 +194,35 @@ p { margin: 0; }
 .quick .q-arrow { color: var(--muted); flex: none; }
 .quick a.is-primary .q-arrow { color: #fff; }
 
-/* Pillars */
-.pillars { display: grid; gap: 1px; background: var(--line); border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; }
-@media (min-width: 640px) { .pillars { grid-template-columns: 1fr 1fr; } }
-@media (min-width: 1000px) { .pillars { grid-template-columns: repeat(4, 1fr); } }
-.pillar { background: var(--ink-2); padding: 26px 22px; display: grid; gap: 10px; align-content: start; }
-.pillar h3 { font-size: var(--step-1); font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase; }
-.pillar h3 span { color: var(--blue); }
-.pillar p { color: var(--muted); }
+/* The Standard: Colossians 3:23 phrase by phrase */
+.standard { position: relative; overflow: hidden; }
+.verse-lines { list-style: none; margin: 0; padding: 0; display: grid; }
+.verse-line { display: grid; gap: 10px 40px; padding-block: clamp(22px, 3vw, 34px); border-top: 1px solid var(--line); align-items: baseline; }
+.verse-line:last-child { border-bottom: 1px solid var(--line); }
+@media (min-width: 900px) { .verse-line { grid-template-columns: 1.25fr 0.75fr; } }
+.vl-phrase { font-family: var(--font-display); font-weight: 900; font-style: italic; text-transform: uppercase; line-height: 0.95; letter-spacing: -0.01em; font-size: clamp(2.3rem, 1rem + 5.4vw, 5.4rem); }
+.verse-line:nth-child(3) .vl-phrase { color: var(--blue); }
+.verse-line:nth-child(4) .vl-phrase { color: transparent; -webkit-text-stroke: 1.5px var(--ice); }
+.vl-pillar { display: grid; gap: 6px; max-width: 30rem; }
+.vl-pillar h3 { font-size: var(--step--1); font-weight: 700; letter-spacing: 0.24em; text-transform: uppercase; color: var(--ice); display: flex; gap: 10px; align-items: center; }
+.vl-pillar h3::before { content: ""; width: 18px; height: 2px; background: var(--red); }
+.vl-pillar p { color: var(--muted); }
+.verse-cite { margin-top: 22px; display: flex; flex-wrap: wrap; justify-content: space-between; gap: 10px; font-family: var(--font-display); font-weight: 700; letter-spacing: 0.28em; text-transform: uppercase; font-size: var(--step--1); color: var(--red); }
+.verse-cite span:last-child { color: var(--muted); letter-spacing: 0.12em; }
+
+/* Full-bleed blue call to action */
+.cta-band { background: var(--blue); color: #fff; position: relative; overflow: hidden; isolation: isolate; }
+.cta-band .wrap { padding-block: clamp(56px, 8vw, 104px); display: grid; gap: 22px; justify-items: start; }
+.cta-band::before {
+  content: "3:23"; position: absolute; z-index: -1; right: -2vw; bottom: -0.18em;
+  font-family: var(--font-display); font-weight: 900; font-style: italic; line-height: 1; font-size: clamp(10rem, 30vw, 26rem);
+  color: transparent; -webkit-text-stroke: 2px rgba(255,255,255,0.18); pointer-events: none;
+}
+.cta-band h2 { font-size: clamp(2.4rem, 1.2rem + 5vw, 5rem); font-weight: 900; font-style: italic; text-transform: uppercase; line-height: 0.95; max-width: 14ch; }
+.cta-band p { font-size: var(--step-1); max-width: 34rem; color: rgba(255,255,255,0.88); }
+.cta-band .kicker { font-family: var(--font-display); font-weight: 700; letter-spacing: 0.3em; text-transform: uppercase; font-size: var(--step--1); color: var(--ink); }
+.btn--light { --bg: #fff; color: var(--ink); }
+.btn--light:hover { --bg: var(--ink); color: #fff; }
 
 /* Programs */
 .programs { display: grid; gap: 18px; }
@@ -346,7 +386,11 @@ input:focus, select:focus, textarea:focus { outline: none; border-color: var(--b
 .done p { color: #c9d2de; max-width: 30rem; }
 
 /* Footer */
-footer { border-top: 1px solid var(--line); padding-block: 48px calc(32px + env(safe-area-inset-bottom, 0px)); }
+footer { position: relative; padding-block: 0 calc(32px + env(safe-area-inset-bottom, 0px)); background: linear-gradient(var(--ink), #050d18); }
+.waves { display: block; width: 100%; height: clamp(44px, 6vw, 84px); margin-bottom: clamp(36px, 5vw, 56px); }
+.foot-verse { font-family: var(--font-display); font-weight: 800; font-style: italic; text-transform: uppercase; font-size: clamp(1.4rem, 0.9rem + 2.2vw, 2.5rem); line-height: 1.05; max-width: 24ch; margin-bottom: 40px; text-wrap: balance; }
+.foot-verse span { color: var(--blue); }
+.foot-verse cite { display: block; margin-top: 14px; font-style: normal; font-weight: 700; font-size: var(--step--1); letter-spacing: 0.3em; color: var(--red); }
 .foot { display: grid; gap: 28px; }
 @media (min-width: 800px) { .foot { grid-template-columns: 1fr auto; align-items: end; } }
 .foot img { width: 220px; }
@@ -379,6 +423,7 @@ footer { border-top: 1px solid var(--line); padding-block: 48px calc(32px + env(
       <span><b>3:23</b> Pitching</span>
     </a>
     <nav class="nav" aria-label="Main">
+      <a href="#standard">3:23</a>
       <a href="#programs">Programs</a>
       <a href="#inside">Inside</a>
       <a href="#coach">Coach</a>
@@ -390,27 +435,35 @@ footer { border-top: 1px solid var(--line); padding-block: 48px calc(32px + env(
 
 <main id="top">
 
-  <!-- HERO -->
+  <!-- HERO: the verse is the headline -->
   <section class="hero">
+    <div class="hero-watermark" aria-hidden="true">3:23</div>
     <div class="wrap">
       <img class="hero-logo" src="assets/logo-primary.png" alt="3:23 Pitching Performance logo: a pitcher on a mountain ridge above ocean waves, with Colossians 3:23" width="425" height="415">
       <div class="hero-copy">
-        <span class="eyebrow">Pitching development &middot; Mental game &middot; Faith</span>
-        <h1>Build the arm.<br>Train the mind.<br><em>Honor the King.</em></h1>
-        <p class="hero-sub">In-person training, remote mentorship and mental game coaching for pitchers who want to get better and compete with purpose.</p>
+        <span class="hero-ref">Colossians 3:23</span>
+        <h1><span>Whatever you do,</span> <span>work heartily,</span> <span class="lord">as for the Lord</span> <span class="men">and not for men.</span></h1>
+        <p class="hero-sub"><b>3:23 Pitching Performance</b> develops elite pitchers through in-person training, remote mentorship and mental game coaching. We train the arm and the mind, and we do it for the King.</p>
         <div class="hero-ctas">
           <a class="btn" href="#apply">Apply for training
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
           </a>
           <a class="btn btn--ghost" href="#programs">See programs</a>
         </div>
-        <blockquote class="verse">
-          <q>Whatever you do, work heartily, as for the Lord and not for men.</q>
-          <cite>Colossians 3:23</cite>
-        </blockquote>
       </div>
     </div>
+    <svg class="ridge" viewBox="0 0 1440 100" preserveAspectRatio="none" aria-hidden="true">
+      <polygon fill="#87bdf0" fill-opacity="0.18" points="0,100 0,70 140,38 230,62 360,12 470,54 560,30 690,66 800,22 930,58 1040,8 1150,50 1260,28 1360,60 1440,40 1440,100"/>
+      <polygon fill="#0276e1" points="0,100 0,82 120,60 250,84 380,44 500,78 640,52 760,86 900,48 1010,76 1120,40 1240,74 1340,56 1440,72 1440,100"/>
+    </svg>
   </section>
+
+  <div class="marquee" aria-hidden="true">
+    <div class="marquee-track">
+      <span>Remote mentorship</span><span>Mental game</span><span>Faith driven</span><span>Purpose focused</span><span class="ref">Colossians 3:23</span><span>Developing elite pitchers</span><span>Honoring the King</span><span class="ref">Colossians 3:23</span>
+      <span>Remote mentorship</span><span>Mental game</span><span>Faith driven</span><span>Purpose focused</span><span class="ref">Colossians 3:23</span><span>Developing elite pitchers</span><span>Honoring the King</span><span class="ref">Colossians 3:23</span>
+    </div>
+  </div>
 
   <!-- QUICK LINKS: the Instagram link-in-bio menu -->
   <section class="quick" aria-labelledby="quick-title">
@@ -451,31 +504,33 @@ footer { border-top: 1px solid var(--line); padding-block: 48px calc(32px + env(
     </div>
   </section>
 
-  <!-- PILLARS -->
-  <section class="band band--raised" aria-labelledby="pillars-title">
+  <!-- THE STANDARD: Colossians 3:23 phrase by phrase, each tied to a pillar -->
+  <section class="band band--raised standard" id="standard" aria-labelledby="standard-title">
     <div class="wrap">
       <div class="section-head">
-        <span class="eyebrow">What we stand on</span>
-        <h2 id="pillars-title">Developing elite pitchers. Honoring the King.</h2>
+        <span class="eyebrow">Our name is our standard</span>
+        <h2 id="standard-title">One verse. Four ways we compete.</h2>
+        <p>The 3:23 in our name comes from Colossians 3:23. Every part of how we coach traces back to a phrase of it.</p>
       </div>
-      <div class="pillars">
-        <div class="pillar">
-          <h3><span>/</span> Remote mentorship</h3>
-          <p>Elite coaching shouldn't depend on your zip code. Your plan, your video and your data, reviewed by a coach who knows your name.</p>
-        </div>
-        <div class="pillar">
-          <h3><span>/</span> Mental game</h3>
-          <p>Velocity gets you noticed. Composure on the mound keeps you there. We train routines, focus and response to failure like any other skill.</p>
-        </div>
-        <div class="pillar">
-          <h3><span>/</span> Faith driven</h3>
-          <p>Your worth isn't your ERA. We compete hard because the work itself is an act of worship, not because the scoreboard defines us.</p>
-        </div>
-        <div class="pillar">
-          <h3><span>/</span> Purpose focused</h3>
-          <p>Every throw, lift and journal entry ties back to a clear goal. No random drills. You'll always know why you're doing what you're doing.</p>
-        </div>
-      </div>
+      <ol class="verse-lines">
+        <li class="verse-line">
+          <span class="vl-phrase">Whatever you do,</span>
+          <div class="vl-pillar"><h3>Purpose focused</h3><p>Bullpens, lifts, recovery, schoolwork. No rep is throwaway. Every drill ties back to a clear goal, and you'll always know why you're doing it.</p></div>
+        </li>
+        <li class="verse-line">
+          <span class="vl-phrase">work heartily,</span>
+          <div class="vl-pillar"><h3>Remote mentorship</h3><p>Full effort, every day, wherever you live. Your plan, your video and your data, reviewed by a coach who knows your name.</p></div>
+        </li>
+        <li class="verse-line">
+          <span class="vl-phrase">as for the Lord</span>
+          <div class="vl-pillar"><h3>Faith driven</h3><p>The work itself is worship. We compete hard because of who we play for, and your worth was settled before you threw a pitch.</p></div>
+        </li>
+        <li class="verse-line">
+          <span class="vl-phrase">and not for men.</span>
+          <div class="vl-pillar"><h3>Mental game</h3><p>Not for the radar gun, the scouts or the box score. Pitchers who stop performing for approval are free to compete. We train that like any other skill.</p></div>
+        </li>
+      </ol>
+      <p class="verse-cite"><span>Colossians 3:23</span><span>Developing elite pitchers. Honoring the King.</span></p>
     </div>
   </section>
 
@@ -631,6 +686,18 @@ footer { border-top: 1px solid var(--line); padding-block: 48px calc(32px + env(
           </ul>
         </div>
       </div>
+    </div>
+  </section>
+
+  <!-- BLUE CALL TO ACTION -->
+  <section class="cta-band" aria-labelledby="cta-title">
+    <div class="wrap">
+      <span class="kicker">Whatever you do</span>
+      <h2 id="cta-title">Work heartily. Start here.</h2>
+      <p>In-person, remote or mental game. Apply in five minutes, then book your intro call.</p>
+      <a class="btn btn--light" href="#apply">Apply for training
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+      </a>
     </div>
   </section>
 
@@ -836,7 +903,9 @@ footer { border-top: 1px solid var(--line); padding-block: 48px calc(32px + env(
 </main>
 
 <footer>
+  <svg class="waves" id="waves" viewBox="0 0 1440 90" preserveAspectRatio="none" aria-hidden="true"></svg>
   <div class="wrap">
+    <p class="foot-verse">&ldquo;Whatever you do, work heartily, <span>as for the Lord</span> and not for men.&rdquo; <cite>Colossians 3:23</cite></p>
     <div class="foot">
       <div>
         <img src="assets/logo-wordmark.png" alt="3:23 Pitching Performance" width="385" height="200">
@@ -910,6 +979,22 @@ const CONFIG = {
     new IntersectionObserver(([e]) => { heroOut = !e.isIntersecting; sync(); }).observe(hero);
     new IntersectionObserver(([e]) => { applyIn = e.isIntersecting; sync(); }, { threshold: 0.05 }).observe(apply);
   }
+
+  // Footer waves (layered sine curves in brand blues)
+  (function drawWaves() {
+    const svg = $("#waves"); if (!svg) return;
+    const W = 1440, H = 90;
+    const layers = [
+      { amp: 10, len: 360, y: 34, phase: 0,   fill: "#87bdf0", op: 0.22 },
+      { amp: 12, len: 280, y: 50, phase: 1.3, fill: "#0276e1", op: 0.55 },
+      { amp: 8,  len: 220, y: 66, phase: 2.4, fill: "#0276e1", op: 1 }
+    ];
+    svg.innerHTML = layers.map(l => {
+      let d = `M0 ${H} L0 ${l.y}`;
+      for (let x = 0; x <= W; x += 12) d += ` L${x} ${(l.y + Math.sin(x / l.len * Math.PI * 2 + l.phase) * l.amp).toFixed(1)}`;
+      return `<path d="${d} L${W} ${H} Z" fill="${l.fill}" fill-opacity="${l.op}"/>`;
+    }).join("");
+  })();
 
   // ---------- Example movement chart (sample data, clearly labeled) ----------
   const PITCHES = [
