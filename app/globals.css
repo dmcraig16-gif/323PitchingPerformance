@@ -1,0 +1,18 @@
+@import 'tailwindcss';
+
+@theme {
+  --color-brand-black: #000000;
+  --color-brand-blue: #0289eb;
+  --color-brand-red: #ff0707;
+  --color-brand-white: #ffffff;
+  --color-brand-input: #e6f3fd;
+
+  --font-heading: var(--font-heading-family), sans-serif;
+  --font-body: var(--font-body-family), sans-serif;
+}
+
+body {
+  background: var(--color-brand-white);
+  color: var(--color-brand-black);
+  font-family: var(--font-body);
+}
