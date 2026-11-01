@@ -74,6 +74,7 @@ async function loadDebugData() {
           slot: ex.slot,
           name: ex.name,
           cue: ex.cue,
+          demo: ex.demo,
           plan: parsePlan(ex.plansByWeek[week]),
           log: ex.logsByWeek[week] ?? '',
           notes: ex.notes,

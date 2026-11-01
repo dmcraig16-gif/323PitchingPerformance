@@ -13,6 +13,7 @@ export interface ExerciseRow {
   slot: string
   name: string
   cue: string
+  demo: string
   plansByWeek: Record<number, string>
   logsByWeek: Record<number, string>
   notes: string
@@ -59,6 +60,7 @@ export function parseBlockTab(grid: unknown[][]): ParsedBlockTab {
 
     const weekColumns: WeekColumn[] = []
     let notesCol = -1
+    let demoCol = -1
     for (let c = 3; c < headerRow.length; c++) {
       const label = String(headerRow[c] ?? '')
       const wkMatch = label.match(WEEK_COL_RE)
@@ -67,6 +69,8 @@ export function parseBlockTab(grid: unknown[][]): ParsedBlockTab {
         weekColumns.push({ week: Number(wkMatch[1]), type, colIndex: c })
       } else if (/notes/i.test(label)) {
         notesCol = c
+      } else if (/^demo$/i.test(label.trim())) {
+        demoCol = c
       }
     }
     if (notesCol === -1 && headerRow.length > 3) notesCol = headerRow.length - 1
@@ -90,6 +94,7 @@ export function parseBlockTab(grid: unknown[][]): ParsedBlockTab {
         slot: String(row?.[0] ?? '').trim(),
         name,
         cue: String(row?.[2] ?? '').trim(),
+        demo: demoCol >= 0 ? String(row?.[demoCol] ?? '').trim() : '',
         plansByWeek,
         logsByWeek,
         notes: notesCol >= 0 ? String(row?.[notesCol] ?? '').trim() : '',
