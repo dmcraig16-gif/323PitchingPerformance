@@ -24,12 +24,12 @@ The testimonials section is in the page but hidden (`id="proof-quotes"`, `hidden
 
 ## Photos
 
-Hero: `assets/photos/mound-night-*`. Story section: `assets/photos/delivery-cmu-*` (shown in black and white by CSS, lazy-loaded). Each comes in WebP and JPEG at 800px and 1600px. `prayer-mound-*` is ready but unused.
+Hero: `assets/photos/mound-night-*`. Why 323 exists: `assets/photos/prayer-mound-*` (black and white via CSS, lazy-loaded). Each comes in WebP and JPEG at 800px and 1600px. `delivery-cmu-*` is ready but unused.
 
 ## Instagram
 
 - Bio link: `https://yoursite.com/?utm_source=instagram&utm_medium=bio`
-- Story links can deep-link to a section: `/#how` (program vs mentor), `/#mission` (story), `/#programs` (what you get) or `/#apply` (opens the application). Older links (`/#proof`, `/#program-remote`, `/#program-inperson`, `/#program-mental`, `/#coach`, `/#standard`, `/#inside`, `/#faq`) still resolve.
+- Story links can deep-link to a section: `/#what` (what 323 is), `/#mission` (why 323 exists), `/#how` (how it works) or `/#apply` (opens the application). Older links (`/#proof`, `/#programs`, `/#program-remote`, `/#program-inperson`, `/#program-mental`, `/#coach`, `/#standard`, `/#inside`, `/#faq`) still resolve.
 
 The UTM tags are saved with each application, so you can see which links bring in athletes.
 

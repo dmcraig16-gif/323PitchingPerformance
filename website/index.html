@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>3:23 Pitching Performance</title>
 <meta name="claude:viewport-fit-sides" content="cover">
-<meta name="description" content="Programs train arms. Mentors build pitchers. One-on-one pitching mentorship from a pro pitcher who was cut, overlooked and built his way to 97 mph. Colossians 3:23.">
+<meta name="description" content="Programs train arms. Mentors build pitchers. 323 is one-on-one pitching mentorship for the whole athlete: throwing, movement, mental game and life in the game. Colossians 3:23.">
 <meta name="theme-color" content="#000000">
 <meta property="og:title" content="3:23 Pitching Performance">
 <meta property="og:description" content="Programs train arms. Mentors build pitchers. Apply for mentorship.">
@@ -125,7 +125,7 @@ p { margin: 0; }
   .hero .wrap { margin-top: 0; display: flex; align-items: center; padding-block: calc(var(--space) * 12); }
 }
 
-/* Credibility strip */
+/* Whole-athlete strip */
 .facts { border-block: 1px solid var(--line); }
 .facts ul { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: 1fr 1fr; }
 @media (min-width: 768px) { .facts ul { grid-template-columns: repeat(4, 1fr); } }
@@ -154,24 +154,31 @@ p { margin: 0; }
 .side--mentor .label { color: var(--blue); }
 .side--mentor li { font-weight: 500; }
 
-/* Story */
-.story { display: grid; gap: calc(var(--space) * 5); align-items: start; }
-@media (min-width: 900px) { .story { grid-template-columns: 0.8fr 1.2fr; gap: calc(var(--space) * 8); } }
-.story-photo { margin: 0; aspect-ratio: 4 / 5; max-width: 100%; overflow: hidden; border-radius: var(--radius); background: var(--raised); }
-.story-photo img { width: 100%; height: 100%; object-fit: cover; object-position: 38% 40%; filter: grayscale(1) contrast(1.08) brightness(0.9); }
-@media (max-width: 899px) { .story-photo { order: 2; aspect-ratio: 4 / 3; } }
-.story-copy { display: grid; gap: calc(var(--space) * 2.5); max-width: var(--text); }
-.story-copy .section-title { margin-bottom: var(--space); }
-.story-copy p { color: var(--bone); }
-.story-copy p + p { color: var(--bone); }
-.pull { margin: calc(var(--space) * 2) 0 0; padding-top: calc(var(--space) * 3); border-top: 1px solid var(--line); font-family: var(--font-script); font-style: italic; font-weight: 500; font-size: clamp(2.2rem, 1.5rem + 3vw, 3.5rem); line-height: 1.05; color: var(--bone); }
+/* Why 323 exists */
+.why { display: grid; gap: calc(var(--space) * 5); align-items: start; }
+@media (min-width: 900px) { .why { grid-template-columns: 1.2fr 0.8fr; gap: calc(var(--space) * 8); } }
+.why-copy { display: grid; gap: calc(var(--space) * 2.5); max-width: var(--text); }
+.why-copy .section-title { margin-bottom: var(--space); }
+.why-name { margin-top: calc(var(--space) * 2); padding-top: calc(var(--space) * 3); border-top: 1px solid var(--line); display: grid; gap: var(--space); }
+.why-name .scripture { font-size: 1.25em; font-weight: 600; }
+.pull { margin: calc(var(--space) * 2) 0 0; font-family: var(--font-script); font-style: italic; font-weight: 500; font-size: clamp(2.2rem, 1.5rem + 3vw, 3.5rem); line-height: 1.05; color: var(--bone); }
+.why-photo { margin: 0; display: grid; gap: calc(var(--space) * 1.5); }
+.why-photo .frame { aspect-ratio: 4 / 5; max-width: 100%; overflow: hidden; border-radius: var(--radius); background: var(--raised); }
+.why-photo img { width: 100%; height: 100%; object-fit: cover; object-position: 48% 30%; filter: grayscale(1) contrast(1.08) brightness(0.9); }
+.founder { font-size: 0.92rem; color: var(--steel); max-width: 30rem; }
+@media (max-width: 899px) { .why-photo .frame { aspect-ratio: 4 / 3; } }
 
-/* What you get */
-.gets { list-style: none; margin: 0; padding: 0; display: grid; gap: calc(var(--space) * 4); }
-@media (min-width: 768px) { .gets { grid-template-columns: repeat(3, 1fr); gap: calc(var(--space) * 5); } }
-.get { border-top: 2px solid var(--bone); padding-top: calc(var(--space) * 2.5); display: grid; gap: var(--space); align-content: start; }
-.get h3 { font-size: 2rem; }
-.get p { color: var(--steel); max-width: 22rem; }
+/* How it works */
+.steps { list-style: none; margin: 0; padding: 0; display: grid; counter-reset: step; }
+.step { counter-increment: step; display: grid; grid-template-columns: 3.25rem 1fr; gap: 4px calc(var(--space) * 2); padding-block: calc(var(--space) * 3); border-top: 1px solid var(--line); }
+.step:last-child { border-bottom: 1px solid var(--line); }
+.step::before { content: counter(step, decimal-leading-zero); grid-row: span 2; font-family: var(--font-head); font-size: 2rem; line-height: 1; color: var(--steel); }
+.step h3 { font-size: 1.6rem; }
+.step p { color: var(--steel); max-width: 34rem; }
+@media (min-width: 900px) {
+  .step { grid-template-columns: 5rem 16rem 1fr; align-items: baseline; padding-block: calc(var(--space) * 3.5); }
+  .step::before { grid-row: auto; font-size: 2.4rem; }
+}
 
 /* Proof (hidden until real quotes exist) */
 .quotes { list-style: none; margin: 0; padding: 0; display: grid; gap: calc(var(--space) * 3); }
@@ -272,9 +279,9 @@ input:focus, select:focus, textarea:focus { outline: none; border-color: var(--b
       <span>3:23 Pitching</span>
     </a>
     <nav class="nav-links" aria-label="Main">
-      <a href="#how">Mentorship</a>
-      <a href="#mission">Story</a>
-      <a href="#programs">What you get</a>
+      <a href="#what">What it is</a>
+      <a href="#mission">Why 323</a>
+      <a href="#how">How it works</a>
     </nav>
     <a class="btn" href="#apply">Apply for Mentorship</a>
   </div>
@@ -282,42 +289,42 @@ input:focus, select:focus, textarea:focus { outline: none; border-color: var(--b
 
 <main id="top">
 
-  <!-- 1. HERO -->
+  <!-- 1. HERO: what 323 is, in one line -->
   <section class="hero" aria-labelledby="hero-title">
     <figure class="hero-photo">
       <picture>
         <source type="image/webp" srcset="assets/photos/mound-night-800.webp 800w, assets/photos/mound-night-1600.webp 1600w" sizes="(min-width: 900px) 50vw, 100vw">
-        <img src="assets/photos/mound-night-800.jpg" srcset="assets/photos/mound-night-800.jpg 800w, assets/photos/mound-night-1600.jpg 1600w" sizes="(min-width: 900px) 50vw, 100vw" width="800" height="534" fetchpriority="high" alt="David Craig on the mound during a night game, head down between pitches">
+        <img src="assets/photos/mound-night-800.jpg" srcset="assets/photos/mound-night-800.jpg 800w, assets/photos/mound-night-1600.jpg 1600w" sizes="(min-width: 900px) 50vw, 100vw" width="800" height="534" fetchpriority="high" alt="A pitcher on the mound during a night game, head down between pitches">
       </picture>
     </figure>
     <div class="wrap">
       <div class="hero-copy">
         <h1 id="hero-title">Programs train arms. Mentors build pitchers.</h1>
-        <p class="hero-sub">I was cut and overlooked. Nobody invested in me, so I invest in you.</p>
+        <p class="hero-sub">323 is one-on-one pitching mentorship. One coach. One plan. The whole athlete.</p>
         <a class="btn" href="#apply">Apply for Mentorship</a>
         <p class="hero-verse scripture">&ldquo;Whatever you do, work heartily, as for the Lord and not for men.&rdquo; <cite>Colossians 3:23</cite></p>
       </div>
     </div>
   </section>
 
-  <!-- 2. CREDIBILITY STRIP (old #proof links land here) -->
-  <section class="facts" aria-label="David's background">
+  <!-- 2. WHOLE-ATHLETE STRIP (old #proof links land here) -->
+  <section class="facts" aria-label="What 323 coaches">
     <span id="proof" aria-hidden="true"></span>
     <div class="wrap">
       <ul>
-        <li>Cut from HS team</li>
-        <li>JUCO to D2</li>
-        <li>97 mph</li>
-        <li>Playing pro now</li>
+        <li>Throwing</li>
+        <li>Movement</li>
+        <li>Mental game</li>
+        <li>Life in the game</li>
       </ul>
     </div>
   </section>
 
-  <!-- 3. PROGRAM VS MENTOR (old #inside and #faq links land here) -->
-  <section class="section" id="how" aria-labelledby="how-title">
-    <span id="inside" aria-hidden="true"></span><span id="faq" aria-hidden="true"></span>
+  <!-- 3. WHAT 323 IS (old #inside, #programs and #program-* links land here) -->
+  <section class="section" id="what" aria-labelledby="what-title">
+    <span id="inside" aria-hidden="true"></span><span id="programs" aria-hidden="true"></span><span id="program-remote" aria-hidden="true"></span><span id="program-inperson" aria-hidden="true"></span><span id="program-mental" aria-hidden="true"></span>
     <div class="wrap">
-      <h2 class="section-title" id="how-title">Here's the difference.</h2>
+      <h2 class="section-title" id="what-title">Not a program. A mentor.</h2>
       <div class="versus">
         <div class="side side--program">
           <p class="label">A program</p>
@@ -328,7 +335,7 @@ input:focus, select:focus, textarea:focus { outline: none; border-color: var(--b
           </ul>
         </div>
         <div class="side side--mentor">
-          <p class="label">A mentor</p>
+          <p class="label">323</p>
           <ul>
             <li>A weekly call.</li>
             <li>Daily feedback.</li>
@@ -342,46 +349,45 @@ input:focus, select:focus, textarea:focus { outline: none; border-color: var(--b
     </div>
   </section>
 
-  <!-- 4. WHY I INVEST (old #coach and #standard links land here) -->
+  <!-- 4. WHY 323 EXISTS (old #coach and #standard links land here) -->
   <section class="section" id="mission" aria-labelledby="mission-title">
     <span id="coach" aria-hidden="true"></span><span id="standard" aria-hidden="true"></span>
-    <div class="wrap story">
-      <figure class="story-photo">
-        <picture>
-          <source type="image/webp" srcset="assets/photos/delivery-cmu-800.webp 800w, assets/photos/delivery-cmu-1600.webp 1600w" sizes="(min-width: 900px) 40vw, 100vw">
-          <img src="assets/photos/delivery-cmu-800.jpg" srcset="assets/photos/delivery-cmu-800.jpg 800w, assets/photos/delivery-cmu-1600.jpg 1600w" sizes="(min-width: 900px) 40vw, 100vw" width="800" height="533" loading="lazy" decoding="async" alt="David Craig in a Colorado Mesa baseball shirt, mid-delivery on the mound">
-        </picture>
-      </figure>
-      <div class="story-copy">
-        <h2 class="section-title" id="mission-title">Why I invest</h2>
-        <p>I got cut from my high school team. Overlooked. Nobody was in my corner.</p>
-        <p>So I built it the long way. JUCO. Then Division II at Colorado Mesa. Rep after rep until the gun read 97 and I signed a pro contract. I'm still pitching pro today.</p>
-        <p>I coach because nobody invested in me. The name comes from Colossians 3:23. I work for the Lord, not the radar gun. I'll teach you to do the same.</p>
+    <div class="wrap why">
+      <div class="why-copy">
+        <h2 class="section-title" id="mission-title">Why 323 exists</h2>
+        <p>Most young pitchers get a program. A PDF. A velo plan. An app. Then they're on their own.</p>
+        <p>Nobody watches the video. Nobody asks how school is going. Nobody notices when the confidence goes.</p>
+        <p>323 exists to close that gap. Every athlete gets a coach who invests in the whole person. The arm, the body, the mind and the faith underneath it.</p>
+        <div class="why-name">
+          <p class="label">The name</p>
+          <p>323 comes from <span class="scripture">Colossians 3:23</span>. That verse is the standard for every rep and every athlete. We work for the Lord, not the radar gun.</p>
+        </div>
         <blockquote class="pull">&ldquo;Freedom is the real swag.&rdquo;</blockquote>
-        <div class="section-cta" style="margin-top: var(--space)"><a class="btn" href="#apply">Apply for Mentorship</a></div>
       </div>
+      <figure class="why-photo">
+        <div class="frame">
+          <picture>
+            <source type="image/webp" srcset="assets/photos/prayer-mound-800.webp 800w, assets/photos/prayer-mound-1600.webp 1600w" sizes="(min-width: 900px) 35vw, 100vw">
+            <img src="assets/photos/prayer-mound-800.jpg" srcset="assets/photos/prayer-mound-800.jpg 800w, assets/photos/prayer-mound-1600.jpg 1600w" sizes="(min-width: 900px) 35vw, 100vw" width="800" height="640" loading="lazy" decoding="async" alt="A pitcher standing on the mound with his cap off and head bowed, glove held to his chest">
+          </picture>
+        </div>
+        <figcaption class="founder">Founded by David Craig, a pro pitcher who was cut, overlooked and built his way to 97 mph. He coaches because nobody invested in him.</figcaption>
+      </figure>
     </div>
   </section>
 
-  <!-- 5. WHAT YOU GET (old #programs and #program-* links land here) -->
-  <section class="section" id="programs" aria-labelledby="programs-title">
-    <span id="program-remote" aria-hidden="true"></span><span id="program-inperson" aria-hidden="true"></span><span id="program-mental" aria-hidden="true"></span>
+  <!-- 5. HOW IT WORKS (old #faq links land here) -->
+  <section class="section" id="how" aria-labelledby="how-title">
+    <span id="faq" aria-hidden="true"></span>
     <div class="wrap">
-      <h2 class="section-title" id="programs-title">What you get</h2>
-      <ul class="gets">
-        <li class="get">
-          <h3>Throwing</h3>
-          <p>Velocity, command and movement in one plan. Built for your body. Adjusted every week.</p>
-        </li>
-        <li class="get">
-          <h3>Mind</h3>
-          <p>A routine for pressure. A reset after the bad inning. You learn to compete.</p>
-        </li>
-        <li class="get">
-          <h3>Identity</h3>
-          <p>Your worth isn't your ERA. You play from who God says you are.</p>
-        </li>
-      </ul>
+      <h2 class="section-title" id="how-title">How it works</h2>
+      <ol class="steps">
+        <li class="step"><h3>Apply</h3><p>Five minutes. Tell us where you are and where you want to go.</p></li>
+        <li class="step"><h3>Intro call</h3><p>Athlete, parents and coach. We make sure it's a fit both ways.</p></li>
+        <li class="step"><h3>Evaluation</h3><p>You send video. We break down your delivery, your movement and how you compete.</p></li>
+        <li class="step"><h3>Your plan</h3><p>One plan for throwing, movement and mental game, built around your season.</p></li>
+        <li class="step"><h3>Every week</h3><p>A call, feedback on your work and a text after every outing. Parents stay in the loop.</p></li>
+      </ol>
       <div class="section-cta"><a class="btn" href="#apply">Apply for Mentorship</a></div>
     </div>
   </section>
@@ -556,9 +562,9 @@ input:focus, select:focus, textarea:focus { outline: none; border-color: var(--b
     <div>
       <p class="f-label">[ ABOUT ]</p>
       <ul class="f-links">
-        <li><a href="#how">Mentorship</a></li>
-        <li><a href="#mission">Story</a></li>
-        <li><a href="#programs">What you get</a></li>
+        <li><a href="#what">What it is</a></li>
+        <li><a href="#mission">Why 323</a></li>
+        <li><a href="#how">How it works</a></li>
       </ul>
     </div>
     <div>
