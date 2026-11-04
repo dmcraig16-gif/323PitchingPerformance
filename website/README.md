@@ -14,7 +14,7 @@ Open `index.html` and edit the `CONFIG` block near the bottom:
 | `coachName` | Your name as it should appear under your photo |
 | `formEndpoint` | A form endpoint that emails you applications, for example a free [Formspree](https://formspree.io) form URL |
 | `newsletterEndpoint` | Where footer newsletter sign-ups go (Mailchimp, ConvertKit, Formspree). Empty means visitors see "Sign-ups open soon" and nothing is sent |
-| `bookingLinks` | Your Calendly, Cal.com or Acuity link for each program. After applying, athletes go to the link for the program they chose |
+| `bookingLinks` | Your Calendly, Cal.com or Acuity link for each program (`Full Pitching Programming`, `Mental Game Mentorship`). After applying, athletes go to the link for the program they chose |
 
 If `formEndpoint` is empty, applications are **not sent anywhere**. If a booking link is empty, the athlete sees "We'll reach out within 48 hours" instead of a booking button.
 
@@ -29,7 +29,7 @@ Hero: `assets/photos/mound-night-*`. Why 323 exists: `assets/photos/prayer-mound
 ## Instagram
 
 - Bio link: `https://yoursite.com/?utm_source=instagram&utm_medium=bio`
-- Story links can deep-link to a section: `/#what` (what 323 is), `/#mission` (why 323 exists), `/#how` (how it works) or `/#apply` (opens the application). Older links (`/#proof`, `/#programs`, `/#program-remote`, `/#program-inperson`, `/#program-mental`, `/#coach`, `/#standard`, `/#inside`, `/#faq`) still resolve.
+- Story links can deep-link to a section: `/#paths` (choose your path), `/#programming` (Full Pitching Programming), `/#mental-game` (Mental Game Mentorship), `/#how` (how it works) or `/#apply` (opens the application). Older links (`/#what`, `/#mission`, `/#proof`, `/#programs`, `/#program-remote`, `/#program-inperson`, `/#program-mental`, `/#coach`, `/#standard`, `/#inside`, `/#faq`) still resolve.
 
 The UTM tags are saved with each application, so you can see which links bring in athletes.
 
