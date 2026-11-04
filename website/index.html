@@ -140,6 +140,9 @@ p { margin: 0; }
 .believe { background: var(--bone); color: var(--black); border-top: 0; }
 .believe .label, .believe .muted { color: rgba(0, 0, 0, 0.62); }
 .believe .key { color: var(--blue-dark); }
+.belief-lead { display: grid; gap: calc(var(--space) * 1.5); padding-block: calc(var(--space) * 4); border-top: 2px solid var(--black); }
+.belief-lead h3 { font-size: clamp(2.75rem, 1.8rem + 4vw, 4.5rem); }
+.belief-lead p:not(.label) { font-size: clamp(1.1rem, 1rem + 0.5vw, 1.3rem); max-width: 40rem; }
 .beliefs { list-style: none; margin: 0; padding: 0; display: grid; border-top: 1px solid var(--line-dark); }
 .beliefs li { display: grid; gap: 4px calc(var(--space) * 4); padding-block: calc(var(--space) * 2.5); border-bottom: 1px solid var(--line-dark); }
 @media (min-width: 768px) { .beliefs li { grid-template-columns: 22rem 1fr; align-items: baseline; } }
@@ -377,12 +380,16 @@ p { margin: 0; }
         <h2 class="section-title" id="believe-title">What we <span class="key">believe</span></h2>
         <p class="section-lead muted">You don't need more talent. You need less noise.</p>
       </div>
+      <div class="belief-lead">
+        <p class="label">Above all</p>
+        <h3>Identity <span class="key">first</span>.</h3>
+        <p>Who the athlete is comes before anything they throw. Their worth is settled by God, not the radar gun or the box score. They compete from that identity, never for it.</p>
+      </div>
       <ul class="beliefs">
-        <li><h3>Excellence is worship.</h3><p>Pursue the craft with everything you have.</p></li>
-        <li><h3>Identity first.</h3><p>You compete from it, never for it.</p></li>
-        <li><h3>Athletes before mechanics.</h3><p>Move well, then throw hard.</p></li>
-        <li><h3>Play like a kid again.</h3><p>Joy is a performance tool.</p></li>
-        <li><h3>Comparison is a thief.</h3><p>Run your own race.</p></li>
+        <li><h3>Childlikeness must be restored.</h3><p>Pressure takes the joy out of the game. We bring it back, because athletes compete best when they play like a kid again.</p></li>
+        <li><h3>Programming is individual.</h3><p>Every athlete gets a plan built for their body, their needs and their season. No templates.</p></li>
+        <li><h3>Progress is not linear.</h3><p>Development has jumps, plateaus and setbacks. We measure over seasons, not single outings, and stay patient with the process.</p></li>
+        <li><h3>Mind, body and spirit.</h3><p>Each one has to be addressed to reach peak performance. We train all three on purpose.</p></li>
       </ul>
       <blockquote class="scripture-block">&ldquo;Whatever you do, work heartily, as for the Lord and not for men.&rdquo;<cite>Colossians 3:23</cite></blockquote>
     </div>

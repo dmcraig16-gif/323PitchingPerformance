@@ -91,11 +91,11 @@ Every page runs through two lines. If it doesn't fit, it doesn't ship.
 
 ## What We Believe
 
-- Excellence is worship. Pursue the craft with everything you have.
-- Identity first. You compete from it, never for it.
-- Athletes before mechanics. Move well, then throw hard.
-- Play like a kid again. Joy is a performance tool.
-- Comparison is a thief. Run your own race.
+- **Identity first. The biggest one.** Who the athlete is comes before anything they throw. They compete from identity, never for it.
+- Childlikeness must be restored. Athletes compete best when they play like a kid again.
+- Programming is individual. Every athlete gets a plan built for their body, needs and season.
+- Progress is not linear. Measure over seasons, not single outings.
+- Mind, body and spirit must each be addressed to reach peak performance.
 
 ## Content Pillars
 
