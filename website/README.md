@@ -1,4 +1,4 @@
-# 3:23 Pitching Performance: website
+# 323 Pitching Performance: website
 
 One page for 323pitchingperformance.com. It explains the Complete Pitching Program and Mental Game Mentorship, and every section ends at the application.
 
