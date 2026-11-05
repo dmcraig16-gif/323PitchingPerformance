@@ -3,14 +3,18 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>3:23 Pitching Performance</title>
+<title>323 Pitching Performance</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <meta name="description" content="Remote, individualized, faith-based development for high school pitchers and their parents. Raise the ceiling. Play up to it. Colossians 3:23.">
 <meta name="theme-color" content="#000000">
-<meta property="og:title" content="3:23 Pitching Performance">
+<meta property="og:title" content="323 Pitching Performance">
 <meta property="og:description" content="Raise the ceiling. Play up to it. Book a discovery call.">
-<meta property="og:image" content="assets/og-image.jpg">
+<meta property="og:image" content="https://323pitchingperformance.com/assets/og-image.jpg">
 <meta property="og:type" content="website">
+<meta property="og:url" content="https://323pitchingperformance.com/">
+<meta property="og:site_name" content="323 Pitching Performance">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="canonical" href="https://323pitchingperformance.com/">
 <link rel="icon" type="image/png" href="assets/favicon.png">
 <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -66,16 +70,26 @@ p { margin: 0; }
 .label { font-size: 0.8rem; font-weight: 600; letter-spacing: 0.16em; text-transform: uppercase; color: var(--steel); }
 .muted { color: var(--steel); }
 
+/* Skip link */
+.skip { position: absolute; left: 16px; top: -100px; z-index: 100; padding: 10px 16px; background: var(--blue); color: var(--black); font-weight: 600; text-decoration: none; border-radius: var(--radius); }
+.skip:focus { top: calc(env(safe-area-inset-top, 0px) + 12px); color: var(--black); }
+
+/* Button with a short note under it */
+.cta-group { display: grid; gap: var(--space); justify-items: start; margin-top: var(--space); }
+.cta-group--center { justify-items: center; margin-top: 0; }
+.cta-note { font-size: 0.88rem; color: var(--steel); }
+
 /* Nav */
 .nav { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 50; background: var(--black); border-bottom: 1px solid var(--line); }
 .nav .wrap { display: flex; align-items: center; justify-content: space-between; gap: calc(var(--space) * 2); min-height: 64px; }
 .logo { display: flex; align-items: center; gap: var(--space); text-decoration: none; color: var(--white); }
 .logo:hover { color: var(--white); }
+.logo:focus-visible { outline: 2px solid var(--blue); outline-offset: 4px; }
 .logo img { width: 32px; height: 32px; }
 .logo span { font-family: var(--font-head); font-size: 1.2rem; letter-spacing: 0.03em; text-transform: uppercase; }
 @media (max-width: 419px) { .logo span { display: none; } }
 .nav-links { display: none; gap: calc(var(--space) * 4); }
-.nav-links a { text-decoration: none; font-weight: 500; font-size: 0.92rem; color: var(--steel); }
+.nav-links a { padding-block: 10px; text-decoration: none; font-weight: 500; font-size: 0.92rem; color: var(--steel); }
 .nav-links a:hover { color: var(--white); }
 .nav .btn { min-height: 40px; padding: 0 calc(var(--space) * 2); font-size: 0.78rem; }
 @media (min-width: 960px) { .nav-links { display: flex; } }
@@ -89,7 +103,6 @@ p { margin: 0; }
 .hero-copy { display: grid; gap: calc(var(--space) * 2.5); justify-items: start; max-width: 40rem; }
 .hero h1 { font-size: clamp(3.1rem, 1.7rem + 6.4vw, 6.5rem); line-height: 0.93; }
 .hero-sub { font-size: clamp(1.1rem, 1rem + 0.5vw, 1.35rem); max-width: 30rem; }
-.hero .btn { margin-top: var(--space); }
 .hero .scripture-block { margin-top: calc(var(--space) * 2); font-size: 1.2rem; max-width: 30rem; }
 @media (min-width: 900px) {
   .hero { min-height: 660px; }
@@ -134,6 +147,11 @@ p { margin: 0; }
 .area li { padding: 4px calc(var(--space) * 1.5); border: 1px solid var(--line); border-radius: var(--radius); font-size: 0.9rem; }
 .principles { list-style: none; margin: 0; padding: 0; display: grid; border-top: 1px solid var(--line); width: 100%; }
 .principles li { padding-block: calc(var(--space) * 1.5); border-bottom: 1px solid var(--line); }
+.nb { white-space: nowrap; }
+.facts-row { margin: 0; display: flex; flex-wrap: wrap; gap: calc(var(--space) * 1.5) calc(var(--space) * 4); }
+.facts-row div { display: grid; gap: 2px; }
+.facts-row dt { font-size: 0.75rem; font-weight: 600; letter-spacing: 0.16em; text-transform: uppercase; color: var(--steel); }
+.facts-row dd { margin: 0; font-weight: 500; }
 .formula { font-family: var(--font-head); text-transform: uppercase; font-size: clamp(1.6rem, 1.2rem + 1.6vw, 2.25rem); line-height: 1.1; letter-spacing: 0.02em; }
 
 /* What we believe: the one light band */
@@ -164,6 +182,19 @@ p { margin: 0; }
 }
 .section-cta { margin-top: calc(var(--space) * 6); }
 
+/* FAQ */
+.faq { display: grid; max-width: 52rem; border-top: 1px solid var(--line); }
+.faq details { border-bottom: 1px solid var(--line); }
+.faq summary {
+  list-style: none; cursor: pointer; display: flex; justify-content: space-between; align-items: center; gap: calc(var(--space) * 2);
+  min-height: 56px; padding-block: calc(var(--space) * 2); font-weight: 600; font-size: 1.05rem;
+}
+.faq summary::-webkit-details-marker { display: none; }
+.faq summary::after { content: "+"; flex: none; font-family: var(--font-head); font-size: 1.6rem; line-height: 1; color: var(--blue); transition: transform .15s; }
+.faq details[open] summary::after { transform: rotate(45deg); }
+.faq summary:hover { color: var(--blue); }
+.faq details p { padding-bottom: calc(var(--space) * 2.5); color: var(--steel); max-width: 44rem; }
+
 /* Closing line */
 .closing { padding-block: calc(var(--section) * 1.2); border-top: 1px solid var(--line); text-align: center; }
 .closing .wrap { display: grid; justify-items: center; gap: calc(var(--space) * 4); }
@@ -175,12 +206,13 @@ p { margin: 0; }
 @media (min-width: 768px) { .site-footer .wrap { grid-template-columns: repeat(3, 1fr); } }
 .f-label { font-weight: 600; font-size: 0.8rem; letter-spacing: 0.14em; color: var(--steel); margin-bottom: calc(var(--space) * 2); white-space: pre; }
 .f-links { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--space); }
-.f-links a { color: var(--white); text-decoration: none; }
+.f-links a { display: inline-block; padding-block: 6px; color: var(--white); text-decoration: none; }
 .f-links a:hover { color: var(--blue); }
 .socials { display: flex; gap: calc(var(--space) * 1.5); align-items: center; }
 .socials a { display: grid; place-items: center; width: 44px; height: 44px; border: 1px solid var(--line); border-radius: var(--radius); color: var(--white); }
 .socials a:hover { border-color: var(--blue); color: var(--blue); }
 .socials svg { width: 20px; height: 20px; }
+.f-copy { grid-column: 1 / -1; padding-top: calc(var(--space) * 3); border-top: 1px solid var(--line); font-size: 0.85rem; color: var(--steel); }
 .community p { color: var(--steel); margin-bottom: calc(var(--space) * 2); max-width: 22rem; }
 .btn--outline { background: transparent; color: var(--white); box-shadow: inset 0 0 0 1px var(--line); }
 .btn--outline:hover { background: transparent; color: var(--blue); box-shadow: inset 0 0 0 1px var(--blue); }
@@ -201,11 +233,12 @@ p { margin: 0; }
 </head>
 <body>
 
+<a class="skip" href="#top">Skip to content</a>
 <header class="nav">
   <div class="wrap">
-    <a class="logo" href="#top" aria-label="3:23 Pitching Performance, back to top">
+    <a class="logo" href="#top" aria-label="323 Pitching Performance, back to top">
       <img src="assets/icon-323.png" alt="" width="32" height="32">
-      <span>3:23 Pitching</span>
+      <span>323 Pitching</span>
     </a>
     <nav class="nav-links" aria-label="Main">
       <a href="#programming">Pitching Programming</a>
@@ -230,7 +263,10 @@ p { margin: 0; }
       <div class="hero-copy">
         <h1 id="hero-title">Raise the <span class="key">ceiling</span>. Play up to it.</h1>
         <p class="hero-sub">Remote, individualized, faith-based development for high school pitchers and their parents.</p>
-        <a class="btn" href="https://calendly.com/323mperformance/3-23-performance-discovery-call" data-call target="_blank" rel="noopener">Book a Discovery Call</a>
+        <div class="cta-group">
+          <a class="btn" href="https://calendly.com/323mperformance/3-23-performance-discovery-call" data-call target="_blank" rel="noopener">Book a Discovery Call</a>
+          <p class="cta-note">Free. 30 minutes on Zoom. Athlete and parent together.</p>
+        </div>
         <blockquote class="scripture-block">&ldquo;Whatever you do, work heartily, as for the Lord and not for men.&rdquo;<cite>Colossians 3:23</cite></blockquote>
       </div>
     </div>
@@ -246,8 +282,8 @@ p { margin: 0; }
       </div>
       <ul class="diffs">
         <li class="diff">
-          <h3>Both jobs, one athlete</h3>
-          <p>We raise the ceiling and train the mind and identity needed to play up to it. One plan, not two disconnected services.</p>
+          <h3>The whole athlete</h3>
+          <p>We raise the ceiling and train the mind and identity needed to play up to it. Every athlete is coached as a whole person.</p>
           <p class="industry"><b>Typical</b>Training stops at the ceiling.</p>
         </li>
         <li class="diff">
@@ -273,8 +309,8 @@ p { margin: 0; }
   <section class="section" id="paths" aria-labelledby="paths-title">
     <div class="wrap">
       <div class="section-head">
-        <h2 class="section-title" id="paths-title">Two jobs. <span class="key">Always</span> together.</h2>
-        <p class="section-lead muted">We develop every part of the athlete. We raise their ceiling as a pitcher, then make sure they can play up to it.</p>
+        <h2 class="section-title" id="paths-title">Two jobs. <span class="key">One</span> athlete.</h2>
+        <p class="section-lead muted">Every pitcher needs a higher ceiling and the ability to play up to it. Start with one program or both. On the discovery call we'll recommend where to begin.</p>
       </div>
       <ul class="jobs">
         <li>
@@ -307,6 +343,10 @@ p { margin: 0; }
         <p class="label">Job 01 &middot; Raise the ceiling</p>
         <h2 class="section-title" id="programming-title">Full Pitching <span class="key">Programming</span></h2>
         <p class="section-lead">An individualized program built around the athlete's body and season. It develops the skill and the engine behind it.</p>
+        <dl class="facts-row">
+          <div><dt>For</dt><dd>High school pitchers</dd></div>
+          <div><dt>Format</dt><dd>Remote, in the Trainerize app</dd></div>
+        </dl>
         <ul class="principles" aria-label="How the program is built">
           <li>Movement efficiency and athleticism first. Move well, then throw hard.</li>
           <li>Velocity is built through constraints and variability, not forced mechanics.</li>
@@ -345,7 +385,11 @@ p { margin: 0; }
         <p class="label">Job 02 &middot; Play up to it</p>
         <h2 class="section-title" id="mental-title">Mental Game <span class="key">Mentorship</span></h2>
         <p class="section-lead">Mentorship that removes what's in the way, so the athlete performs to the potential they've built.</p>
-        <p class="formula" aria-label="Performance equals potential minus interference">Performance = Potential &minus; <span class="red">Interference</span></p>
+        <dl class="facts-row">
+          <div><dt>For</dt><dd>High school pitchers</dd></div>
+          <div><dt>Format</dt><dd>Remote, one-on-one</dd></div>
+        </dl>
+        <p class="formula" aria-label="Performance equals potential minus interference"><span class="nb">Performance =</span> <span class="nb">Potential &minus; <span class="red">Interference</span></span></p>
         <p class="muted">Confidence comes from knowing who you are, not from how you look or what the radar says.</p>
         <a class="btn" href="https://calendly.com/323mperformance/3-23-performance-discovery-call" data-call data-interest="Mental Game Mentorship" target="_blank" rel="noopener">Book a Discovery Call</a>
       </div>
@@ -397,7 +441,6 @@ p { margin: 0; }
 
   <!-- HOW IT WORKS (old #faq links land here) -->
   <section class="section" id="how" aria-labelledby="how-title">
-    <span id="faq" aria-hidden="true"></span>
     <div class="wrap">
       <div class="section-head">
         <h2 class="section-title" id="how-title">How it <span class="key">works</span></h2>
@@ -413,11 +456,49 @@ p { margin: 0; }
     </div>
   </section>
 
+  <!-- FAQ -->
+  <section class="section" id="faq" aria-labelledby="faq-title">
+    <div class="wrap">
+      <div class="section-head">
+        <h2 class="section-title" id="faq-title">Questions <span class="key">parents</span> ask</h2>
+      </div>
+      <div class="faq">
+        <details>
+          <summary>Who is 323 for?</summary>
+          <p>High school pitchers and their parents. The athlete does the work. The parent is a partner in the plan from the first call.</p>
+        </details>
+        <details>
+          <summary>Is everything remote?</summary>
+          <p>Yes. The discovery call is on Zoom, and programming is delivered through the Trainerize app, so your athlete can train wherever you live.</p>
+        </details>
+        <details>
+          <summary>Do we have to sign up for both programs?</summary>
+          <p>No. You can start with Full Pitching Programming, Mental Game Mentorship or both. Pick the one you're most interested in when you book, and we'll talk through the right starting point on the call.</p>
+        </details>
+        <details>
+          <summary>What does it cost?</summary>
+          <p>Pricing depends on the program. We walk through it on the discovery call once we understand your athlete. The call itself is free.</p>
+        </details>
+        <details>
+          <summary>Will my athlete throw harder?</summary>
+          <p>We don't promise velocity numbers, roster spots or scholarships. Progress is not linear. What we do commit to is an individualized plan, honest measurement and the reasoning behind every adjustment.</p>
+        </details>
+        <details>
+          <summary>What happens on the discovery call?</summary>
+          <p>Thirty minutes with the athlete and a parent. We learn where the athlete is, where they want to go and what's getting in the way. If it's a fit, we'll recommend a program. If it isn't, we'll tell you.</p>
+        </details>
+      </div>
+    </div>
+  </section>
+
   <!-- CLOSING (old #apply links land here) -->
   <section class="closing" id="apply" aria-labelledby="closing-title">
     <div class="wrap">
       <h2 id="closing-title">For the <span class="key">Lord</span>, not for man.</h2>
-      <a class="btn" href="https://calendly.com/323mperformance/3-23-performance-discovery-call" data-call target="_blank" rel="noopener">Book a Discovery Call</a>
+      <div class="cta-group cta-group--center">
+        <a class="btn" href="https://calendly.com/323mperformance/3-23-performance-discovery-call" data-call target="_blank" rel="noopener">Book a Discovery Call</a>
+        <p class="cta-note">Free. 30 minutes on Zoom.</p>
+      </div>
     </div>
   </section>
 </main>
@@ -430,6 +511,7 @@ p { margin: 0; }
         <li><a href="#programming">Pitching Programming</a></li>
         <li><a href="#mental-game">Mental Game</a></li>
         <li><a href="#how">How it works</a></li>
+        <li><a href="#faq">FAQ</a></li>
       </ul>
     </div>
     <div>
@@ -446,6 +528,7 @@ p { margin: 0; }
       <p>Free for athletes and parents. The 323 Community on Skool.</p>
       <a class="btn btn--outline" href="#" data-community target="_blank" rel="noopener">Join the 323 Community</a>
     </div>
+    <p class="f-copy">&copy; <span id="year">2026</span> 323 Pitching Performance. Colossians 3:23.</p>
   </div>
 </footer>
 
@@ -479,6 +562,7 @@ const CONFIG = {
     a.href = url.toString();
   });
 
+  $("#year").textContent = new Date().getFullYear();
   $$("[data-instagram]").forEach(a => a.href = "https://www.instagram.com/" + CONFIG.instagramHandle + "/");
   $$("[data-instagram-handle]").forEach(el => el.textContent = "@" + CONFIG.instagramHandle);
   if (CONFIG.communityUrl) {
