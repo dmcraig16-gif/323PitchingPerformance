@@ -5,10 +5,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>323 Pitching Performance</title>
 <meta name="claude:viewport-fit-sides" content="cover">
-<meta name="description" content="Remote, individualized, faith-based development for high school pitchers and their parents. Raise the ceiling. Play up to it. Colossians 3:23.">
+<meta name="description" content="Remote, individualized, faith-based development for high school pitchers and their parents. The Complete Pitching Program and Mental Game Mentorship. Colossians 3:23.">
 <meta name="theme-color" content="#000000">
 <meta property="og:title" content="323 Pitching Performance">
-<meta property="og:description" content="Raise the ceiling. Play up to it. Book a discovery call.">
+<meta property="og:description" content="Raise the ceiling. Play up to it. Apply for the Complete Pitching Program or Mental Game Mentorship.">
 <meta property="og:image" content="https://323pitchingperformance.com/assets/og-image.jpg">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://323pitchingperformance.com/">
@@ -23,8 +23,9 @@
 <link rel="stylesheet" href="323-brand.css">
 <link rel="preload" as="image" href="assets/photos/mound-night-800.webp" imagesrcset="assets/photos/mound-night-800.webp 800w, assets/photos/mound-night-1600.webp 1600w" imagesizes="(min-width: 900px) 50vw, 100vw">
 <style>
-/* Layout: true-black editorial column. Hero, how 323 differs, the two jobs,
-   one section per program, a bone "what we believe" band, the process, the closing line.
+/* Layout: true-black editorial column. Hero, how 323 differs, the two program cards,
+   one section per program, side by side, a bone "what we believe" band, how to start,
+   FAQ, the closing line. Every button goes to the application.
    Colors, fonts, scripture block and the button live in 323-brand.css. */
 :root {
   --section: calc(var(--space) * 8);      /* 64px mobile */
@@ -77,7 +78,10 @@ p { margin: 0; }
 /* Button with a short note under it */
 .cta-group { display: grid; gap: var(--space); justify-items: start; margin-top: var(--space); }
 .cta-group--center { justify-items: center; margin-top: 0; }
-.cta-note { font-size: 0.88rem; color: var(--steel); }
+.cta-note { font-size: 0.88rem; color: var(--steel); max-width: 34rem; }
+.cta-note b { color: var(--white); font-weight: 600; }
+.pending { color: var(--white); }
+.pending a { display: inline-block; padding-block: 6px; }
 
 /* Nav */
 .nav { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 50; background: var(--black); border-bottom: 1px solid var(--line); }
@@ -120,39 +124,50 @@ p { margin: 0; }
 .diff .industry { font-size: 0.92rem; color: var(--steel); }
 .diff .industry b { font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; font-size: 0.75rem; margin-right: 6px; }
 
-/* The two jobs */
-.jobs { list-style: none; margin: 0; padding: 0; display: grid; gap: calc(var(--space) * 2); }
-@media (min-width: 768px) { .jobs { grid-template-columns: 1fr 1fr; gap: calc(var(--space) * 3); } }
-.job {
-  display: grid; gap: calc(var(--space) * 1.5); align-content: start; height: 100%;
-  padding: calc(var(--space) * 3.5) calc(var(--space) * 3); border: 1px solid var(--line); border-radius: var(--radius);
-  color: var(--white); text-decoration: none; transition: border-color .15s;
-}
-.job:hover { color: var(--white); border-color: var(--blue); }
-.job h3 { font-size: clamp(2rem, 1.4rem + 2.2vw, 2.8rem); }
-.job .program { font-weight: 600; }
-.job p.muted { max-width: 30rem; }
-.job .more { margin-top: var(--space); font-weight: 600; font-size: 0.82rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--blue); }
+/* Program cards */
+.cards { list-style: none; margin: 0; padding: 0; display: grid; gap: calc(var(--space) * 2); }
+@media (min-width: 768px) { .cards { grid-template-columns: 1fr 1fr; gap: calc(var(--space) * 3); } }
+.card { display: grid; gap: calc(var(--space) * 1.5); align-content: start; padding: calc(var(--space) * 3.5) calc(var(--space) * 3); border: 1px solid var(--line); border-radius: var(--radius); }
+.card h3 { font-size: clamp(2rem, 1.4rem + 2.2vw, 2.8rem); }
+.card-tag { font-weight: 600; }
+.card-actions { display: flex; flex-wrap: wrap; align-items: center; gap: calc(var(--space) * 1.5) calc(var(--space) * 3); margin-top: var(--space); }
+.text-link { display: inline-block; padding-block: 8px; font-weight: 600; font-size: 0.85rem; letter-spacing: 0.08em; text-transform: uppercase; text-decoration: none; }
 
 /* Program sections */
-.offer { display: grid; gap: calc(var(--space) * 5); }
-@media (min-width: 900px) { .offer { grid-template-columns: 1fr 1fr; gap: calc(var(--space) * 8); align-items: start; } }
-.offer-intro { display: grid; gap: calc(var(--space) * 2.5); justify-items: start; max-width: var(--text); }
+.program-grid { display: grid; gap: calc(var(--space) * 5); grid-template-areas: "intro" "side" "details"; }
+@media (min-width: 900px) {
+  .program-grid { grid-template-columns: 1.05fr 0.95fr; grid-template-areas: "intro side" "details side"; column-gap: calc(var(--space) * 8); row-gap: calc(var(--space) * 5); align-items: start; }
+}
+.program-intro { grid-area: intro; display: grid; gap: calc(var(--space) * 2); justify-items: start; max-width: var(--text); }
+.program-intro .section-title { max-width: 12ch; }
+.program-tag { font-size: clamp(1.1rem, 1rem + 0.5vw, 1.3rem); font-weight: 500; }
+.program-side { grid-area: side; display: grid; gap: calc(var(--space) * 3); }
+.program-details { grid-area: details; display: grid; gap: calc(var(--space) * 3); justify-items: start; max-width: var(--text); }
+.badge { display: inline-block; padding: 4px 10px; border: 1px solid var(--red); border-radius: var(--radius); color: var(--red); font-size: 0.75rem; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; }
 .offer-photo { margin: 0; aspect-ratio: 4 / 3; max-width: 100%; width: 100%; overflow: hidden; border-radius: var(--radius); background: #0b0b0b; }
 .offer-photo img { width: 100%; height: 100%; object-fit: cover; filter: grayscale(1) contrast(1.08) brightness(0.9); }
-.areas { display: grid; gap: calc(var(--space) * 2); }
-.area { padding: calc(var(--space) * 3); border: 1px solid var(--line); border-radius: var(--radius); display: grid; gap: var(--space); }
-.area h3 { font-size: 1.75rem; }
-.area ul { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: var(--space); }
-.area li { padding: 4px calc(var(--space) * 1.5); border: 1px solid var(--line); border-radius: var(--radius); font-size: 0.9rem; }
-.principles { list-style: none; margin: 0; padding: 0; display: grid; border-top: 1px solid var(--line); width: 100%; }
-.principles li { padding-block: calc(var(--space) * 1.5); border-bottom: 1px solid var(--line); }
+.included { border: 1px solid var(--line); border-radius: var(--radius); padding: calc(var(--space) * 3); display: grid; gap: calc(var(--space) * 1.5); }
+.included ul { list-style: none; margin: 0; padding: 0; display: grid; }
+.included li { padding-block: calc(var(--space) * 1.5); border-top: 1px solid var(--line); color: var(--steel); font-size: 0.97rem; }
+.included li b { color: var(--white); font-weight: 600; }
+.detail, .commitment { display: grid; gap: 6px; }
+.commitment { width: 100%; padding: calc(var(--space) * 2.5); border: 1px solid var(--blue); border-radius: var(--radius); }
+.commitment b { font-weight: 600; }
+.program-details .btn { text-align: center; }
+@media (max-width: 599px) { .program-details .btn { width: 100%; padding-block: 12px; } }
 .nb { white-space: nowrap; }
-.facts-row { margin: 0; display: flex; flex-wrap: wrap; gap: calc(var(--space) * 1.5) calc(var(--space) * 4); }
-.facts-row div { display: grid; gap: 2px; }
-.facts-row dt { font-size: 0.75rem; font-weight: 600; letter-spacing: 0.16em; text-transform: uppercase; color: var(--steel); }
-.facts-row dd { margin: 0; font-weight: 500; }
 .formula { font-family: var(--font-head); text-transform: uppercase; font-size: clamp(1.6rem, 1.2rem + 1.6vw, 2.25rem); line-height: 1.1; letter-spacing: 0.02em; }
+
+/* Side by side */
+.table-scroll { overflow-x: auto; }
+.compare { width: 100%; border-collapse: collapse; font-size: 0.95rem; }
+@media (max-width: 359px) { .compare { font-size: 0.85rem; } .compare th, .compare td { padding-inline: 4px; } }
+.compare th, .compare td { padding: calc(var(--space) * 1.75) var(--space); border-bottom: 1px solid var(--line); text-align: center; }
+.compare thead th { font-family: var(--font-head); font-weight: 400; font-size: clamp(1rem, 0.8rem + 1vw, 1.5rem); text-transform: uppercase; line-height: 1.1; vertical-align: bottom; }
+.compare tbody th { text-align: left; font-weight: 500; }
+.compare .yes { color: var(--white); font-weight: 600; }
+.compare .no { color: var(--steel); }
+@media (min-width: 768px) { .compare th, .compare td { padding-inline: calc(var(--space) * 2); } .compare tbody th { width: 40%; } }
 
 /* What we believe: the one light band */
 .believe { background: var(--bone); color: var(--black); border-top: 0; }
@@ -241,11 +256,12 @@ p { margin: 0; }
       <span>323 Pitching</span>
     </a>
     <nav class="nav-links" aria-label="Main">
-      <a href="#programming">Pitching Programming</a>
-      <a href="#mental-game">Mental Game</a>
-      <a href="#how">How it works</a>
+      <a href="#programs">Programs</a>
+      <a href="#compare">Compare</a>
+      <a href="#how">How to start</a>
+      <a href="#faq">FAQ</a>
     </nav>
-    <a class="btn" href="https://calendly.com/323mperformance/3-23-performance-discovery-call" data-call target="_blank" rel="noopener">Book a Discovery Call</a>
+    <a class="btn" href="#apply" data-apply>Apply Now</a>
   </div>
 </header>
 
@@ -264,8 +280,8 @@ p { margin: 0; }
         <h1 id="hero-title">Raise the <span class="key">ceiling</span>. Play up to it.</h1>
         <p class="hero-sub">Remote, individualized, faith-based development for high school pitchers and their parents.</p>
         <div class="cta-group">
-          <a class="btn" href="https://calendly.com/323mperformance/3-23-performance-discovery-call" data-call target="_blank" rel="noopener">Book a Discovery Call</a>
-          <p class="cta-note">Free. 30 minutes on Zoom. Athlete and parent together.</p>
+          <a class="btn" href="#apply" data-apply>Apply Now</a>
+          <p class="cta-note">A 5-minute application, then a free discovery call. Five founding spots open.</p>
         </div>
         <blockquote class="scripture-block">&ldquo;Whatever you do, work heartily, as for the Lord and not for men.&rdquo;<cite>Colossians 3:23</cite></blockquote>
       </div>
@@ -305,114 +321,164 @@ p { margin: 0; }
     </div>
   </section>
 
-  <!-- THE TWO JOBS: funnel into the two programs -->
-  <section class="section" id="paths" aria-labelledby="paths-title">
+  <!-- PROGRAMS: homepage cards (old #paths links land here) -->
+  <section class="section" id="programs" aria-labelledby="programs-title">
+    <span id="paths" aria-hidden="true"></span>
     <div class="wrap">
       <div class="section-head">
-        <h2 class="section-title" id="paths-title">Two jobs. <span class="key">One</span> athlete.</h2>
-        <p class="section-lead muted">Every pitcher needs a higher ceiling and the ability to play up to it. Start with one program or both. On the discovery call we'll recommend where to begin.</p>
+        <h2 class="section-title" id="programs-title">Two <span class="key">programs</span>.</h2>
+        <p class="section-lead muted">Start with the one that fits your athlete. Not sure which? That's what the discovery call is for.</p>
       </div>
-      <ul class="jobs">
-        <li>
-          <a class="job" href="#programming">
-            <p class="label">Job 01</p>
-            <h3>Raise the ceiling</h3>
-            <p class="program">Full Pitching Programming</p>
-            <p class="muted">An individualized program for higher velocity, a deeper arsenal, sharper pitchability and more efficient mechanics.</p>
-            <span class="more">See the program</span>
-          </a>
+      <ul class="cards">
+        <li class="card">
+          <h3>Complete Pitching Program</h3>
+          <p class="card-tag">The arm, the body, and the mind. Built as one system.</p>
+          <p class="muted">An individualized throwing, strength, and mental game program for high school pitchers who want to raise their ceiling and compete up to it. You get weekly 1-on-1 coaching, video feedback within 24 hours, and a plan built around your season.</p>
+          <div class="card-actions">
+            <a class="btn" href="#apply" data-apply>Apply Now</a>
+            <a class="text-link" href="#complete">See what's included</a>
+          </div>
         </li>
-        <li>
-          <a class="job" href="#mental-game">
-            <p class="label">Job 02</p>
-            <h3>Play up to it</h3>
-            <p class="program">Mental Game Mentorship</p>
-            <p class="muted">Mentorship through the mental game and identity, so the athlete performs to the potential they've built.</p>
-            <span class="more">See the mentorship</span>
-          </a>
+        <li class="card">
+          <h3>Mental Game Mentorship</h3>
+          <p class="card-tag">You don't need more talent. You need less noise.</p>
+          <p class="muted">Weekly 1-on-1 mentorship for pitchers who have the stuff but lose it between the ears. We train focus, pressure, confidence, and identity so you compete freely and perform to the potential you've already built.</p>
+          <div class="card-actions">
+            <a class="btn" href="#apply" data-apply>Apply Now</a>
+            <a class="text-link" href="#mental-game">See what's included</a>
+          </div>
         </li>
       </ul>
     </div>
   </section>
 
-  <!-- FULL PITCHING PROGRAMMING (old #programs, #program-remote and #program-inperson links land here) -->
-  <section class="section" id="programming" aria-labelledby="programming-title">
-    <span id="programs" aria-hidden="true"></span><span id="program-remote" aria-hidden="true"></span><span id="program-inperson" aria-hidden="true"></span>
-    <div class="wrap offer">
-      <div class="offer-intro">
-        <p class="label">Job 01 &middot; Raise the ceiling</p>
-        <h2 class="section-title" id="programming-title">Full Pitching <span class="key">Programming</span></h2>
-        <p class="section-lead">An individualized program built around the athlete's body and season. It develops the skill and the engine behind it.</p>
-        <dl class="facts-row">
-          <div><dt>For</dt><dd>High school pitchers</dd></div>
-          <div><dt>Format</dt><dd>Remote, in the Trainerize app</dd></div>
-        </dl>
-        <ul class="principles" aria-label="How the program is built">
-          <li>Movement efficiency and athleticism first. Move well, then throw hard.</li>
-          <li>Velocity is built through constraints and variability, not forced mechanics.</li>
-          <li>Every plan is measured and adjusted around the season.</li>
-        </ul>
-        <a class="btn" href="https://calendly.com/323mperformance/3-23-performance-discovery-call" data-call data-interest="Complete Pitching Program" target="_blank" rel="noopener">Book a Discovery Call</a>
+  <!-- COMPLETE PITCHING PROGRAM (old #programming, #program-remote and #program-inperson links land here) -->
+  <section class="section program" id="complete" aria-labelledby="complete-title">
+    <span id="programming" aria-hidden="true"></span><span id="program-remote" aria-hidden="true"></span><span id="program-inperson" aria-hidden="true"></span>
+    <div class="wrap program-grid">
+      <div class="program-intro">
+        <p class="badge">Founding spots open</p>
+        <h2 class="section-title" id="complete-title">Complete Pitching <span class="key">Program</span></h2>
+        <p class="program-tag">For the pitcher who wants everything. One coach, one plan, every part of the athlete.</p>
+        <p>Most high school pitchers are training in pieces. They have a throwing routine from one place, a lift from another, and no plan at all for what happens between the ears. Those pieces don't talk to each other. That's how arms get overworked and progress stalls.</p>
+        <p>The Complete Pitching Program puts it all under one plan. Your throwing, strength, mobility, and mental game are programmed together and adjusted every week around your team schedule. Nothing gets stacked. Nothing gets missed.</p>
+        <p>We build velocity and command the way they last, through better movement and not more stress. And we make sure you can carry that work onto the mound when it counts.</p>
       </div>
-      <div class="areas">
+      <div class="program-side">
         <figure class="offer-photo">
           <picture>
             <source type="image/webp" srcset="assets/photos/delivery-cmu-800.webp 800w, assets/photos/delivery-cmu-1600.webp 1600w" sizes="(min-width: 900px) 45vw, 100vw">
             <img src="assets/photos/delivery-cmu-800.jpg" srcset="assets/photos/delivery-cmu-800.jpg 800w, assets/photos/delivery-cmu-1600.jpg 1600w" sizes="(min-width: 900px) 45vw, 100vw" width="800" height="533" loading="lazy" decoding="async" alt="A pitcher mid-delivery during a bullpen session">
           </picture>
         </figure>
-        <div class="area">
-          <h3>Skill Acquisition</h3>
-          <ul aria-label="Skill Acquisition covers">
-            <li>Velocity</li><li>Arsenal</li><li>Pitchability</li><li>Command</li><li>Mechanics</li><li>Workload</li>
+        <div class="included">
+          <p class="label">What's included</p>
+          <ul>
+            <li><b>Individualized throwing program.</b> Built around your team schedule, your workload, and your goals. Constraint-based drills develop velocity and command by improving how you move, not by forcing mechanics.</li>
+            <li><b>Strength, mobility, and movement prep.</b> Programmed by phase, with a video demo for every exercise. Train like an athlete, not just a thrower.</li>
+            <li><b>Mechanical analysis and throwing assessment.</b> Bullpen video is reviewed every training block, with clear fixes and the reasons behind them.</li>
+            <li><b>The full 323 mental game curriculum.</b> Focus, pressure, confidence, routines, and identity, built into your weekly work.</li>
+            <li><b>Weekly 1-on-1 call.</b> Review the week, adjust the plan, and talk through what's going on in your head.</li>
+            <li><b>Video feedback within 24 hours.</b> Send video and check-ins through the app. Hear back within a day.</li>
+            <li><b>Parent updates.</b> A short, honest summary so you always know what we worked on, what improved, and what's next.</li>
+            <li><b>Access to the 323 Community.</b></li>
           </ul>
         </div>
-        <div class="area">
-          <h3>The Engine</h3>
-          <ul aria-label="The Engine covers">
-            <li>Strength</li><li>Mobility</li><li>Movement quality</li><li>Recovery</li>
-          </ul>
+      </div>
+      <div class="program-details">
+        <div class="detail">
+          <p class="label">Who it's for</p>
+          <p>High school pitchers who are serious about getting better and want a coach who sees the whole picture. It's the right fit if your athlete needs a throwing and lifting plan, not just mentorship.</p>
         </div>
+        <div class="detail">
+          <p class="label">Why parents choose it</p>
+          <p>You'll know the plan. You'll know the reason behind it. And you'll know your athlete's workload is being managed by someone watching it every week. We respect the team schedule. We adjust instead of piling on.</p>
+        </div>
+        <div class="commitment">
+          <p class="label">Commitment</p>
+          <p><b>6-month minimum.</b> Five founding spots are open across both programs, and founding athletes keep their founding rate as long as they stay enrolled.</p>
+        </div>
+        <a class="btn" href="#apply" data-apply>Apply for the Complete Pitching Program</a>
       </div>
     </div>
   </section>
 
   <!-- MENTAL GAME MENTORSHIP (old #program-mental links land here) -->
-  <section class="section" id="mental-game" aria-labelledby="mental-title">
+  <section class="section program" id="mental-game" aria-labelledby="mental-title">
     <span id="program-mental" aria-hidden="true"></span>
-    <div class="wrap offer">
-      <div class="offer-intro">
-        <p class="label">Job 02 &middot; Play up to it</p>
+    <div class="wrap program-grid">
+      <div class="program-intro">
+        <p class="badge">Founding spots open</p>
         <h2 class="section-title" id="mental-title">Mental Game <span class="key">Mentorship</span></h2>
-        <p class="section-lead">Mentorship that removes what's in the way, so the athlete performs to the potential they've built.</p>
-        <dl class="facts-row">
-          <div><dt>For</dt><dd>High school pitchers</dd></div>
-          <div><dt>Format</dt><dd>Remote, one-on-one</dd></div>
-        </dl>
+        <p class="program-tag">For the pitcher who already has a throwing program but loses it between the ears.</p>
+        <p>Every coach has seen it. The pitcher who dominates the bullpen and unravels in the third inning. The kid who can't shake one bad outing. The athlete who's playing to impress the scout in the stands instead of competing against the hitter in the box.</p>
+        <p>That isn't a talent problem. It's interference.</p>
         <p class="formula" aria-label="Performance equals potential minus interference"><span class="nb">Performance =</span> <span class="nb">Potential &minus; <span class="red">Interference</span></span></p>
-        <p class="muted">Confidence comes from knowing who you are, not from how you look or what the radar says.</p>
-        <a class="btn" href="https://calendly.com/323mperformance/3-23-performance-discovery-call" data-call data-interest="Mental Game Mentorship" target="_blank" rel="noopener">Book a Discovery Call</a>
+        <p>Fear of failure, comparison, overthinking, and playing for approval all take away from what your athlete can do. This program removes them.</p>
+        <p>Mental skills are trained like physical ones. They take reps, structure, and a coach. We give your athlete all three, starting with who they are. Confidence that depends on the radar gun or the box score breaks easily. Confidence rooted in identity holds. We compete from identity, never for it, and we talk about faith openly because that's where it starts.</p>
       </div>
-      <div class="areas">
+      <div class="program-side">
         <figure class="offer-photo">
           <picture>
             <source type="image/webp" srcset="assets/photos/prayer-mound-800.webp 800w, assets/photos/prayer-mound-1600.webp 1600w" sizes="(min-width: 900px) 45vw, 100vw">
             <img src="assets/photos/prayer-mound-800.jpg" srcset="assets/photos/prayer-mound-800.jpg 800w, assets/photos/prayer-mound-1600.jpg 1600w" sizes="(min-width: 900px) 45vw, 100vw" width="800" height="640" loading="lazy" decoding="async" alt="A pitcher standing on the mound with his cap off and head bowed, glove held to his chest" style="object-position: 48% 30%">
           </picture>
         </figure>
-        <div class="area">
-          <h3>The Mind</h3>
-          <ul aria-label="The Mind covers">
-            <li>Focus</li><li>Pressure</li><li>Confidence</li><li>Routines</li>
-          </ul>
-        </div>
-        <div class="area">
-          <h3>The Spirit</h3>
-          <ul aria-label="The Spirit covers">
-            <li>Identity</li><li>Character</li><li>Faith</li><li>How you compete</li><li>How you carry yourself</li>
+        <div class="included">
+          <p class="label">What's included</p>
+          <ul>
+            <li><b>The 323 mental game curriculum.</b> It starts with a 4-week foundation phase covering identity, focus, pressure, and routines, then builds from there.</li>
+            <li><b>Weekly 1-on-1 call.</b> We work through what's actually happening on the mound and off it.</li>
+            <li><b>Message access through the app.</b> Reach out before a start, after a rough outing, or when something is stuck in your head.</li>
+            <li><b>Pre-game and recovery routines built for you.</b> You'll have a plan for the bullpen, the dugout, and the drive home.</li>
+            <li><b>Faith-integrated mentorship.</b> Competing freely starts with knowing who you are. We talk about that openly.</li>
+            <li><b>Parent updates and access to the 323 Community.</b></li>
           </ul>
         </div>
       </div>
+      <div class="program-details">
+        <div class="detail">
+          <p class="label">Who it's for</p>
+          <p>Pitchers who already have a throwing and strength plan they trust but aren't performing up to it in games. It's also a strong fit for athletes who carry pressure, comparison, or a bad outing longer than they should.</p>
+        </div>
+        <div class="detail">
+          <p class="label">Why parents choose it</p>
+          <p>Your athlete gets a mentor who understands the game from the mound and points them back to what matters. You get a clear, structured process instead of "just relax out there."</p>
+        </div>
+        <div class="commitment">
+          <p class="label">Commitment</p>
+          <p><b>3-month minimum.</b> Five founding spots are open across both programs, and founding athletes keep their founding rate as long as they stay enrolled.</p>
+        </div>
+        <a class="btn" href="#apply" data-apply>Apply for Mental Game Mentorship</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- SIDE BY SIDE -->
+  <section class="section" id="compare" aria-labelledby="compare-title">
+    <div class="wrap">
+      <div class="section-head">
+        <h2 class="section-title" id="compare-title">Side by <span class="key">side</span></h2>
+      </div>
+      <div class="table-scroll">
+        <table class="compare">
+          <thead>
+            <tr><th scope="col"><span class="sr-only">Feature</span></th><th scope="col">Complete Pitching Program</th><th scope="col">Mental Game Mentorship</th></tr>
+          </thead>
+          <tbody>
+            <tr><th scope="row">Minimum commitment</th><td>6 months</td><td>3 months</td></tr>
+            <tr><th scope="row">Throwing program</th><td class="yes">Yes</td><td class="no">No</td></tr>
+            <tr><th scope="row">Strength and mobility</th><td class="yes">Yes</td><td class="no">No</td></tr>
+            <tr><th scope="row">Mechanical analysis</th><td class="yes">Yes</td><td class="no">No</td></tr>
+            <tr><th scope="row">24-hour video feedback</th><td class="yes">Yes</td><td class="no">No</td></tr>
+            <tr><th scope="row">Mental game curriculum</th><td class="yes">Yes</td><td class="yes">Yes</td></tr>
+            <tr><th scope="row">Weekly 1-on-1 call</th><td class="yes">Yes</td><td class="yes">Yes</td></tr>
+            <tr><th scope="row">Parent updates</th><td class="yes">Yes</td><td class="yes">Yes</td></tr>
+            <tr><th scope="row">323 Community</th><td class="yes">Yes</td><td class="yes">Yes</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="section-cta"><a class="btn" href="#apply" data-apply>Apply Now</a></div>
     </div>
   </section>
 
@@ -439,20 +505,22 @@ p { margin: 0; }
     </div>
   </section>
 
-  <!-- HOW IT WORKS (old #faq links land here) -->
+  <!-- HOW TO START -->
   <section class="section" id="how" aria-labelledby="how-title">
     <div class="wrap">
       <div class="section-head">
-        <h2 class="section-title" id="how-title">How it <span class="key">works</span></h2>
-        <p class="section-lead muted">Athlete and parent are both part of it from the first conversation.</p>
+        <h2 class="section-title" id="how-title">Four steps. <span class="key">No</span> pressure.</h2>
       </div>
       <ol class="steps">
-        <li class="step"><h3>Discovery call</h3><p>Thirty minutes on Zoom with the athlete and a parent. We learn where the athlete is, where they want to go and which job comes first.</p></li>
-        <li class="step"><h3>Enroll</h3><p>If it's a fit, you enroll online. There's no pressure on the call.</p></li>
-        <li class="step"><h3>Your plan</h3><p>An individualized plan built around the athlete's season, delivered through the Trainerize app.</p></li>
-        <li class="step"><h3>Train, measure, adjust</h3><p>The athlete does the work. We measure it, explain the why and adjust as they develop.</p></li>
+        <li class="step"><h3>Apply</h3><p>A short application so we understand your athlete's goals, season, and background. It takes about five minutes.</p></li>
+        <li class="step"><h3>Book your discovery call</h3><p>When you submit your application, you'll pick a time for a free 20 to 30 minute call with your athlete and a parent. We'll talk through goals, schedule, and fit.</p></li>
+        <li class="step"><h3>Get an honest recommendation</h3><p>We'll tell you which program fits, or if neither does. Program details and founding rates are covered on the call.</p></li>
+        <li class="step"><h3>Start training</h3><p>Onboarding and your first call happen within 72 hours of enrolling. Your first program block is live within a week.</p></li>
       </ol>
-      <div class="section-cta"><a class="btn" href="https://calendly.com/323mperformance/3-23-performance-discovery-call" data-call target="_blank" rel="noopener">Book a Discovery Call</a></div>
+      <div class="section-cta cta-group">
+        <a class="btn" href="#apply" data-apply>Apply Now</a>
+        <p class="cta-note"><b>Not sure which program fits?</b> That's what the call is for. Apply, pick a time at the end, and we'll figure it out together.</p>
+      </div>
     </div>
   </section>
 
@@ -468,24 +536,32 @@ p { margin: 0; }
           <p>High school pitchers and their parents. The athlete does the work. The parent is a partner in the plan from the first call.</p>
         </details>
         <details>
-          <summary>Is everything remote?</summary>
-          <p>Yes. The discovery call is on Zoom, and programming is delivered through the Trainerize app, so your athlete can train wherever you live.</p>
+          <summary>Which program is right for my athlete?</summary>
+          <p>If your athlete needs a throwing and lifting plan, the Complete Pitching Program. If they already have a throwing and strength plan they trust but aren't performing up to it in games, Mental Game Mentorship. Not sure? That's what the discovery call is for.</p>
         </details>
         <details>
-          <summary>Do we have to sign up for both programs?</summary>
-          <p>No. You can start with Full Pitching Programming, Mental Game Mentorship or both. Pick the one you're most interested in when you book, and we'll talk through the right starting point on the call.</p>
+          <summary>Is everything remote?</summary>
+          <p>Yes. Your program, video feedback and check-ins run through the app, and calls happen online, so your athlete can train wherever you live.</p>
         </details>
         <details>
           <summary>What does it cost?</summary>
-          <p>Pricing depends on the program. We walk through it on the discovery call once we understand your athlete. The call itself is free.</p>
+          <p>Prices aren't listed on the site. Program details and founding rates are covered on the discovery call, and the call is free.</p>
+        </details>
+        <details>
+          <summary>Why 6 months for the Complete Pitching Program?</summary>
+          <p>Velocity and command don't change in four weeks. Real movement change takes a full training cycle. Six months gives us time to build, test, and prove it.</p>
+        </details>
+        <details>
+          <summary>Why 3 months for Mental Game Mentorship?</summary>
+          <p>Mental skills are trained like physical ones. Three months gives your athlete enough time to build the habits and use them in real games.</p>
         </details>
         <details>
           <summary>Will my athlete throw harder?</summary>
           <p>We don't promise velocity numbers, roster spots or scholarships. Progress is not linear. What we do commit to is an individualized plan, honest measurement and the reasoning behind every adjustment.</p>
         </details>
         <details>
-          <summary>What happens on the discovery call?</summary>
-          <p>Thirty minutes with the athlete and a parent. We learn where the athlete is, where they want to go and what's getting in the way. If it's a fit, we'll recommend a program. If it isn't, we'll tell you.</p>
+          <summary>What happens after I apply?</summary>
+          <p>You'll pick a time for a free 20 to 30 minute call with your athlete and a parent. We'll give you an honest recommendation, including if neither program fits.</p>
         </details>
       </div>
     </div>
@@ -496,8 +572,9 @@ p { margin: 0; }
     <div class="wrap">
       <h2 id="closing-title">For the <span class="key">Lord</span>, not for man.</h2>
       <div class="cta-group cta-group--center">
-        <a class="btn" href="https://calendly.com/323mperformance/3-23-performance-discovery-call" data-call target="_blank" rel="noopener">Book a Discovery Call</a>
-        <p class="cta-note">Free. 30 minutes on Zoom.</p>
+        <a class="btn" href="#apply" data-apply>Apply Now</a>
+        <p class="cta-note">A 5-minute application, then a free discovery call.</p>
+        <p class="cta-note pending" id="apply-pending">Applications open soon. Message <a href="https://www.instagram.com/3.23performance/" data-instagram target="_blank" rel="noopener">@3.23performance</a> on Instagram to hold your spot.</p>
       </div>
     </div>
   </section>
@@ -508,9 +585,9 @@ p { margin: 0; }
     <div>
       <p class="f-label">[ ABOUT ]</p>
       <ul class="f-links">
-        <li><a href="#programming">Pitching Programming</a></li>
-        <li><a href="#mental-game">Mental Game</a></li>
-        <li><a href="#how">How it works</a></li>
+        <li><a href="#complete">Complete Pitching Program</a></li>
+        <li><a href="#mental-game">Mental Game Mentorship</a></li>
+        <li><a href="#how">How to start</a></li>
         <li><a href="#faq">FAQ</a></li>
       </ul>
     </div>
@@ -532,15 +609,17 @@ p { margin: 0; }
   </div>
 </footer>
 
-<div class="mobile-cta" id="mobile-cta"><a class="btn" href="https://calendly.com/323mperformance/3-23-performance-discovery-call" data-call target="_blank" rel="noopener">Book a Discovery Call</a></div>
+<div class="mobile-cta" id="mobile-cta"><a class="btn" href="#apply" data-apply>Apply Now</a></div>
 
 <script>
 /* ============================================================
    SITE SETTINGS: edit these to go live.
    ============================================================ */
 const CONFIG = {
-  // Calendly discovery call. Every button on the page goes here.
-  discoveryCallUrl: "https://calendly.com/323mperformance/3-23-performance-discovery-call",
+  // The application. Every button on the page goes here.
+  // The Calendly discovery call link belongs at the END of the application, after submit,
+  // not on this page: https://calendly.com/323mperformance/3-23-performance-discovery-call
+  applicationUrl: "",
   // Instagram handle without the @
   instagramHandle: "3.23performance",
   // Free 323 Community on Skool. Leave empty to hide the footer block.
@@ -551,18 +630,19 @@ const CONFIG = {
   const $ = (s, el = document) => el.querySelector(s);
   const $$ = (s, el = document) => Array.from(el.querySelectorAll(s));
 
-  // Discovery call links. Program buttons pre-answer Calendly's
-  // "What are you interested in?" question (a2), and any utm_ tags
-  // on this page (for example from the Instagram bio link) carry through.
+  // Application links. Any utm_ tags on this page (for example from the
+  // Instagram bio link) carry through. Until the application is live, the
+  // buttons go to the closing section, which says how to reach us.
   const params = new URLSearchParams(location.search);
-  $$("a[data-call]").forEach(a => {
-    const url = new URL(CONFIG.discoveryCallUrl);
-    if (a.dataset.interest) url.searchParams.set("a2", a.dataset.interest);
-    for (const [k, v] of params) if (k.startsWith("utm_")) url.searchParams.set(k, v);
-    a.href = url.toString();
-  });
+  if (CONFIG.applicationUrl) {
+    $$("a[data-apply]").forEach(a => {
+      const url = new URL(CONFIG.applicationUrl);
+      for (const [k, v] of params) if (k.startsWith("utm_")) url.searchParams.set(k, v);
+      a.href = url.toString();
+    });
+    $("#apply-pending").hidden = true;
+  }
 
-  $("#year").textContent = new Date().getFullYear();
   $$("[data-instagram]").forEach(a => a.href = "https://www.instagram.com/" + CONFIG.instagramHandle + "/");
   $$("[data-instagram-handle]").forEach(el => el.textContent = "@" + CONFIG.instagramHandle);
   if (CONFIG.communityUrl) {

@@ -1,8 +1,8 @@
 # 3:23 Pitching Performance: website
 
-One page for 323pitchingperformance.com. It explains the two programs and points every visitor to a discovery call.
+One page for 323pitchingperformance.com. It explains the Complete Pitching Program and Mental Game Mentorship, and every section ends at the application.
 
-Funnel: Instagram (@3.23performance) to the free 323 Community on Skool to this site to a Calendly discovery call to Stripe enrollment to Trainerize.
+Funnel: Instagram (@3.23performance) to the free 323 Community on Skool to this site to the application to a Calendly discovery call to Stripe enrollment to Trainerize. The Calendly link is not on this site; it goes at the end of the application, after submit. No prices on the site.
 
 Plain HTML. No build step. Put the `website/` folder on any static host (Netlify drop, Vercel, GitHub Pages, Cloudflare Pages).
 
@@ -21,19 +21,20 @@ Open `index.html` and edit the `CONFIG` block near the bottom:
 
 | Setting | What it does |
 |---|---|
-| `discoveryCallUrl` | Your Calendly discovery call. Every button on the page goes here. Set to the "323 Pitching Performance Discovery Call" event |
+| `applicationUrl` | The live application. Every Apply button goes here. While it's empty, the buttons scroll to the closing section, which says applications open soon and points to Instagram. Put the Calendly discovery call link (`https://calendly.com/323mperformance/3-23-performance-discovery-call`) on the application's thank-you screen |
 | `instagramHandle` | Instagram handle without the `@` |
 | `communityUrl` | Your free 323 Community on Skool. While empty, the footer's community block stays hidden |
 
-## How the call buttons work
+## How the Apply buttons work
 
-- The two program buttons pre-answer Calendly's "What are you interested in?" question with `Complete Pitching Program` or `Mental Game Mentorship`. That's the `a2` parameter, because it is the second custom question on the event. If you reorder or rename those questions in Calendly, update `data-interest` on those two buttons to match.
-- Any `utm_` tags on the page URL carry through to Calendly. Use this as your Instagram bio link to see in Calendly which bookings came from Instagram:
+- Every Apply button goes to `applicationUrl`. Any `utm_` tags on the page URL carry through, so use this as your Instagram bio link and you can see which applications came from Instagram:
   `https://323pitchingperformance.com/?utm_source=instagram&utm_medium=bio`
+- Program copy lives in the two program sections (`#complete`, `#mental-game`) and the side-by-side table (`#compare`). The FAQ holds "Why 6 months?" and "Why 3 months?".
+- Founding spots: both program sections and the hero say five founding spots are open. Update or remove those lines when they fill.
 
 ## Section links
 
-Use these in stories and DMs: `/#different`, `/#paths`, `/#programming`, `/#mental-game`, `/#mission` (what we believe), `/#how`. Older links (`/#apply`, `/#what`, `/#proof`, `/#programs`, `/#program-remote`, `/#program-inperson`, `/#program-mental`, `/#coach`, `/#standard`, `/#inside`, `/#faq`) still land on a sensible section.
+Use these in stories and DMs: `/#programs`, `/#complete`, `/#mental-game`, `/#compare`, `/#how`, `/#faq`, `/#mission` (what we believe). Older links (`/#apply`, `/#paths`, `/#programming`, `/#different`, `/#what`, `/#proof`, `/#program-remote`, `/#program-inperson`, `/#program-mental`, `/#coach`, `/#standard`, `/#inside`) still land on a sensible section.
 
 ## Photos
 
