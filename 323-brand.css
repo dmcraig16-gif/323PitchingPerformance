@@ -1,0 +1,53 @@
+/* 323 Pitching Performance brand tokens.
+   Source: BRAND.md. Change a value here and every page follows.
+   Bone, Steel and Dark Blue are derived placeholders until the Canva kit values are added. */
+:root {
+  --black: #000000;        /* backgrounds, primary base */
+  --white: #ffffff;        /* headlines and body text on black */
+  --blue: #0289eb;         /* 323 Blue: one key word per headline, links, main button */
+  --blue-dark: #0270c2;    /* hover states, depth */
+  --red: #ff0707;          /* sparing: one word, stat or badge per screen. Never body text or a background */
+  --bone: #f2f0eb;         /* light section backgrounds */
+  --steel: #8a8f98;        /* secondary text, captions, dividers */
+
+  --line: rgba(255, 255, 255, 0.14);
+  --line-dark: rgba(0, 0, 0, 0.14);
+
+  --font-head: "Anton", "Bebas Neue", Impact, "Arial Narrow", sans-serif;      /* headlines, uppercase */
+  --font-script: "Cormorant Garamond", Georgia, "Times New Roman", serif;     /* scripture and quotes only, italic */
+  --font-body: "Inter", "Helvetica Neue", Arial, sans-serif;                  /* body, buttons, forms */
+
+  --radius: 4px;
+  --space: 8px;
+  color-scheme: dark;
+}
+
+/* One key word per headline */
+.key { color: var(--blue); }
+/* Sparing emphasis: one per screen */
+.red { color: var(--red); }
+
+/* Scripture: always italic serif, set apart, blue rule on the left */
+.scripture-block {
+  margin: 0;
+  padding: 4px 0 4px calc(var(--space) * 2.5);
+  border-left: 3px solid var(--blue);
+  font-family: var(--font-script);
+  font-style: italic;
+  font-weight: 500;
+  line-height: 1.3;
+}
+.scripture-block cite { display: block; margin-top: 6px; font-style: italic; font-weight: 600; color: var(--blue); }
+
+/* Main button: 323 Blue with black text */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-height: 52px; padding: 0 calc(var(--space) * 3.5);
+  border: 0; border-radius: var(--radius);
+  background: var(--blue); color: var(--black);
+  font-family: var(--font-body); font-weight: 600; font-size: 0.95rem;
+  letter-spacing: 0.06em; text-transform: uppercase; text-decoration: none;
+  cursor: pointer; transition: background-color .15s;
+}
+.btn:hover { background: var(--blue-dark); }
+.btn:focus-visible { outline: 2px solid var(--white); outline-offset: 3px; }
