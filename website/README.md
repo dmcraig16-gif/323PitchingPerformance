@@ -8,7 +8,7 @@ Plain HTML. No build step.
 
 ## Publishing
 
-This repo's GitHub Pages address (dmcraig16-gif.github.io/323PitchingPerformance) belongs to the pitch visualizer, so the website is published from its own repo instead. See the session notes for the current link.
+Not published yet. It will go live at 323pitchingperformance.com. This repo's GitHub Pages address (dmcraig16-gif.github.io/323PitchingPerformance) belongs to the pitch visualizer, so the website needs its own hosting: for example its own GitHub repo with the domain attached, or Netlify or Cloudflare Pages pointed at this folder.
 
 ## Files
 
