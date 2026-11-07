@@ -30,11 +30,12 @@ Open `index.html` and edit the `CONFIG` block near the bottom:
 - Every Apply button goes to `applicationUrl`. Any `utm_` tags on the page URL carry through, so use this as your Instagram bio link and you can see which applications came from Instagram:
   `https://323pitchingperformance.com/?utm_source=instagram&utm_medium=bio`
 - Program copy lives in the two program sections (`#complete`, `#mental-game`) and the side-by-side table (`#compare`). The FAQ holds "Why 6 months?" and "Why 3 months?".
-- Founding spots: both program sections and the hero say five founding spots are open. Update or remove those lines when they fill.
+- Founding spots: the hero and the "Founding spots open" badge on both program sections. Update or remove them when spots fill.
+- Page order is built to convert: what 323 is and Apply on the first screen, the two programs, compare, how to enroll, then why 323, beliefs and FAQ for visitors who need more.
 
 ## Section links
 
-Use these in stories and DMs: `/#programs`, `/#complete`, `/#mental-game`, `/#compare`, `/#how`, `/#faq`, `/#mission` (what we believe). Older links (`/#apply`, `/#paths`, `/#programming`, `/#different`, `/#what`, `/#proof`, `/#program-remote`, `/#program-inperson`, `/#program-mental`, `/#coach`, `/#standard`, `/#inside`) still land on a sensible section.
+Use these in stories and DMs: `/#programs` (what we offer), `/#complete`, `/#mental-game`, `/#compare`, `/#how` (how to enroll), `/#faq`, `/#different` (why 323), `/#mission` (what we believe). Older links (`/#apply`, `/#paths`, `/#programming`, `/#different`, `/#what`, `/#proof`, `/#program-remote`, `/#program-inperson`, `/#program-mental`, `/#coach`, `/#standard`, `/#inside`) still land on a sensible section.
 
 ## Photos
 
