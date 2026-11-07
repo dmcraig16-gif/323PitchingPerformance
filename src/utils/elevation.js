@@ -1,7 +1,12 @@
 /**
  * Full atmospheric model for baseball flight conditions.
  *
- * Magnus force (iVB, HorzBreak) ∝ air density ρ.
+ * Break (iVB, HorzBreak) ∝ ρ^BREAK_EXPONENT, not strictly linear with density.
+ * As density decreases, drag also decreases, keeping the ball faster longer,
+ * which partially offsets the Magnus force reduction.
+ * Empirical calibration: Coors Field (82% density) shows ~10% less break
+ * in Statcast data, implying ρ^0.55 (Nathan 2008, Kagan 2014).
+ *
  * ρ depends on: altitude (via ISA pressure), temperature, barometric pressure,
  * and relative humidity (moist air is less dense than dry air).
  *
@@ -16,7 +21,15 @@
  *         Psat via Tetens: 611.2·exp(17.67·Tc/(Tc+243.5))  Pa
  *         Rd = 287.058  J/(kg·K)
  *         Rv = 461.495  J/(kg·K)
+ *
+ * Wind effects (additive, not multiplicative):
+ *   Crosswind → adds directly to HorzBreak (± 0.2 in/mph)
+ *   Headwind  → increases effective air speed → slightly more break (~0.2%/mph)
  */
+
+// Empirical exponent: break ∝ ρ^BREAK_EXPONENT
+// Derived from Coors data: (0.823)^α = 0.90 → α ≈ 0.54
+const BREAK_EXPONENT = 0.55;
 
 // ── ISA helpers ───────────────────────────────────────────────────────────────
 
@@ -62,34 +75,75 @@ export function airDensityFull(altFt, tempF, pressureInHg, humidity) {
 }
 
 /**
- * Movement scale factor (Magnus break ratio) when projecting from reference
- * conditions to target conditions.
+ * Raw air density ratio (target / ref). Useful for display.
  */
-export function movementScaleFactorFull(ref, target) {
+export function densityRatioFull(ref, target) {
   const refRho = airDensityFull(ref.altFt, ref.tempF, ref.pressureInHg, ref.humidity);
   if (refRho === 0) return 1;
   return airDensityFull(target.altFt, target.tempF, target.pressureInHg, target.humidity) / refRho;
 }
 
 /**
+ * Break scale factor: how much iVB and HorzBreak change from ref → target.
+ * Uses calibrated exponent (0.55) derived from Coors Field Statcast data.
+ * Break ∝ ρ^0.55, not linearly — drag also decreases with density,
+ * partially offsetting the Magnus force reduction.
+ */
+export function movementScaleFactorFull(ref, target) {
+  return Math.pow(densityRatioFull(ref, target), BREAK_EXPONENT);
+}
+
+/**
  * % change in density for each environmental factor in isolation,
  * holding the other three variables fixed at the reference values.
- * Gives an intuitive breakdown of what is driving the total change.
+ * NOTE: altitude factor correctly uses ISA pressure at target altitude,
+ * since air density cannot change with altitude without a pressure change.
  */
 export function factorBreakdown(ref, target) {
   const base = airDensityFull(ref.altFt, ref.tempF, ref.pressureInHg, ref.humidity);
   const pct  = (rho) => (rho / base - 1) * 100;
+  // Altitude: apply ISA pressure at target altitude (altFt itself is unused in airDensityFull)
+  const isaPressAtTargetAlt = isaPressurePa(target.altFt) / 3386.389;
   return {
-    altitude:    pct(airDensityFull(target.altFt,  ref.tempF,    ref.pressureInHg, ref.humidity)),
-    temperature: pct(airDensityFull(ref.altFt,     target.tempF, ref.pressureInHg, ref.humidity)),
-    pressure:    pct(airDensityFull(ref.altFt,     ref.tempF,    target.pressureInHg, ref.humidity)),
-    humidity:    pct(airDensityFull(ref.altFt,     ref.tempF,    ref.pressureInHg, target.humidity)),
+    altitude:    pct(airDensityFull(target.altFt,  ref.tempF,    isaPressAtTargetAlt,  ref.humidity)),
+    temperature: pct(airDensityFull(ref.altFt,     target.tempF, ref.pressureInHg,     ref.humidity)),
+    pressure:    pct(airDensityFull(ref.altFt,     ref.tempF,    target.pressureInHg,  ref.humidity)),
+    humidity:    pct(airDensityFull(ref.altFt,     ref.tempF,    ref.pressureInHg,     target.humidity)),
   };
 }
 
 /** % total density change from ref → target. */
 export function totalDensityChangePct(ref, target) {
+  return (densityRatioFull(ref, target) - 1) * 100;
+}
+
+/** % break change from ref → target (using calibrated exponent). */
+export function totalBreakChangePct(ref, target) {
   return (movementScaleFactorFull(ref, target) - 1) * 100;
+}
+
+// ── Wind effects ──────────────────────────────────────────────────────────────
+
+/**
+ * Horizontal break added by crosswind (inches).
+ * windDir: 0 = in from CF (headwind), 90 = toward 1B, 180 = out to CF, 270 = toward 3B.
+ * Positive = toward 1B.
+ * ~0.2 in/mph of crosswind — Nathan (2012) pitching wind analysis.
+ */
+export function windHorzEffect(windSpeedMph, windDirDeg) {
+  const crosswind = windSpeedMph * Math.sin(windDirDeg * Math.PI / 180);
+  return crosswind * 0.2;
+}
+
+/**
+ * Additive break scale delta from headwind/tailwind.
+ * Headwind increases effective air speed → more Magnus force → more break.
+ * ~0.2% break change per 1 mph headwind.
+ * Usage: adjIVB = origIVB * (movementScaleFactorFull(ref, target) + windVertScaleDelta(target) - windVertScaleDelta(ref))
+ */
+export function windVertScaleDelta(windSpeedMph, windDirDeg) {
+  const headwind = windSpeedMph * Math.cos(windDirDeg * Math.PI / 180);
+  return headwind * 0.002;
 }
 
 // ── Legacy single-variable exports (backward compat) ─────────────────────────

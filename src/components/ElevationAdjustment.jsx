@@ -3,10 +3,14 @@ import { getNormalizedPitchColor, PITCH_TYPE_ORDER } from '../utils/pitchTypes';
 import {
   airDensityFull,
   movementScaleFactorFull,
+  densityRatioFull,
   factorBreakdown,
   totalDensityChangePct,
+  totalBreakChangePct,
   isaPressureInHg,
   isaTemperatureF,
+  windHorzEffect,
+  windVertScaleDelta,
   VENUE_PRESETS,
   TIME_OF_DAY_PRESETS,
 } from '../utils/elevation';
@@ -29,12 +33,20 @@ function avg(arr) {
   return f.length ? f.reduce((a, b) => a + b, 0) / f.length : null;
 }
 
+const WIND_DIRS = [
+  { label: '↖ NW', deg: 315 }, { label: '↑ Out', deg: 180 }, { label: '↗ NE', deg: 45 },
+  { label: '← 3B', deg: 270 }, { label: '·',     deg: null }, { label: '→ 1B', deg: 90  },
+  { label: '↙ SW', deg: 225 }, { label: '↓ In',  deg: 0    }, { label: '↘ SE', deg: 135 },
+];
+
 function defaultCond(altFt = 0) {
   return {
     altFt,
     tempF: Math.round(isaTemperatureF(altFt)),
     pressureInHg: parseFloat(isaPressureInHg(altFt).toFixed(2)),
     humidity: 50,
+    windSpeed: 0,
+    windDir: 0,
   };
 }
 
@@ -137,6 +149,34 @@ function ConditionPanel({ label, cond, onChange, accentColor }) {
         onChange={v => set('humidity', v)} accentColor="#34D399"
         hint="Higher humidity → less dense air (H₂O lighter than N₂/O₂)"
       />
+
+      {/* Wind */}
+      <SliderRow label="Wind Speed" value={cond.windSpeed} min={0} max={30} step={1} unit="mph"
+        onChange={v => set('windSpeed', v)} accentColor="#94A3B8"
+      />
+      {cond.windSpeed > 0 && (
+        <div style={{ marginBottom: 12 }}>
+          <div style={{ color: '#6B7280', fontSize: 10, marginBottom: 5 }}>WIND DIRECTION</div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 3, maxWidth: 180 }}>
+            {WIND_DIRS.map((d, i) => {
+              if (d.deg === null) return <div key={i} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 9, color: '#374151' }}>CF↓</div>;
+              const active = Math.abs(cond.windDir - d.deg) < 23 || (cond.windDir > 337 && d.deg === 0);
+              return (
+                <button key={i} onClick={() => set('windDir', d.deg)}
+                  style={{
+                    padding: '3px 2px', borderRadius: 4, fontSize: 10, cursor: 'pointer',
+                    background: active ? '#94A3B822' : '#1F2937',
+                    border: `1px solid ${active ? '#94A3B8' : '#374151'}`,
+                    color: active ? '#D1D5DB' : '#6B7280',
+                  }}>{d.label}</button>
+              );
+            })}
+          </div>
+          <div style={{ color: '#4B5563', fontSize: 10, marginTop: 4 }}>
+            {(['In from CF (headwind)', 'NE', 'Cross → 1B', 'SE', 'Out to CF (tailwind)', 'SW', 'Cross ← 3B', 'NW'][Math.round(cond.windDir / 45) % 8])}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -168,9 +208,12 @@ export default function ElevationAdjustment({ pitches, selectedPitchTypes }) {
   const [targetCond, setTargetCond] = useState(defaultCond(5280));
 
   const scale = movementScaleFactorFull(refCond, targetCond);
-  const totalDelta = totalDensityChangePct(refCond, targetCond);
+  const densityDelta = totalDensityChangePct(refCond, targetCond);
+  const breakDelta = totalBreakChangePct(refCond, targetCond);
   const breakdown = factorBreakdown(refCond, targetCond);
-  const noChange = Math.abs(totalDelta) < 0.05;
+  const windHorzDelta = windHorzEffect(targetCond.windSpeed, targetCond.windDir) - windHorzEffect(refCond.windSpeed, refCond.windDir);
+  const windVertDelta = windVertScaleDelta(targetCond.windSpeed, targetCond.windDir) - windVertScaleDelta(refCond.windSpeed, refCond.windDir);
+  const noChange = Math.abs(breakDelta) < 0.05 && Math.abs(windHorzDelta) < 0.01;
 
   const visible = useMemo(() => pitches.filter(p =>
     p.horzBreak !== null && p.vertBreak !== null &&
@@ -188,10 +231,12 @@ export default function ElevationAdjustment({ pitches, selectedPitchTypes }) {
     return PITCH_TYPE_ORDER.filter(t => byType[t]).map(t => {
       const origIVB = avg(byType[t].ivb);
       const origHB  = avg(byType[t].hb);
+      const adjIVB = origIVB !== null ? origIVB * (scale + windVertDelta) : null;
+      const adjHB  = origHB  !== null ? origHB  * scale + windHorzDelta : null;
       return {
         pitchType: t, count: byType[t].ivb.length,
-        origIVB,  adjIVB:  origIVB !== null ? origIVB * scale : null, deltaIVB: origIVB !== null ? origIVB * (scale - 1) : null,
-        origHB,   adjHB:   origHB  !== null ? origHB  * scale : null, deltaHB:  origHB  !== null ? origHB  * (scale - 1) : null,
+        origIVB,  adjIVB,  deltaIVB: adjIVB !== null && origIVB !== null ? adjIVB - origIVB : null,
+        origHB,   adjHB,   deltaHB:  adjHB  !== null && origHB  !== null ? adjHB  - origHB  : null,
         color: getNormalizedPitchColor(t),
       };
     });
@@ -210,14 +255,18 @@ export default function ElevationAdjustment({ pitches, selectedPitchTypes }) {
       return {
         ...s,
         // Δ iVB / HB per standard unit change, all computed from BASE
-        altSens:   { ivb: ivb * scaleDelta(BASE, { ...BASE, altFt:        BASE.altFt + 1000 }),
-                     hb:  hb  * scaleDelta(BASE, { ...BASE, altFt:        BASE.altFt + 1000 }) },
+        // Altitude: also update pressureInHg to ISA (altFt alone has no effect in airDensityFull)
+        altSens:   { ivb: ivb * scaleDelta(BASE, { ...BASE, altFt: BASE.altFt + 1000, pressureInHg: isaPressureInHg(BASE.altFt + 1000) }),
+                     hb:  hb  * scaleDelta(BASE, { ...BASE, altFt: BASE.altFt + 1000, pressureInHg: isaPressureInHg(BASE.altFt + 1000) }) },
         tempSens:  { ivb: ivb * scaleDelta(BASE, { ...BASE, tempF:        BASE.tempF + 10   }),
                      hb:  hb  * scaleDelta(BASE, { ...BASE, tempF:        BASE.tempF + 10   }) },
         pressSens: { ivb: ivb * scaleDelta(BASE, { ...BASE, pressureInHg: BASE.pressureInHg - 0.5 }),
                      hb:  hb  * scaleDelta(BASE, { ...BASE, pressureInHg: BASE.pressureInHg - 0.5 }) },
         humSens:   { ivb: ivb * scaleDelta(BASE, { ...BASE, humidity:     BASE.humidity + 10  }),
                      hb:  hb  * scaleDelta(BASE, { ...BASE, humidity:     BASE.humidity + 10  }) },
+        // Wind: 10 mph crosswind toward 1B
+        windSens:  { ivb: ivb * 0.002 * 10,  // headwind component (at 0° wind) = 10*cos(0)=10 → +2% iVB
+                     hb:  windHorzEffect(10, 90) },  // 10 mph crosswind toward 1B → Δ HB
       };
     }).filter(Boolean);
   }, [typeStats]);
@@ -266,12 +315,21 @@ export default function ElevationAdjustment({ pitches, selectedPitchTypes }) {
         {/* Combined summary + factor breakdown */}
         <div style={{ marginTop: 16, padding: '14px 16px', background: '#0D1117', borderRadius: 8, border: '1px solid #1F2937' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 14, flexWrap: 'wrap' }}>
-            <span style={{ color: '#9CA3AF', fontSize: 13 }}>Density scale:</span>
-            <span style={{ color: '#F9FAFB', fontWeight: 700, fontSize: 16 }}>{(scale * 100).toFixed(1)}%</span>
-            <span style={{ color: '#6B7280', fontSize: 13 }}>→ break change</span>
-            <span style={{ color: deltaColor(totalDelta), fontWeight: 700, fontSize: 16 }}>
-              {totalDelta >= 0 ? '+' : ''}{totalDelta.toFixed(2)}%
+            <span style={{ color: '#9CA3AF', fontSize: 13 }}>Density Δ:</span>
+            <span style={{ color: deltaColor(densityDelta), fontWeight: 700, fontSize: 15 }}>
+              {densityDelta >= 0 ? '+' : ''}{densityDelta.toFixed(2)}%
             </span>
+            <span style={{ color: '#374151', fontSize: 13 }}>→</span>
+            <span style={{ color: '#9CA3AF', fontSize: 13 }}>Break Δ:</span>
+            <span style={{ color: deltaColor(breakDelta), fontWeight: 700, fontSize: 15 }}>
+              {breakDelta >= 0 ? '+' : ''}{breakDelta.toFixed(2)}%
+            </span>
+            <span style={{ color: '#4B5563', fontSize: 11 }}>(ρ^0.55 calibrated)</span>
+            {Math.abs(windHorzDelta) > 0.01 && (
+              <span style={{ color: deltaColor(windHorzDelta), fontSize: 13 }}>
+                Wind HB: {windHorzDelta >= 0 ? '+' : ''}{windHorzDelta.toFixed(1)}"
+              </span>
+            )}
           </div>
           <div style={{ color: '#6B7280', fontSize: 10, marginBottom: 8 }}>FACTOR CONTRIBUTIONS (independent, additive approximation)</div>
           <FactorBar label="Altitude"     value={breakdown.altitude}    maxAbs={maxFactorAbs} />
@@ -398,6 +456,7 @@ export default function ElevationAdjustment({ pitches, selectedPitchTypes }) {
                 <th style={{ padding: '6px 8px', textAlign: 'right', color: '#F97316', fontWeight: 500, whiteSpace: 'nowrap' }}>+10°F temp</th>
                 <th style={{ padding: '6px 8px', textAlign: 'right', color: '#A78BFA', fontWeight: 500, whiteSpace: 'nowrap' }}>−0.5 inHg</th>
                 <th style={{ padding: '6px 8px', textAlign: 'right', color: '#34D399', fontWeight: 500, whiteSpace: 'nowrap' }}>+10% RH</th>
+                <th style={{ padding: '6px 8px', textAlign: 'right', color: '#94A3B8', fontWeight: 500, whiteSpace: 'nowrap' }}>10mph cross</th>
               </tr>
             </thead>
             <tbody>
@@ -416,12 +475,19 @@ export default function ElevationAdjustment({ pitches, selectedPitchTypes }) {
                       <div style={{ color: '#4B5563', fontSize: 10 }}>HB {sign(sens.hb)}"</div>
                     </td>
                   ))}
+                  <td style={{ padding: '6px 8px', textAlign: 'right' }}>
+                    <div style={{ color: deltaColor(s.windSens.ivb), fontWeight: 600 }}>{sign(s.windSens.ivb)}"</div>
+                    <div style={{ color: deltaColor(s.windSens.hb), fontSize: 10, fontWeight: 600 }}>HB {sign(s.windSens.hb)}"</div>
+                  </td>
                 </tr>
               ))}
             </tbody>
           </table>
           <p style={{ color: '#4B5563', fontSize: 10, marginTop: 8 }}>
-            Computed from ISA moist-air density model. Sensitivities are independent (each factor varied from 72°F / 29.92 inHg / 50% RH / sea level baseline). Values scale linearly with actual break magnitude.
+            Computed from ISA moist-air density model with ρ^0.55 break scaling (Nathan 2008).
+            Sensitivities are independent (each factor varied from 72°F / 29.92 inHg / 50% RH / sea level).
+            Altitude sensitivity includes ISA pressure drop. Wind column = 10 mph crosswind toward 1B.
+            Values scale with actual break magnitude except wind HorzBreak (additive offset independent of break).
           </p>
         </div>
       )}
@@ -485,9 +551,10 @@ export default function ElevationAdjustment({ pitches, selectedPitchTypes }) {
         <strong style={{ color: '#9CA3AF' }}>Model:</strong>{' '}
         Moist-air density ρ = P<sub>d</sub>/(R<sub>d</sub>T) + P<sub>v</sub>/(R<sub>v</sub>T) where
         P<sub>d</sub> = P − P<sub>v</sub>, P<sub>v</sub> = RH · P<sub>sat</sub>(T) via Tetens formula.
-        Magnus force ∝ ρ, so iVB and HorzBreak scale with the density ratio.
-        Gravity (drop) is unaffected. Altitude sets ISA base pressure when adjusted;
-        barometric and temperature sliders override ISA defaults independently.
+        Break scales as ρ<sup>0.55</sup> (not linearly) — derived from Coors Field Statcast data
+        showing ~10% less break at 82% sea-level density (Nathan 2008, Kagan 2014);
+        linear scaling would overpredict at ~18%. Gravity (drop) is unaffected.
+        Wind: crosswind adds ±0.2 in/mph to HorzBreak; headwind adds ~0.2%/mph to Magnus force.
       </div>
     </div>
   );
