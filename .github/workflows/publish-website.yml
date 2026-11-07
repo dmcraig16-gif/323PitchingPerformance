@@ -1,0 +1,42 @@
+# Publishes the website/ folder to the gh-pages branch, which GitHub Pages serves.
+# Runs on every push that changes the site, or by hand from the Actions tab.
+name: Publish website
+
+on:
+  push:
+    branches: [claude/gracious-rubin-0c5vvm]
+    paths:
+      - "website/**"
+      - ".github/workflows/publish-website.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: publish-website
+  cancel-in-progress: true
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Copy the site (working docs left out)
+        run: |
+          mkdir -p "$RUNNER_TEMP/site"
+          cp -r website/. "$RUNNER_TEMP/site/"
+          find "$RUNNER_TEMP/site" -name "*.md" -delete
+          touch "$RUNNER_TEMP/site/.nojekyll"
+
+      - name: Push to gh-pages
+        working-directory: ${{ runner.temp }}/site
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          git init -q -b gh-pages
+          git add -A
+          git -c user.name="github-actions[bot]" -c user.email="41898282+github-actions[bot]@users.noreply.github.com" \
+            commit -qm "Publish website from ${GITHUB_SHA::7}"
+          git push -f "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" gh-pages
