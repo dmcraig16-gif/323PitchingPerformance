@@ -4,7 +4,17 @@ One page for 323pitchingperformance.com. It explains the Complete Pitching Progr
 
 Funnel: Instagram (@3.23performance) to the free 323 Community on Skool to this site to the application to a Calendly discovery call to Stripe enrollment to Trainerize. The Calendly link is not on this site; it goes at the end of the application, after submit. No prices on the site.
 
-Plain HTML. No build step. Put the `website/` folder on any static host (Netlify drop, Vercel, GitHub Pages, Cloudflare Pages).
+Plain HTML. No build step.
+
+## Publishing
+
+The site is published with GitHub Pages. Every push to `claude/gracious-rubin-0c5vvm` that changes `website/` runs `.github/workflows/publish-website.yml`, which copies this folder (minus the `.md` docs) to the `gh-pages` branch. GitHub Pages serves that branch.
+
+- Live link: https://dmcraig16-gif.github.io/323PitchingPerformance/
+- Instagram bio link: https://dmcraig16-gif.github.io/323PitchingPerformance/?utm_source=instagram&utm_medium=bio
+- One-time setup: repo Settings > Pages > Build and deployment > Source: Deploy from a branch > Branch: `gh-pages`, folder `/ (root)` > Save.
+- If the site moves to a different branch, change the branch name at the top of the workflow.
+- Custom domain (323pitchingperformance.com): add it under Settings > Pages > Custom domain and point the domain's DNS at GitHub Pages. The page's canonical and share-preview tags already use that domain.
 
 ## Files
 
