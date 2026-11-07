@@ -13,6 +13,7 @@ Plain HTML. No build step. Put the `website/` folder on any static host (Netlify
 | `index.html` | The page. Layout CSS and a small script live inside it |
 | `323-brand.css` | Brand tokens (colors, fonts, radius), the scripture block and the main button. Change a color here and the whole page follows |
 | `BRAND.md` | The brand guide. Every change to the site should pass it |
+| `APPLICATION.md` | The Tally application: every question, hidden fields, the redirect to Calendly, and where submissions go |
 | `assets/` | Logos, icons, share image, photos |
 
 ## Settings
@@ -23,11 +24,11 @@ Open `index.html` and edit the `CONFIG` block near the bottom:
 |---|---|
 | `applicationUrl` | The live application. Every Apply button goes here. While it's empty, the buttons scroll to the closing section, which says applications open soon and points to Instagram. Put the Calendly discovery call link (`https://calendly.com/323mperformance/3-23-performance-discovery-call`) on the application's thank-you screen |
 | `instagramHandle` | Instagram handle without the `@` |
-| `communityUrl` | Your free 323 Community on Skool. While empty, the footer's community block stays hidden |
+| `communityUrl` | The free 323 Community on Skool. Shows in the footer and as a "Not ready to apply?" line under the final Apply button. Empty hides both |
 
 ## How the Apply buttons work
 
-- Every Apply button goes to `applicationUrl`. Any `utm_` tags on the page URL carry through, so use this as your Instagram bio link and you can see which applications came from Instagram:
+- Every Apply button goes to `applicationUrl`. The program buttons also add `program=` so the application's hidden field records which program they picked. Any `utm_` tags on the page URL carry through, so use this as your Instagram bio link and you can see which applications came from Instagram:
   `https://323pitchingperformance.com/?utm_source=instagram&utm_medium=bio`
 - Program copy lives in the two program sections (`#complete`, `#mental-game`) and the side-by-side table (`#compare`). The FAQ holds "Why 6 months?" and "Why 3 months?".
 - Founding spots: the hero and the "Founding spots open" badge on both program sections. Update or remove them when spots fill.
