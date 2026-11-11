@@ -13,7 +13,7 @@ Published with GitHub Pages from its own repo, `dmcraig16-gif/323Website` (this 
 - Interim live link: https://dmcraig16-gif.github.io/323Website/
 - Instagram bio link: https://dmcraig16-gif.github.io/323Website/?utm_source=instagram&utm_medium=bio
 - One-time setup in `323Website`: Settings > Pages > Source: Deploy from a branch > `main`, `/ (root)` > Save.
-- When 323pitchingperformance.com is connected: add a `CNAME` file containing `323pitchingperformance.com` to `323Website`, point Squarespace DNS at GitHub Pages, and change the four interim URLs at the top of `index.html` back to the domain.
+- When 323pitchingperformance.com is connected: add a `CNAME` file containing `323pitchingperformance.com` to `323Website`, point Squarespace DNS at GitHub Pages, and change the three interim URLs at the top of `index.html` back to the domain.
 
 ## Files
 
