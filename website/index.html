@@ -22,6 +22,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=Cormorant+Garamond:ital,wght@1,500;1,600&family=Inter:wght@400;500;600&display=swap">
 <link rel="stylesheet" href="323-brand.css">
+<script async src="https://tally.so/widgets/embed.js"></script>
 <link rel="preload" as="image" href="assets/photos/mound-night-800.webp" imagesrcset="assets/photos/mound-night-800.webp 800w, assets/photos/mound-night-1600.webp 1600w" imagesizes="(min-width: 900px) 50vw, 100vw">
 <style>
 /* Layout: true-black editorial column. Hero, how 323 differs, the two program cards,
@@ -631,7 +632,10 @@ const CONFIG = {
   // The application. Every button on the page goes here.
   // The Calendly discovery call link belongs at the END of the application, after submit,
   // not on this page: https://calendly.com/323mperformance/3-23-performance-discovery-call
-  applicationUrl: "",
+  applicationUrl: "https://tally.so/r/je6ylY",
+  // Tally form ID. Apply buttons open the application as a popup on this page;
+  // if the popup can't load, they open applicationUrl instead.
+  tallyFormId: "je6ylY",
   // Instagram handle without the @
   instagramHandle: "3.23performance",
   // Free 323 Community on Skool. Leave empty to hide the footer block.
@@ -653,6 +657,16 @@ const CONFIG = {
       // Fills the application's hidden "program" field (see APPLICATION.md)
       if (a.dataset.program) url.searchParams.set("program", a.dataset.program);
       a.href = url.toString();
+      a.addEventListener("click", e => {
+        if (!CONFIG.tallyFormId || !window.Tally) return;   // fall back to the link
+        e.preventDefault();
+        const hiddenFields = Object.fromEntries(url.searchParams);
+        window.Tally.openPopup(CONFIG.tallyFormId, {
+          layout: "modal",
+          emoji: { text: "\u{1F44B}", animation: "wave" },
+          hiddenFields
+        });
+      });
     });
     $("#apply-pending").hidden = true;
   }

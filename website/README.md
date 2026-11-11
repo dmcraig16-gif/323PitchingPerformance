@@ -31,7 +31,8 @@ Open `index.html` and edit the `CONFIG` block near the bottom:
 
 | Setting | What it does |
 |---|---|
-| `applicationUrl` | The live application. Every Apply button goes here. While it's empty, the buttons scroll to the closing section, which says applications open soon and points to Instagram. Put the Calendly discovery call link (`https://calendly.com/323mperformance/3-23-performance-discovery-call`) on the application's thank-you screen |
+| `applicationUrl` | The Tally application's link (`https://tally.so/r/je6ylY`). Used if the popup can't load. Empty means the buttons go to an "Applications open soon" notice instead |
+| `tallyFormId` | Tally form ID (`je6ylY`). Apply buttons open the application as a popup on the page, passing `program` and `utm_` tags as hidden fields |
 | `instagramHandle` | Instagram handle without the `@` |
 | `communityUrl` | The free 323 Community on Skool. Shows in the footer and as a "Not ready to apply?" line under the final Apply button. Empty hides both |
 
