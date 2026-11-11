@@ -105,6 +105,6 @@ Pitching Development. Train Like an Athlete. The Mental Game. Identity on the Mo
 
 The website explains the programs. Every section ends at the application.
 
-Instagram (@3.23performance) to the free 323 Community on Skool to 323pitchingperformance.com to the application to a Calendly discovery call (linked only at the end of the application, after submit) to Stripe enrollment to Trainerize. No prices on the site.
+Instagram (@3.23performance) to the free 323 Community on Skool to 323pitchingperformance.com to the application to a Calendly discovery call (linked only at the end of the application, after submit) to Stripe enrollment to the athlete's program sheet and the 323 Community on Skool. No prices on the site.
 
 The in-person facility program is separate and never appears on this site.

@@ -2,7 +2,7 @@
 
 One page for 323pitchingperformance.com. It explains the Complete Pitching Program and Mental Game Mentorship, and every section ends at the application.
 
-Funnel: Instagram (@3.23performance) to the free 323 Community on Skool to this site to the application to a Calendly discovery call to Stripe enrollment to Trainerize. The Calendly link is not on this site; it goes at the end of the application, after submit. No prices on the site.
+Funnel: Instagram (@3.23performance) to the free 323 Community on Skool to this site to the application to a Calendly discovery call to Stripe enrollment to the athlete's program sheet and the 323 Community on Skool. The Calendly link is not on this site; it goes at the end of the application, after submit. No prices on the site.
 
 Plain HTML. No build step.
 
@@ -31,8 +31,10 @@ Open `index.html` and edit the `CONFIG` block near the bottom:
 
 | Setting | What it does |
 |---|---|
-| `applicationUrl` | The Tally application's link (`https://tally.so/r/je6ylY`). Used if the popup can't load. Empty means the buttons go to an "Applications open soon" notice instead |
-| `tallyFormId` | Tally form ID (`je6ylY`). Apply buttons open the application as a popup on the page, passing `program` and `utm_` tags as hidden fields |
+| `applicationUrl` | The Tally application's link (`https://tally.so/r/je6ylY`). Phones, Instagram's in-app browser, and any visitor whose popup can't load go here |
+| `tallyFormId` | Tally form ID (`je6ylY`). On desktop, Apply buttons open the application as a popup on the page. Both paths pass `program` and `utm_` tags as hidden fields |
+| `foundingSpotsLeft` | Founding spots still open (now 5). Drives the hero line and both program badges ("5 founding spots left"). Set to `0` to hide every founding mention, including the founding-rate sentence |
+| `coachInstagram` | The coach's Instagram handle (`dc.throws`), linked from the Your coach section |
 | `instagramHandle` | Instagram handle without the `@` |
 | `communityUrl` | The free 323 Community on Skool. Shows in the footer and as a "Not ready to apply?" line under the final Apply button. Empty hides both |
 
@@ -40,13 +42,13 @@ Open `index.html` and edit the `CONFIG` block near the bottom:
 
 - Every Apply button goes to `applicationUrl`. The program buttons also add `program=` so the application's hidden field records which program they picked. Any `utm_` tags on the page URL carry through, so use this as your Instagram bio link and you can see which applications came from Instagram:
   `https://323pitchingperformance.com/?utm_source=instagram&utm_medium=bio`
-- Program copy lives in the two program sections (`#complete`, `#mental-game`) and the side-by-side table (`#compare`). The FAQ holds "Why 6 months?" and "Why 3 months?".
-- Founding spots: the hero and the "Founding spots open" badge on both program sections. Update or remove them when spots fill.
+- Program copy lives in the two program sections (`#complete`, `#mental-game`) The FAQ holds "Why 6 months?" and "Why 3 months?".
+- Founding spots: set `foundingSpotsLeft` in CONFIG when an athlete enrolls. The hero line and both badges update; `0` hides them.
 - Page order is built to convert: what 323 is and Apply on the first screen, the two programs, compare, how to enroll, then why 323, beliefs and FAQ for visitors who need more.
 
 ## Section links
 
-Use these in stories and DMs: `/#programs` (what we offer), `/#complete`, `/#mental-game`, `/#compare`, `/#how` (how to enroll), `/#faq`, `/#different` (why 323), `/#mission` (what we believe). Older links (`/#apply`, `/#paths`, `/#programming`, `/#different`, `/#what`, `/#proof`, `/#program-remote`, `/#program-inperson`, `/#program-mental`, `/#coach`, `/#standard`, `/#inside`) still land on a sensible section.
+Use these in stories and DMs: `/#different` (why 323), `/#coach-bio` (your coach), `/#programs` (what we offer), `/#complete`, `/#mental-game`, `/#how` (how to enroll), `/#faq`, `/#mission` (what we believe). Older links (`/#apply`, `/#paths`, `/#compare`, `/#programming`, `/#different`, `/#what`, `/#proof`, `/#program-remote`, `/#program-inperson`, `/#program-mental`, `/#coach`, `/#standard`, `/#inside`) still land on a sensible section.
 
 ## Photos
 
