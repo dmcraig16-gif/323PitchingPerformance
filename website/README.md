@@ -8,7 +8,7 @@ Plain HTML. No build step.
 
 ## Publishing
 
-Published with GitHub Pages from its own repo, `dmcraig16-gif/323Website` (this repo's Pages address belongs to the pitch visualizer). Copy this folder there without the `.md` docs.
+Live from its own repo, `dmcraig16-gif/323Website`, with GitHub Pages on `main` (this repo's Pages address belongs to the pitch visualizer). To update the live site, copy this folder there without the `.md` docs and push to `main`. Pages republishes within a couple of minutes.
 
 - Interim live link: https://dmcraig16-gif.github.io/323Website/
 - Instagram bio link: https://dmcraig16-gif.github.io/323Website/?utm_source=instagram&utm_medium=bio
