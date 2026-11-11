@@ -8,7 +8,12 @@ Plain HTML. No build step.
 
 ## Publishing
 
-Not published yet. It will go live at 323pitchingperformance.com. This repo's GitHub Pages address (dmcraig16-gif.github.io/323PitchingPerformance) belongs to the pitch visualizer, so the website needs its own hosting: for example its own GitHub repo with the domain attached, or Netlify or Cloudflare Pages pointed at this folder.
+Published with GitHub Pages from its own repo, `dmcraig16-gif/323Website` (this repo's Pages address belongs to the pitch visualizer). Copy this folder there without the `.md` docs.
+
+- Interim live link: https://dmcraig16-gif.github.io/323Website/
+- Instagram bio link: https://dmcraig16-gif.github.io/323Website/?utm_source=instagram&utm_medium=bio
+- One-time setup in `323Website`: Settings > Pages > Source: Deploy from a branch > `main`, `/ (root)` > Save.
+- When 323pitchingperformance.com is connected: add a `CNAME` file containing `323pitchingperformance.com` to `323Website`, point Squarespace DNS at GitHub Pages, and change the four interim URLs at the top of `index.html` back to the domain.
 
 ## Files
 
