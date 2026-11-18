@@ -39,19 +39,21 @@ Paste this into your site builder, AI website tool, or repo README so every page
 
 ## Brand Colors
 
+Blue, red and navy come from the 323 logo (`assets/logo-323.png`).
+
 | Name | Hex | Use |
 |---|---|---|
 | True Black | `#000000` | Backgrounds, primary base |
-| White | `#ffffff` | Headlines and body text on black |
-| 323 Blue | `#0289eb` | Primary accent, key words, links, buttons |
-| 323 Red | `#ff0707` | Sparing emphasis only |
-| Bone* | `#f2f0eb` | Light section backgrounds |
-| Steel* | `#8a8f98` | Secondary text, captions, dividers |
-| Dark Blue* | `#0270c2` | Hover states, depth |
+| White | `#ffffff` | Headlines and body text on black. Also "PITCHING" and the wave in the logo on dark backgrounds |
+| 323 Blue | `#005cd4` | Buttons (with white text), borders, accents, one key word per large headline |
+| 323 Blue, text tint | `#2976db` | Small blue text and links on black |
+| 323 Red | `#d81820` | Sparing emphasis only |
+| 323 Navy | `#001840` | Light backgrounds only. It disappears on black |
+| Bone | `#f2f0eb` | Light section backgrounds |
+| Steel | `#8a8f98` | Secondary text, captions, dividers |
+| Dark Blue | `#004bb0` | Hover states, blue on light backgrounds |
 
-*Derived placeholders. Swap in the Canva kit values once they're added to the Brand Identity doc.
-
-**Contrast notes:** Blue, red, white, and steel all pass AA as text on black. On a blue button, use black text. White on blue or red only passes at large, bold sizes.
+**Contrast notes:** On black, the logo blue is 3.5:1, so use it for fills and large headlines only; small text and links use the `#2976db` tint (4.7:1). Buttons are 323 Blue with white text (6:1). Red on black is 4.1:1, for large text only.
 
 ## Typography
 

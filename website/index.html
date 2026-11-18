@@ -51,8 +51,8 @@ body {
 @media (min-width: 768px) { body { font-size: 18px; } }
 body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 60; background: var(--black); }
 img { max-width: 100%; display: block; }
-a { color: var(--blue); text-underline-offset: 3px; }
-a:hover { color: var(--blue-dark); }
+a { color: var(--blue-text); text-underline-offset: 3px; }
+a:hover { color: var(--white); }
 :focus-visible { outline: 2px solid var(--blue); outline-offset: 3px; }
 h1, h2, h3 { font-family: var(--font-head); font-weight: 400; line-height: 1; margin: 0; text-transform: uppercase; letter-spacing: 0.01em; text-wrap: balance; }
 p { margin: 0; }
@@ -73,8 +73,8 @@ p { margin: 0; }
 .muted { color: var(--steel); }
 
 /* Skip link */
-.skip { position: absolute; left: 16px; top: -100px; z-index: 100; padding: 10px 16px; background: var(--blue); color: var(--black); font-weight: 600; text-decoration: none; border-radius: var(--radius); }
-.skip:focus { top: calc(env(safe-area-inset-top, 0px) + 12px); color: var(--black); }
+.skip { position: absolute; left: 16px; top: -100px; z-index: 100; padding: 10px 16px; background: var(--blue); color: var(--white); font-weight: 600; text-decoration: none; border-radius: var(--radius); }
+.skip:focus { top: calc(env(safe-area-inset-top, 0px) + 12px); color: var(--white); }
 
 /* Button with a short note under it */
 .cta-group { display: grid; gap: var(--space); justify-items: start; margin-top: var(--space); }
@@ -90,9 +90,8 @@ p { margin: 0; }
 .logo { display: flex; align-items: center; gap: var(--space); text-decoration: none; color: var(--white); }
 .logo:hover { color: var(--white); }
 .logo:focus-visible { outline: 2px solid var(--blue); outline-offset: 4px; }
-.logo img { width: 32px; height: 32px; }
-.logo span { font-family: var(--font-head); font-size: 1.2rem; letter-spacing: 0.03em; text-transform: uppercase; }
-@media (max-width: 419px) { .logo span { display: none; } }
+.logo picture, .logo img { display: block; }
+.logo img { width: auto; height: 42px; }
 .nav-links { display: none; gap: calc(var(--space) * 4); }
 .nav-links a { padding-block: 10px; text-decoration: none; font-weight: 500; font-size: 0.92rem; color: var(--steel); }
 .nav-links a:hover { color: var(--white); }
@@ -112,20 +111,20 @@ p { margin: 0; }
 .hero-bg img { object-fit: cover; object-position: 52% 35%; }
 .hero-bg::after { content: ""; position: absolute; inset: 0; background: linear-gradient(to bottom, rgba(0,0,0,0.74), rgba(0,0,0,0.8) 70%, var(--black)); }
 .hero-home { display: grid; justify-items: center; gap: calc(var(--space) * 1.75); text-align: center; }
-.hero-logo { width: 128px; height: auto; }
+.hero-logo { display: block; width: 220px; height: auto; }
 .hero h1 { font-size: clamp(2.5rem, 1.5rem + 4.6vw, 4.75rem); line-height: 0.95; max-width: 15ch; }
 .hero-sub { font-size: clamp(1rem, 0.95rem + 0.3vw, 1.2rem); max-width: 34rem; }
 .hero-verse { max-width: 34rem; margin-top: var(--space); font-family: var(--font-script); font-style: italic; font-weight: 500; font-size: 1.05rem; line-height: 1.35; color: var(--white); }
-.hero-verse cite { font-style: italic; font-weight: 600; color: var(--blue); white-space: nowrap; }
+.hero-verse cite { font-style: italic; font-weight: 600; color: var(--blue-text); white-space: nowrap; }
 /* Short phone screens: tighten so the four tiles stay on the first screen */
 @media (max-width: 599px) and (max-height: 860px) {
   .hero { padding-block: calc(var(--space) * 2) calc(var(--space) * 3); }
   .hero-home { gap: calc(var(--space) * 1.25); }
-  .hero-logo { width: 96px; }
+  .hero-logo { width: 176px; }
   .tile { min-height: 60px; padding-block: 8px; }
 }
 @media (max-width: 599px) and (max-height: 700px) {
-  .hero-logo { width: 72px; }
+  .hero-logo { width: 100px; }
   .hero h1 { font-size: 2.2rem; }
   .hero-sub { font-size: 0.95rem; line-height: 1.45; }
   .hero-home { gap: var(--space); }
@@ -133,7 +132,7 @@ p { margin: 0; }
   .tile-sub { font-size: 0.75rem; }
 }
 @media (min-width: 768px) {
-  .hero-logo { width: 176px; }
+  .hero-logo { width: 300px; }
   .hero-home { gap: calc(var(--space) * 2.25); }
   .hero-verse { font-size: 1.2rem; }
 }
@@ -245,7 +244,7 @@ p { margin: 0; }
 .faq summary::-webkit-details-marker { display: none; }
 .faq summary::after { content: "+"; flex: none; font-family: var(--font-head); font-size: 1.6rem; line-height: 1; color: var(--blue); transition: transform .15s; }
 .faq details[open] summary::after { transform: rotate(45deg); }
-.faq summary:hover { color: var(--blue); }
+.faq summary:hover { color: var(--blue-text); }
 .faq details p { padding-bottom: calc(var(--space) * 2.5); color: var(--steel); max-width: 44rem; }
 
 /* Closing line */
@@ -260,15 +259,15 @@ p { margin: 0; }
 .f-label { font-weight: 600; font-size: 0.8rem; letter-spacing: 0.14em; color: var(--steel); margin-bottom: calc(var(--space) * 2); white-space: pre; }
 .f-links { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--space); }
 .f-links a { display: inline-block; padding-block: 6px; color: var(--white); text-decoration: none; }
-.f-links a:hover { color: var(--blue); }
+.f-links a:hover { color: var(--blue-text); }
 .socials { display: flex; gap: calc(var(--space) * 1.5); align-items: center; }
 .socials a { display: grid; place-items: center; width: 44px; height: 44px; border: 1px solid var(--line); border-radius: var(--radius); color: var(--white); }
-.socials a:hover { border-color: var(--blue); color: var(--blue); }
+.socials a:hover { border-color: var(--blue); color: var(--blue-text); }
 .socials svg { width: 20px; height: 20px; }
 .f-copy { grid-column: 1 / -1; padding-top: calc(var(--space) * 3); border-top: 1px solid var(--line); font-size: 0.85rem; color: var(--steel); }
 .community p { color: var(--steel); margin-bottom: calc(var(--space) * 2); max-width: 22rem; }
 .btn--outline { background: transparent; color: var(--white); box-shadow: inset 0 0 0 1px var(--line); }
-.btn--outline:hover { background: transparent; color: var(--blue); box-shadow: inset 0 0 0 1px var(--blue); }
+.btn--outline:hover { background: transparent; color: var(--blue-text); box-shadow: inset 0 0 0 1px var(--blue); }
 
 /* Sticky call button on phones */
 .mobile-cta {
@@ -290,8 +289,10 @@ p { margin: 0; }
 <header class="nav">
   <div class="wrap">
     <a class="logo" href="#top" aria-label="323 Pitching Performance, back to top">
-      <img src="assets/icon-323.png" alt="" width="32" height="32">
-      <span>323 Pitching</span>
+      <picture>
+        <source type="image/webp" srcset="assets/logo-323-240.webp">
+        <img src="assets/logo-323-240.png" alt="" width="240" height="158">
+      </picture>
     </a>
     <nav class="nav-links" aria-label="Main">
       <a href="#programs">Programs</a>
@@ -313,7 +314,10 @@ p { margin: 0; }
       </picture>
     </figure>
     <div class="wrap hero-home">
-      <img class="hero-logo" src="assets/logo-primary.png" alt="323 Pitching Performance" width="425" height="415">
+      <picture>
+        <source type="image/webp" srcset="assets/logo-323-720.webp 720w, assets/logo-323.webp 1369w" sizes="(min-width: 768px) 300px, 220px">
+        <img class="hero-logo" src="assets/logo-323-720.png" srcset="assets/logo-323-720.png 720w, assets/logo-323.png 1369w" sizes="(min-width: 768px) 300px, 220px" alt="323 Pitching Performance" width="720" height="475" fetchpriority="high">
+      </picture>
       <p class="eyebrow">323 Performance</p>
       <h1 id="hero-title">Raise the <span class="key">ceiling</span>. Play up to it.</h1>
       <p class="hero-sub">Remote, faith-based pitching development for high school and college pitchers and their parents.</p>

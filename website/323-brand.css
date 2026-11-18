@@ -1,12 +1,14 @@
 /* 323 Pitching Performance brand tokens.
-   Source: BRAND.md. Change a value here and every page follows.
-   Bone, Steel and Dark Blue are derived placeholders until the Canva kit values are added. */
+   Blue, red and navy are sampled from the 323 logo (assets/logo-323.png).
+   Change a value here and every page follows. */
 :root {
   --black: #000000;        /* backgrounds, primary base */
   --white: #ffffff;        /* headlines and body text on black */
-  --blue: #0289eb;         /* 323 Blue: one key word per headline, links, main button */
-  --blue-dark: #0270c2;    /* hover states, depth */
-  --red: #ff0707;          /* sparing: one word, stat or badge per screen. Never body text or a background */
+  --blue: #005cd4;         /* 323 Blue (logo): buttons, borders, accents, one key word per large headline */
+  --blue-text: #2976db;    /* 323 Blue tint for small text and links on black (4.7:1; the logo blue is 3.5:1) */
+  --blue-dark: #004bb0;    /* hover states, depth, blue on light backgrounds */
+  --red: #d81820;          /* 323 Red (logo). Sparing: one word or stat per screen. Never body text or a background */
+  --navy: #001840;         /* 323 Navy (logo). Light backgrounds only; on black it disappears */
   --bone: #f2f0eb;         /* light section backgrounds */
   --steel: #8a8f98;        /* secondary text, captions, dividers */
 
@@ -37,14 +39,14 @@
   font-weight: 500;
   line-height: 1.3;
 }
-.scripture-block cite { display: block; margin-top: 6px; font-style: italic; font-weight: 600; color: var(--blue); }
+.scripture-block cite { display: block; margin-top: 6px; font-style: italic; font-weight: 600; color: var(--blue-text); }
 
-/* Main button: 323 Blue with black text */
+/* Main button: 323 Blue with white text (6:1) */
 .btn {
   display: inline-flex; align-items: center; justify-content: center;
   min-height: 52px; padding: 0 calc(var(--space) * 3.5);
   border: 0; border-radius: var(--radius);
-  background: var(--blue); color: var(--black);
+  background: var(--blue); color: var(--white);
   font-family: var(--font-body); font-weight: 600; font-size: 0.95rem;
   letter-spacing: 0.06em; text-transform: uppercase; text-decoration: none;
   cursor: pointer; transition: background-color .15s;
