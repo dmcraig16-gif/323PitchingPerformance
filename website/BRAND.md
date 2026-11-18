@@ -103,6 +103,8 @@ Every page runs through two lines. If it doesn't fit, it doesn't ship.
 
 ## What We Believe
 
+**Who we are:** Elite baseball development with purpose. We invest in the whole athlete: elite pitching development from a professional pitcher, with the mental and spiritual side trained right alongside it.
+
 - **Identity first. The biggest one.** Who the athlete is comes before anything they throw. They compete from identity, never for it.
 - Childlikeness must be restored. Athletes compete best when they play like a kid again.
 - Programming is individual. Every athlete gets a plan built for their body, needs and season.

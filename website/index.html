@@ -248,7 +248,11 @@ p { margin: 0; }
 .believe { background: var(--bone); color: var(--black); }
 .believe .label, .believe .muted { color: rgba(0, 0, 0, 0.62); }
 .believe .key { color: var(--blue-dark); }
-.belief-lead { display: grid; gap: calc(var(--space) * 1.5); padding-block: calc(var(--space) * 4); border-top: 3px solid var(--black); }
+.believe-mission { display: grid; gap: calc(var(--space) * 1.5); padding-block: calc(var(--space) * 4); border-top: 3px solid var(--black); }
+.mission-line { font-family: var(--font-head); font-style: italic; font-weight: 800; font-stretch: 108%; text-transform: uppercase; line-height: 0.98; font-size: clamp(1.9rem, 1.3rem + 2.6vw, 3.2rem); max-width: 22ch; text-wrap: balance; }
+.mission-text { font-size: clamp(1.1rem, 1rem + 0.5vw, 1.3rem); max-width: 40rem; }
+.mission-text b { font-weight: 600; box-shadow: inset 0 -0.35em 0 rgba(0, 92, 212, 0.18); }
+.belief-lead { display: grid; gap: calc(var(--space) * 1.5); padding-block: calc(var(--space) * 4); border-top: 1px solid var(--line-dark); }
 .belief-lead h3 { font-size: clamp(2.5rem, 1.7rem + 3.6vw, 4.2rem); }
 .belief-lead p:not(.label) { font-size: clamp(1.1rem, 1rem + 0.5vw, 1.3rem); max-width: 40rem; }
 .beliefs { list-style: none; margin: 0; padding: 0; display: grid; border-top: 1px solid var(--line-dark); }
@@ -648,6 +652,11 @@ p { margin: 0; }
       <div class="section-head">
         <h2 class="section-title" id="believe-title">What we <span class="key">believe</span></h2>
         <p class="section-lead muted">You don't need more talent. You need less noise.</p>
+      </div>
+      <div class="believe-mission">
+        <p class="label">Who we are</p>
+        <p class="mission-line">Elite baseball development with <span class="key">purpose</span>.</p>
+        <p class="mission-text">We invest in the <b>whole athlete</b>. Elite pitching development from a professional pitcher, with the mental and spiritual side trained right alongside it.</p>
       </div>
       <div class="belief-lead">
         <p class="label">Above all</p>
