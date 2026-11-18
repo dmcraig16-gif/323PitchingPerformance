@@ -1,25 +1,32 @@
 /* 323 Pitching Performance brand tokens.
    Blue, red and navy are sampled from the 323 logo (assets/logo-323.png).
-   Change a value here and every page follows. */
+   The shapes and type come from the logo too: heavy slanted lettering, chamfered numerals,
+   red arrow tips, mountain slopes. Change a value here and every page follows. */
 :root {
   --black: #000000;        /* backgrounds, primary base */
   --white: #ffffff;        /* headlines and body text on black */
-  --blue: #005cd4;         /* 323 Blue (logo): buttons, borders, accents, one key word per large headline */
+  --blue: #005cd4;         /* 323 Blue (logo): buttons, bars, accents, one key word per large headline */
   --blue-text: #2976db;    /* 323 Blue tint for small text and links on black (4.7:1; the logo blue is 3.5:1) */
   --blue-dark: #004bb0;    /* hover states, depth, blue on light backgrounds */
-  --red: #d81820;          /* 323 Red (logo). Sparing: one word or stat per screen. Never body text or a background */
-  --navy: #001840;         /* 323 Navy (logo). Light backgrounds only; on black it disappears */
+  --red: #d81820;          /* 323 Red (logo). Sparing: arrow tips and one word per screen. Never body text or a background */
+  --navy: #001840;         /* 323 Navy (logo). Light backgrounds only; on black use --panel */
   --bone: #f2f0eb;         /* light section backgrounds */
   --steel: #8a8f98;        /* secondary text, captions, dividers */
 
-  --line: rgba(255, 255, 255, 0.14);
+  --panel: rgba(0, 24, 64, 0.5);        /* 323 Navy over black: cards, tiles, panels */
+  --panel-hi: rgba(0, 92, 212, 0.2);    /* panel on hover */
+  --wash: linear-gradient(180deg, rgba(0, 24, 64, 0.62), rgba(0, 24, 64, 0.18));   /* navy section band */
+  --line: rgba(255, 255, 255, 0.12);
   --line-dark: rgba(0, 0, 0, 0.14);
 
-  --font-head: "Anton", "Bebas Neue", Impact, "Arial Narrow", sans-serif;      /* headlines, uppercase */
-  --font-script: "Cormorant Garamond", Georgia, "Times New Roman", serif;     /* scripture and quotes only, italic */
-  --font-body: "Inter", "Helvetica Neue", Arial, sans-serif;                  /* body, buttons, forms */
+  --font-head: "Saira", "Arial Narrow", Arial, sans-serif;               /* headlines and labels: italic, heavy, like PITCHING */
+  --font-body: "Barlow", "Helvetica Neue", Arial, sans-serif;            /* body copy */
+  --font-script: "Cormorant Garamond", Georgia, "Times New Roman", serif;  /* scripture and quotes only, italic */
 
-  --radius: 4px;
+  /* Chamfered corners, like the cut corners on the 323 numerals */
+  --cut: 12px;
+  --chamfer: polygon(var(--cut) 0, 100% 0, 100% calc(100% - var(--cut)), calc(100% - var(--cut)) 100%, 0 100%, 0 var(--cut));
+  --radius: 0;
   --space: 8px;
   color-scheme: dark;
 }
@@ -41,15 +48,15 @@
 }
 .scripture-block cite { display: block; margin-top: 6px; font-style: italic; font-weight: 600; color: var(--blue-text); }
 
-/* Main button: 323 Blue with white text (6:1) */
+/* Main button: 323 Blue, white slanted caps (6:1), chamfered */
 .btn {
   display: inline-flex; align-items: center; justify-content: center;
   min-height: 52px; padding: 0 calc(var(--space) * 3.5);
-  border: 0; border-radius: var(--radius);
+  border: 0; border-radius: 0; clip-path: var(--chamfer);
   background: var(--blue); color: var(--white);
-  font-family: var(--font-body); font-weight: 600; font-size: 0.95rem;
-  letter-spacing: 0.06em; text-transform: uppercase; text-decoration: none;
+  font-family: var(--font-head); font-style: italic; font-weight: 700; font-stretch: 110%; font-size: 1rem;
+  letter-spacing: 0.05em; text-transform: uppercase; text-decoration: none;
   cursor: pointer; transition: background-color .15s;
 }
-.btn:hover { background: var(--blue-dark); }
-.btn:focus-visible { outline: 2px solid var(--white); outline-offset: 3px; }
+.btn:hover { background: var(--blue-dark); color: var(--white); }
+.btn:focus-visible { outline: 2px solid var(--white); outline-offset: -5px; }

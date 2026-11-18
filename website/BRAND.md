@@ -32,8 +32,8 @@ Paste this into your site builder, AI website tool, or repo README so every page
 - **Accent:** 323 Blue on one key word per headline, links, and the main button.
 - **Red:** Sparing. One word, one stat, or one badge per screen. Never body text. Never a background.
 - **Scripture:** Always italic serif, set apart in its own block with a blue rule on the left. Never buried in body copy.
-- **Headlines:** Tall condensed caps. Short. A statement, not a sentence.
-- **Layout:** Generous space, sharp corners (4px radius), strong contrast. One clear call to action per section.
+- **Headlines:** Heavy slanted caps (Saira). Short. A statement, not a sentence.
+- **Layout:** Generous space, chamfered corners, strong contrast. One clear call to action per section.
 - **Photos:** Real athletes and real work. Bullpens, training, film. No stock hype imagery.
 - **Rule:** Every section ends at the application. The discovery call is booked after the application is submitted.
 
@@ -59,9 +59,19 @@ Blue, red and navy come from the 323 logo (`assets/logo-323.png`).
 
 | Role | Font | Use |
 |---|---|---|
-| Headlines | Anton (Bebas Neue fallback) | Hooks, titles, big statements, uppercase |
+| Headlines | Saira, italic, 800, slightly wide (108%) | Hooks, titles, big statements, uppercase. Echoes "PITCHING" in the logo |
+| Labels | Saira, italic, 600, wide (120 to 125%), letter-spaced | Small uppercase labels and the eyebrow. Echoes "PERFORMANCE" in the logo |
+| Body | Barlow | All website body copy |
 | Scripture | Cormorant Garamond Italic | Verses and quotes only |
-| Body | Inter | All website body copy, buttons, forms |
+
+## Shapes and details
+
+- **Chamfered corners**, like the cut corners on the 323 numerals: buttons, tiles, cards, panels and photos. No rounded corners.
+- **Red arrow tips** flank the "323 Performance" eyebrow, like the arrows beside 323 in the logo.
+- **Speed bar** under section headlines: a short blue bar with a red tip.
+- **Navy panels** (323 Navy over black) for cards and tiles instead of gray outlines.
+- **Mountain-slope edges:** navy-wash sections open on a slanted top edge.
+- **Jersey-number steps:** outlined, slanted numerals.
 
 ## Brand Voice
 
