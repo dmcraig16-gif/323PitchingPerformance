@@ -50,7 +50,7 @@ Intro text: *About five minutes. When you submit, you'll pick a time for a free 
 | 18 | What's getting in the way right now? | Long text. Help text: *Mechanics, velocity, confidence, a bad outing that sticks, anything.* | No |
 | 19 | When is the athlete's season? | Checkboxes: High school spring / Summer travel / Fall ball / Off-season right now | Yes |
 | 20 | Days per week available to train | Multiple choice: 2 / 3 / 4 / 5 or more | Yes |
-| 21 | Commitment | Checkbox: *I understand the Complete Pitching Program has a 6-month minimum and Mental Game Mentorship has a 3-month minimum.* | Yes |
+| 21 | Commitment | Checkbox: *I understand both programs run month to month, and that 6 and 12 month plans are encouraged for lasting progress.* | Yes |
 | 22 | How did you hear about 323? | Multiple choice: Instagram / 323 Community on Skool / Friend or teammate / Coach / Other | Yes |
 | 23 | Anything else we should know? | Long text | No |
 

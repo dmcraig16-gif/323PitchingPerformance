@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>323 Pitching Performance</title>
-<meta name="description" content="Remote, individualized, faith-based development for high school pitchers and their parents. The Complete Pitching Program and Mental Game Mentorship. Colossians 3:23.">
+<meta name="description" content="Remote, individualized, faith-based development for high school and college pitchers and their parents. The Complete Pitching Program and Mental Game Mentorship. Colossians 3:23.">
 <meta name="theme-color" content="#000000">
 <meta property="og:title" content="323 Pitching Performance">
 <meta property="og:description" content="Raise the ceiling. Play up to it. Apply for the Complete Pitching Program or Mental Game Mentorship.">
@@ -160,11 +160,11 @@ p { margin: 0; }
 @media (max-width: 599px) and (max-height: 860px) {
   .hero { padding-block: calc(var(--space) * 2) calc(var(--verse-bar) + var(--space) * 2); }
   .hero-home { gap: calc(var(--space) * 1.25); }
-  .hero-logo { width: 176px; }
+  .hero-logo { width: 150px; }
   .tile { min-height: 60px; padding-block: 8px; }
 }
 @media (max-width: 599px) and (max-height: 700px) {
-  .hero-logo { width: 100px; }
+  .hero-logo { width: 76px; }
   .hero h1 { font-size: 2rem; }
   .hero-sub { font-size: 0.95rem; line-height: 1.45; }
   .hero-home { gap: var(--space); }
@@ -180,7 +180,10 @@ p { margin: 0; }
 
 /* Four ways in: chamfered navy tiles with a blue edge */
 .tiles { display: grid; gap: 12px; width: 100%; max-width: 720px; margin-top: var(--space); }
-@media (min-width: 600px) { .tiles { grid-template-columns: 1fr 1fr; gap: 14px; } }
+@media (min-width: 600px) {
+  .tiles { grid-template-columns: 1fr 1fr; grid-auto-rows: 1fr; gap: 14px; }
+  .tiles .tile { justify-content: flex-start; }   /* equal-height tiles, content on top */
+}
 .tile {
   display: flex; flex-direction: column; justify-content: center; gap: 2px;
   min-height: 64px; padding: 10px 18px 10px 20px;
@@ -373,13 +376,13 @@ p { margin: 0; }
       <nav class="tiles" aria-label="Where to start">
         <a class="tile" href="#complete">
           <span class="tile-label">Complete Pitching Program</span>
-          <span class="tile-sub">Velocity, arsenal, command, and a body built to carry it</span>
+          <span class="tile-sub">Improve velocity, pitch quality and command. Build a body capable of peak performance.</span>
         </a>
         <a class="tile" href="#mental-game">
           <span class="tile-label">Mental Game Mentorship</span>
           <span class="tile-sub">Focus, pressure, identity, and how you compete</span>
         </a>
-        <a class="tile" href="#" data-community target="_blank" rel="noopener">
+        <a class="tile" href="https://www.skool.com/323-pitching-performance-1445/about" data-community target="_blank" rel="noopener">
           <span class="tile-label">Join the Free 323 Community</span>
           <span class="tile-sub">Free on Skool. Learn with other pitchers</span>
         </a>
@@ -465,7 +468,7 @@ p { margin: 0; }
           <p class="muted">Throwing, strength, and mental game programmed together around your season, with weekly 1-on-1 coaching and video feedback within 24 hours.</p>
           <dl class="card-facts">
             <div><dt>Best for</dt><dd>Pitchers who need a full throwing and lifting plan</dd></div>
-            <div><dt>Commitment</dt><dd>6-month minimum</dd></div>
+            <div><dt>Commitment</dt><dd>Month to month. Longer plans encouraged.</dd></div>
           </dl>
           <div class="card-actions">
             <a class="btn" href="#apply" data-apply data-program="Complete Pitching Program">Apply Now</a>
@@ -478,7 +481,7 @@ p { margin: 0; }
           <p class="muted">Weekly 1-on-1 mentorship on focus, pressure, confidence, and identity, so you compete freely and perform to the potential you've built.</p>
           <dl class="card-facts">
             <div><dt>Best for</dt><dd>Pitchers who already have a throwing plan</dd></div>
-            <div><dt>Commitment</dt><dd>3-month minimum</dd></div>
+            <div><dt>Commitment</dt><dd>Month to month. Longer plans encouraged.</dd></div>
           </dl>
           <div class="card-actions">
             <a class="btn" href="#apply" data-apply data-program="Mental Game Mentorship">Apply Now</a>
@@ -522,11 +525,11 @@ p { margin: 0; }
       <div class="program-details">
         <div class="detail">
           <p class="label">Who it's for</p>
-          <p>High school pitchers who are serious about getting better and need a throwing and lifting plan, not just mentorship.</p>
+          <p>High school and college pitchers who are serious about getting better and need a throwing and lifting plan, not just mentorship.</p>
         </div>
         <div class="commitment">
           <p class="label">Commitment</p>
-          <p><b>6-month minimum.</b> Real movement change takes a full training cycle.<span data-founding-terms> Founding athletes keep their founding rate as long as they stay enrolled.</span></p>
+          <p><b>Month to month, or save with a 6 or 12 month plan.</b> We encourage the longer plans. Velocity and command don't change in a month. Lasting progress comes from committed work over a full training cycle.</p>
         </div>
         <a class="btn" href="#apply" data-apply data-program="Complete Pitching Program">Apply for the Complete Pitching Program</a>
       </div>
@@ -566,11 +569,11 @@ p { margin: 0; }
       <div class="program-details">
         <div class="detail">
           <p class="label">Who it's for</p>
-          <p>Pitchers who have a throwing and strength plan they trust but don't perform up to it in games, or who carry pressure and bad outings longer than they should.</p>
+          <p>High school and college pitchers who have a throwing and strength plan they trust but don't perform up to it in games, or who carry pressure and bad outings longer than they should.</p>
         </div>
         <div class="commitment">
           <p class="label">Commitment</p>
-          <p><b>3-month minimum.</b> Enough time to build the habits and use them in real games.<span data-founding-terms> Founding athletes keep their founding rate as long as they stay enrolled.</span></p>
+          <p><b>Month to month, or save with a 6 or 12 month plan.</b> We encourage the longer plans. Mental skills are built like physical ones, through reps over time. One month won't change how a pitcher competes. Committed work will.</p>
         </div>
         <a class="btn" href="#apply" data-apply data-program="Mental Game Mentorship">Apply for Mental Game Mentorship</a>
       </div>
@@ -587,7 +590,7 @@ p { margin: 0; }
       <ol class="steps">
         <li class="step"><h3>Apply</h3><p>Tell us about your athlete's goals, season, and background. About five minutes.</p></li>
         <li class="step"><h3>Book your free call</h3><p>Pick a time as soon as you submit. A 20 to 30 minute call with your athlete and a parent.</p></li>
-        <li class="step"><h3>Get a recommendation</h3><p>We'll tell you which program fits, or if neither does. Details and founding rates are covered on the call.</p></li>
+        <li class="step"><h3>Get a recommendation</h3><p>We'll tell you which program fits, or if neither does. Details and options are covered on the call.</p></li>
         <li class="step"><h3>Start training</h3><p>Your first call happens within 72 hours of enrolling. Your first program block is live within a week.</p></li>
       </ol>
       <div class="section-cta"><a class="btn" href="#apply" data-apply>Apply Now</a></div>
@@ -630,12 +633,8 @@ p { margin: 0; }
           <p>Every athlete is different, so there's no one-size-fits-all plan or price. On your free discovery call, we'll learn your athlete's goals and schedule, then walk you through the program and pricing that fit.</p>
         </details>
         <details>
-          <summary>Why 6 months for the Complete Pitching Program?</summary>
-          <p>Velocity and command don't change in four weeks. Real movement change takes a full training cycle. Six months gives us time to build, test, and prove it.</p>
-        </details>
-        <details>
-          <summary>Why 3 months for Mental Game Mentorship?</summary>
-          <p>Mental skills are trained like physical ones. Three months gives your athlete enough time to build the habits and use them in real games.</p>
+          <summary>Why do you encourage a longer commitment?</summary>
+          <p>Real progress doesn't happen in one month. A new movement pattern, a better breaking ball, a steadier mind on the mound: each one takes repetition, testing and adjustment across a season. You can train month to month. But the athletes who commit to the process are the ones who see change that lasts. Plan options are covered on your call.</p>
         </details>
         <details>
           <summary>Will my athlete throw harder?</summary>
@@ -680,7 +679,7 @@ p { margin: 0; }
       <div class="cta-group cta-group--center">
         <a class="btn" href="#apply" data-apply>Apply Now</a>
         <p class="cta-note">Five-minute application. Free call after you submit.</p>
-        <p class="cta-note community-note" data-community-note hidden>Not ready to apply? <a href="#" data-community target="_blank" rel="noopener">Join the free 323 Community on Skool</a></p>
+        <p class="cta-note community-note" data-community-note hidden>Not ready to apply? <a href="https://www.skool.com/323-pitching-performance-1445/about" data-community target="_blank" rel="noopener">Join the free 323 Community on Skool</a></p>
       </div>
     </div>
   </section>
@@ -710,7 +709,7 @@ p { margin: 0; }
     <div class="community" id="community" hidden>
       <p class="f-label">[ COMMUNITY ]</p>
       <p>Free for athletes and parents. Join the 323 Community on Skool.</p>
-      <a class="btn btn--outline" href="#" data-community target="_blank" rel="noopener">Join the 323 Community</a>
+      <a class="btn btn--outline" href="https://www.skool.com/323-pitching-performance-1445/about" data-community target="_blank" rel="noopener">Join the 323 Community</a>
     </div>
     <p class="f-copy">&copy; <span id="year">2026</span> 323 Pitching Performance. Colossians 3:23.</p>
   </div>
@@ -732,8 +731,6 @@ const CONFIG = {
   tallyFormId: "je6ylY",
   // Instagram handle without the @
   instagramHandle: "3.23performance",
-  // Founding spots still open. Update when an athlete enrolls; 0 hides every founding mention.
-  foundingSpotsLeft: 0,
   // Coach's Instagram handle without the @ (the "Your coach" section links here)
   coachInstagram: "dc.throws",
   // Free 323 Community on Skool. Leave empty to hide the footer block.
@@ -771,15 +768,6 @@ const CONFIG = {
 
   $$("[data-instagram]").forEach(a => a.href = "https://www.instagram.com/" + CONFIG.instagramHandle + "/");
   $$("[data-instagram-handle]").forEach(el => el.textContent = "@" + CONFIG.instagramHandle);
-  // Founding spots: one number in CONFIG drives the hero line, both badges and the terms
-  const spots = Number(CONFIG.foundingSpotsLeft) || 0;
-  if (spots > 0) {
-    const word = spots === 1 ? "spot" : "spots";
-    $$("[data-founding-note]").forEach(el => el.textContent = `${spots} founding ${word} left.`);
-    $$("[data-founding-badge]").forEach(el => el.textContent = `${spots} founding ${word} left`);
-  } else {
-    $$("[data-founding-note], [data-founding-badge], [data-founding-terms]").forEach(el => el.hidden = true);
-  }
   $$("[data-coach-instagram]").forEach(a => a.href = "https://www.instagram.com/" + CONFIG.coachInstagram + "/");
   $$("[data-coach-instagram-handle]").forEach(el => el.textContent = CONFIG.coachInstagram);
   if (CONFIG.communityUrl) {

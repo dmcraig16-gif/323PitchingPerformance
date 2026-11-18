@@ -32,7 +32,6 @@ Open `index.html` and edit the `CONFIG` block near the bottom:
 |---|---|
 | `applicationUrl` | The Tally application's link (`https://tally.so/r/je6ylY`). Phones, Instagram's in-app browser, and any visitor whose popup can't load go here |
 | `tallyFormId` | Tally form ID (`je6ylY`). On desktop, Apply buttons open the application as a popup on the page. Both paths pass `program` and `utm_` tags as hidden fields |
-| `foundingSpotsLeft` | Founding spots still open (now 5). Drives the hero line and both program badges ("5 founding spots left"). Set to `0` to hide every founding mention, including the founding-rate sentence |
 | `coachInstagram` | The coach's Instagram handle (`dc.throws`), linked from the Your coach section |
 | `instagramHandle` | Instagram handle without the `@` |
 | `communityUrl` | The free 323 Community on Skool. Shows in the footer and as a "Not ready to apply?" line under the final Apply button. Empty hides both |
@@ -41,9 +40,8 @@ Open `index.html` and edit the `CONFIG` block near the bottom:
 
 - Every Apply button goes to `applicationUrl`. The program buttons also add `program=` so the application's hidden field records which program they picked. Any `utm_` tags on the page URL carry through, so use this as your Instagram bio link and you can see which applications came from Instagram:
   `https://323pitchingperformance.com/?utm_source=instagram&utm_medium=bio`
-- Program copy lives in the two program sections (`#complete`, `#mental-game`) The FAQ holds "Why 6 months?" and "Why 3 months?".
-- Founding spots: off (`foundingSpotsLeft: 0`). Founding rates are no longer offered; the setting hides every founding mention.
-- Page order is built to convert: what 323 is and Apply on the first screen, the two programs, compare, how to enroll, then why 323, beliefs and FAQ for visitors who need more.
+- Program copy lives in the two program sections (`#complete`, `#mental-game`). Commitment is month to month, with 6 and 12 month plans encouraged; the FAQ "Why do you encourage a longer commitment?" explains why. No prices on the site.
+- Page order: the home screen (logo, headline, four tiles, verse bar), Why 323, Your coach, What we offer, both programs, How to enroll, FAQ, What we believe, closing.
 
 ## Section links
 
@@ -55,4 +53,4 @@ Use these in stories and DMs: `/#different` (why 323), `/#coach-bio` (your coach
 
 ## Proof
 
-There are no testimonials on the page. Add them only when there are real quotes from real founding clients.
+There are no testimonials on the page. Add them only when there are real quotes from real clients.
