@@ -8,12 +8,11 @@ Plain HTML. No build step.
 
 ## Publishing
 
-Live from its own repo, `dmcraig16-gif/323Website`, with GitHub Pages on `main` (this repo's Pages address belongs to the pitch visualizer). To update the live site, copy this folder there without the `.md` docs and push to `main`. Pages republishes within a couple of minutes.
+Live at **https://323pitchingperformance.com/**, published with GitHub Pages from `dmcraig16-gif/323Website` (`main`). This repo's own Pages address belongs to the pitch visualizer.
 
-- Interim live link: https://dmcraig16-gif.github.io/323Website/
-- Instagram bio link: https://dmcraig16-gif.github.io/323Website/?utm_source=instagram&utm_medium=bio
-- One-time setup in `323Website`: Settings > Pages > Source: Deploy from a branch > `main`, `/ (root)` > Save.
-- When 323pitchingperformance.com is connected: add a `CNAME` file containing `323pitchingperformance.com` to `323Website`, point Squarespace DNS at GitHub Pages, and change the three interim URLs at the top of `index.html` back to the domain.
+- To update the live site: copy this folder to `323Website` without the `.md` docs and push to `main`. Pages republishes within a couple of minutes.
+- Domain: Squarespace DNS points `323pitchingperformance.com` (four A records to 185.199.108-111.153) and `www` (CNAME to dmcraig16-gif.github.io) at GitHub Pages. The `CNAME` file in `323Website` holds the domain; don't delete it.
+- Instagram bio link: https://323pitchingperformance.com/?utm_source=instagram&utm_medium=bio
 
 ## Files
 
