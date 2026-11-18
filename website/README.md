@@ -43,7 +43,7 @@ Open `index.html` and edit the `CONFIG` block near the bottom:
 - Every Apply button goes to `applicationUrl`. The program buttons also add `program=` so the application's hidden field records which program they picked. Any `utm_` tags on the page URL carry through, so use this as your Instagram bio link and you can see which applications came from Instagram:
   `https://323pitchingperformance.com/?utm_source=instagram&utm_medium=bio`
 - Program copy lives in the two program sections (`#complete`, `#mental-game`) The FAQ holds "Why 6 months?" and "Why 3 months?".
-- Founding spots: set `foundingSpotsLeft` in CONFIG when an athlete enrolls. The hero line and both badges update; `0` hides them.
+- Founding spots: off (`foundingSpotsLeft: 0`). Founding rates are no longer offered; the setting hides every founding mention.
 - Page order is built to convert: what 323 is and Apply on the first screen, the two programs, compare, how to enroll, then why 323, beliefs and FAQ for visitors who need more.
 
 ## Section links
