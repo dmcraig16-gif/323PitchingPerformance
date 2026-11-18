@@ -135,20 +135,30 @@ p { margin: 0; }
 .hero-logo { display: block; width: 220px; height: auto; }
 .hero h1 { font-size: clamp(2.3rem, 1.4rem + 4.2vw, 4.4rem); line-height: 0.92; max-width: 16ch; }
 .hero-sub { font-size: clamp(1.02rem, 0.95rem + 0.3vw, 1.2rem); max-width: 34rem; color: rgba(255, 255, 255, 0.86); }
-.hero-verse { max-width: 34rem; margin-top: var(--space); font-family: var(--font-script); font-style: italic; font-weight: 500; font-size: 1.05rem; line-height: 1.35; color: var(--white); }
-.hero-verse cite { font-style: italic; font-weight: 600; color: var(--blue-text); white-space: nowrap; }
-/* "323 Performance" between two red arrow tips, like the arrows beside 323 in the logo */
-.eyebrow {
-  display: inline-flex; align-items: center; gap: 12px;
-  font-family: var(--font-head); font-style: italic; font-weight: 600; font-stretch: 125%;
-  font-size: 0.8rem; letter-spacing: 0.26em; text-transform: uppercase; color: var(--white);
+/* Colossians 3:23 bar: pinned to the bottom of the home screen, scrolling right to left.
+   Two identical groups slide by half the track width, so the loop is seamless. */
+.hero { --verse-bar: 46px; padding-bottom: calc(var(--verse-bar) + var(--space) * 3); }
+.verse-bar {
+  position: absolute; left: 0; right: 0; bottom: 0; height: var(--verse-bar);
+  display: flex; align-items: center; overflow: hidden;
+  background: var(--blue); border-top: 2px solid var(--red);
 }
-.eyebrow::before, .eyebrow::after { content: ""; width: 26px; height: 7px; background: var(--red); }
-.eyebrow::before { clip-path: polygon(0 50%, 100% 0, 100% 100%); }
-.eyebrow::after { clip-path: polygon(0 0, 100% 50%, 0 100%); }
+.verse-track { display: flex; width: max-content; animation: verse-scroll 48s linear infinite; }
+.verse-bar:hover .verse-track { animation-play-state: paused; }
+.verse-group { display: flex; align-items: center; }
+.verse-item {
+  white-space: nowrap; padding-inline: calc(var(--space) * 3);
+  font-family: var(--font-head); font-style: normal; font-weight: 600; font-stretch: 110%;
+  font-size: 0.95rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--white);
+}
+.verse-item b { font-weight: 800; margin-left: 0.6em; }
+/* Separator: a chamfered black chip, like the cut corners in the logo */
+.verse-sep { flex: none; width: 16px; height: 8px; background: var(--black); clip-path: polygon(4px 0, 100% 0, calc(100% - 4px) 100%, 0 100%); }
+@keyframes verse-scroll { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+@media (prefers-reduced-motion: reduce) { .verse-track { animation: none; } }
 /* Short phone screens: tighten so the four tiles stay on the first screen */
 @media (max-width: 599px) and (max-height: 860px) {
-  .hero { padding-block: calc(var(--space) * 2) calc(var(--space) * 3); }
+  .hero { padding-block: calc(var(--space) * 2) calc(var(--verse-bar) + var(--space) * 2); }
   .hero-home { gap: calc(var(--space) * 1.25); }
   .hero-logo { width: 176px; }
   .tile { min-height: 60px; padding-block: 8px; }
@@ -164,7 +174,8 @@ p { margin: 0; }
 @media (min-width: 768px) {
   .hero-logo { width: 300px; }
   .hero-home { gap: calc(var(--space) * 2.25); }
-  .hero-verse { font-size: 1.2rem; }
+  .hero { --verse-bar: 52px; }
+  .verse-item { font-size: 1.05rem; }
 }
 
 /* Four ways in: chamfered navy tiles with a blue edge */
@@ -353,7 +364,6 @@ p { margin: 0; }
         <source type="image/webp" srcset="assets/logo-323-720.webp 720w, assets/logo-323.webp 1369w" sizes="(min-width: 768px) 300px, 220px">
         <img class="hero-logo" src="assets/logo-323-720.png" srcset="assets/logo-323-720.png 720w, assets/logo-323.png 1369w" sizes="(min-width: 768px) 300px, 220px" alt="323 Pitching Performance" width="720" height="475" fetchpriority="high">
       </picture>
-      <p class="eyebrow">323 Performance</p>
       <h1 id="hero-title">Raise the <span class="key">ceiling</span>. Play up to it.</h1>
       <p class="hero-sub">Remote, faith-based pitching development for high school and college pitchers and their parents.</p>
       <nav class="tiles" aria-label="Where to start">
@@ -374,7 +384,11 @@ p { margin: 0; }
           <span class="tile-sub">Who we are and what we believe</span>
         </a>
       </nav>
-      <p class="hero-verse"><span>&ldquo;Whatever you do, work heartily, as for the Lord and not for men.&rdquo;</span> <cite>Colossians 3:23</cite></p>
+    </div>
+    <!-- Colossians 3:23, scrolling right to left. Screen readers get the verse once. -->
+    <div class="verse-bar">
+      <p class="sr-only">&ldquo;Whatever you do, work heartily, as for the Lord and not for men.&rdquo; Colossians 3:23</p>
+      <div class="verse-track" aria-hidden="true"><span class="verse-group"><span class="verse-item">Whatever you do, work heartily, as for the Lord and not for men. <b>Colossians 3:23</b></span><span class="verse-sep"></span><span class="verse-item">Whatever you do, work heartily, as for the Lord and not for men. <b>Colossians 3:23</b></span><span class="verse-sep"></span></span><span class="verse-group"><span class="verse-item">Whatever you do, work heartily, as for the Lord and not for men. <b>Colossians 3:23</b></span><span class="verse-sep"></span><span class="verse-item">Whatever you do, work heartily, as for the Lord and not for men. <b>Colossians 3:23</b></span><span class="verse-sep"></span></span></div>
     </div>
   </section>
 

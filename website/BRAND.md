@@ -67,7 +67,7 @@ Blue, red and navy come from the 323 logo (`assets/logo-323.png`).
 ## Shapes and details
 
 - **Chamfered corners**, like the cut corners on the 323 numerals: buttons, tiles, cards, panels and photos. No rounded corners.
-- **Red arrow tips** flank the "323 Performance" eyebrow, like the arrows beside 323 in the logo.
+- **Verse bar:** Colossians 3:23 scrolls right to left in a 323 Blue bar along the bottom of the home screen, in upright Saira.
 - **Speed bar** under section headlines: a short blue bar with a red tip.
 - **Navy panels** (323 Navy over black) for cards and tiles instead of gray outlines.
 - **Mountain-slope edges:** navy-wash sections open on a slanted top edge.
