@@ -161,3 +161,18 @@ Open the preview file in a browser. It runs the real front end and server code a
 - Nothing personal is logged. `exceptionLogging` is `NONE` and the code has no `console.log` of sheet data.
 - No analytics or trackers. The only external requests are Google Fonts.
 - The source in this folder holds no athlete data. Test data in `dev/` is made up.
+
+## Mac app (Claude artifact)
+
+`mac/` builds a second version of the Hub that runs as a Claude artifact and installs as a Mac app from
+the Claude desktop app. It uses the same `src/` code. A bridge (`mac/bridge.js`) stands in for
+SpreadsheetApp: it reads each tab through your Google Sheets connector (`get_spreadsheet`), runs the
+same server functions locally, and writes changed cells back with `update_values`, one call per row,
+sending null for every cell it leaves alone so formulas are never touched. Before every write it re-reads
+the tabs involved, and writes run one at a time.
+
+- Build: `node hub/mac/build.js` writes `hub/mac/323-hub.html`. Publish that file as the artifact.
+- Test with fake data: `node hub/mac/build.js --dev /tmp/mac-dev.html` and open it in a browser.
+- The app refreshes from the sheet every minute while it is open (not while you are typing or have a form open).
+- Menu shortcuts: Cmd+1 to Cmd+5 switch screens, Cmd+R refreshes, Cmd+Shift+T/L/P/E/W add a task, lead,
+  payment, expense or win. The Dock badge shows how many items are overdue.

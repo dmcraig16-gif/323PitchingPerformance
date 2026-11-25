@@ -14,7 +14,8 @@
     function d(off) { return M.localMidnight(t[0], t[1], t[2] + off); }
     function monday(off) { var x = new Date(Date.UTC(t[0], t[1] - 1, t[2])); var back = (x.getUTCDay() + 6) % 7; return d(-back + (off || 0)); }
     function rangeRef(sheet, col) {
-      return { getValues: function () { return SpreadsheetApp.openById().getSheetByName(sheet).getRange(2, col, 200, 1).getValues(); } };
+      var L = String.fromCharCode(64 + col);
+      return { ref: '=' + sheet + '!$' + L + '$2:$' + L, getValues: function () { return SpreadsheetApp.openById().getSheetByName(sheet).getRange(2, col, 200, 1).getValues(); } };
     }
     var list = function (arr) { return new V(C.VALUE_IN_LIST, [arr, true]); };
     var box = new V(C.CHECKBOX);

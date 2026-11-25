@@ -138,7 +138,22 @@
     o.fresh = true;
     views[state.tab](o);
   }
-  setInterval(function () { if (document.visibilityState === 'visible') checkDay(false); }, 60000);
+  // Every minute while the app is on screen: roll over to a new day, and quietly pull changes made
+  // in the sheet (by you, or by Claude) unless you are typing or have a form open.
+  function busyTyping() {
+    var a = document.activeElement;
+    return a && /INPUT|TEXTAREA|SELECT/.test(a.tagName);
+  }
+  setInterval(function () {
+    if (document.visibilityState !== 'visible') return;
+    checkDay(false);
+    if (!document.getElementById('sheet').hidden || busyTyping()) return;
+    if (['home', 'todo', 'clients', 'leads', 'money', 'content', 'wins'].indexOf(state.tab) < 0) return;
+    invalidate();
+    var o = {}; Object.keys(state.opts).forEach(function (k) { o[k] = state.opts[k]; });
+    o.fresh = true; o.quiet = true;
+    views[state.tab](o);
+  }, 60000);
   document.addEventListener('visibilitychange', function () {
     if (document.visibilityState !== 'visible') return;
     // Coming back to the app: new day, or stale data on Home and To-Do, gets refreshed.
@@ -160,7 +175,7 @@
       if (state.tab === 'home') renderHome(data);
     }).catch(function (msg) {
       toast(msg, true);
-      if (!state.home) $view.innerHTML = '<p class="placeholder">Could not load. Tap refresh to try again.</p>';
+      if (!state.home) $view.innerHTML = '<h1>Home</h1><p class="placeholder">' + esc(msg) + '</p><button class="btn" data-retry>Try again</button>';
     }).then(function () { setBusy(false); });
   }
 
@@ -259,6 +274,7 @@
     if (task) return toggleTask(task);
     var add = e.target.closest('[data-add]');
     if (add) return openForm(add.getAttribute('data-add'));
+    if (e.target.closest('[data-retry]')) return loadHome({ fresh: true });
     var menu = e.target.closest('[data-menu]');
     if (menu) return menuAction(menu.getAttribute('data-menu'));
   } };
@@ -303,8 +319,12 @@
       '<button class="btn ghost" data-menu="content">Content</button>' +
       '<button class="btn ghost" data-menu="wins">Wins</button>' +
       '<button class="btn ghost" data-menu="history">Scorecard history</button>' +
-      '<button class="btn ghost" data-menu="sheet">Open the Command Center sheet</button>' +
+      '<a class="btn ghost" id="sheetLink" href="#" target="_blank" rel="noopener">Open the Command Center sheet</a>' +
       '</div>';
+    api('getSheetUrl').then(function (url) {
+      var a = document.getElementById('sheetLink');
+      if (a && isUrl(url)) a.href = url;
+    }).catch(function () {});
   }
   function menuAction(what) {
     if (what === 'sheet') {

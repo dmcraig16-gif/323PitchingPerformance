@@ -97,10 +97,13 @@
 
     // Quick actions
     h += '<div class="actions">';
-    h += p.links.email ? '<a class="btn ghost" href="mailto:' + esc(p.links.email) + '" target="_top">Email parent</a>' : '<button class="btn ghost" disabled>No parent email</button>';
+    h += p.links.email
+      ? '<a class="btn ghost" href="mailto:' + esc(p.links.email) + '" target="_top">Email parent</a>' +
+        '<button class="btn ghost" data-copy="' + esc(p.links.email) + '">Copy ' + esc(p.links.email) + '</button>'
+      : '<button class="btn ghost" disabled>No parent email</button>';
     if (H.isUrl(p.links.payment)) h += '<button class="btn ghost" data-copy="' + esc(p.links.payment) + '">Copy payment link</button>';
     else h += '<button class="btn ghost" disabled>' + (p.links.payment ? 'Pays by ' + esc(p.links.payment) : 'No payment link') + '</button>';
-    h += H.isUrl(p.links.agreement) ? '<button class="btn ghost" data-open="' + esc(p.links.agreement) + '">Open agreement</button>' : '<button class="btn ghost" disabled>No agreement link</button>';
+    h += H.isUrl(p.links.agreement) ? '<a class="btn ghost" href="' + esc(p.links.agreement) + '" target="_blank" rel="noopener">Open agreement</a>' : '<button class="btn ghost" disabled>No agreement link</button>';
     h += '</div>';
 
     // Term

@@ -1,0 +1,4082 @@
+<title>323 Hub</title>
+<meta name="theme-color" content="#000000">
+<script type="application/json" id="claude-artifacts-manifest">{"permissions": []}</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root { color-scheme: dark; }
+:root {
+  --black: #000000;
+  --white: #ffffff;
+  --blue: #0289eb;
+  --blue-dark: #0270c2;
+  --red: #ff0707;
+  --bg: #000000;
+  --panel: #0d0f12;
+  --panel-2: #15181d;
+  --line: rgba(255, 255, 255, 0.12);
+  --muted: #8a8f98;
+  --text: #ffffff;
+  --font-head: "Anton", "Bebas Neue", Impact, "Arial Narrow", sans-serif;
+  --font-body: "Inter", "Helvetica Neue", Arial, sans-serif;
+  --radius: 10px;
+  --tap: 48px;
+  --safe-b: env(safe-area-inset-bottom, 0px);
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; background: var(--bg); color: var(--text); }
+body {
+  font-family: var(--font-body); font-size: 16px; line-height: 1.45;
+  -webkit-font-smoothing: antialiased; -webkit-tap-highlight-color: transparent;
+  padding-bottom: calc(76px + var(--safe-b));
+}
+button, input, select, textarea { font: inherit; color: inherit; }
+button { cursor: pointer; }
+a { color: var(--blue); }
+.key { color: var(--blue); }
+.hidden { display: none !important; }
+
+/* Top bar */
+.topbar {
+  position: sticky; top: 0; z-index: 10;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 12px 16px; background: rgba(0,0,0,.92); backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--line);
+}
+.brand { font-family: var(--font-head); font-size: 24px; letter-spacing: .04em; text-transform: uppercase; }
+.icon-btn {
+  width: var(--tap); height: var(--tap); display: grid; place-items: center;
+  background: transparent; border: 0; border-radius: 50%; color: var(--white);
+}
+.icon-btn:active { background: var(--panel-2); }
+.icon-btn.spin svg { animation: spin .8s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+main { padding: 16px; max-width: 1100px; margin: 0 auto; }
+
+/* Headings */
+h1, h2, h3 { font-family: var(--font-head); font-weight: 400; text-transform: uppercase; letter-spacing: .03em; margin: 0; }
+h1 { font-size: 34px; line-height: 1.05; }
+h2 { font-size: 22px; margin: 28px 0 12px; }
+.sub { color: var(--muted); font-size: 14px; margin-top: 4px; }
+.row-between { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+
+/* Cards */
+.cards { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-top: 16px; }
+.card {
+  background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius);
+  padding: 14px; min-height: 92px; display: flex; flex-direction: column; justify-content: space-between;
+}
+.card .label { color: var(--muted); font-size: 12px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; }
+.card .num { font-family: var(--font-head); font-size: 34px; line-height: 1; margin-top: 8px; }
+.card.accent { border-color: var(--blue); }
+.card.accent .num { color: var(--blue); }
+
+.week { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+.week > div { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 10px 8px; text-align: center; }
+.week .num { font-family: var(--font-head); font-size: 28px; }
+.week .label { color: var(--muted); font-size: 11px; line-height: 1.2; }
+
+/* Lists */
+.list { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; }
+.list > * + * { border-top: 1px solid var(--line); }
+.group-label { padding: 10px 14px 6px; font-size: 12px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--blue); background: var(--panel); }
+.empty { padding: 18px 14px; color: var(--muted); }
+
+.task {
+  display: flex; gap: 12px; align-items: flex-start; width: 100%;
+  padding: 14px; min-height: 56px; background: transparent; border: 0; text-align: left;
+}
+.task:active { background: var(--panel-2); }
+.check {
+  flex: 0 0 26px; width: 26px; height: 26px; border-radius: 7px; border: 2px solid var(--muted);
+  display: grid; place-items: center; margin-top: 1px;
+}
+.task.done .check { background: var(--blue); border-color: var(--blue); }
+.task.done .check::after { content: ""; width: 7px; height: 13px; border: solid #000; border-width: 0 3px 3px 0; transform: rotate(45deg) translate(-1px, -1px); }
+.task .txt { flex: 1; }
+.task.done .txt { color: var(--muted); text-decoration: line-through; }
+.task .mins { color: var(--muted); font-size: 13px; white-space: nowrap; }
+.task.saving { opacity: .6; }
+
+.item { display: flex; gap: 12px; padding: 12px 14px; align-items: flex-start; }
+.dot { flex: 0 0 10px; height: 10px; border-radius: 50%; margin-top: 7px; background: var(--blue); }
+.dot.overdue { background: var(--red); }
+.dot.info { background: var(--muted); }
+.item .t { font-weight: 600; }
+.item .d { color: var(--muted); font-size: 14px; }
+.item.overdue .d { color: #ff8a8a; }
+
+.tag { display: inline-block; font-size: 11px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; padding: 2px 7px; border-radius: 4px; margin-left: 6px; vertical-align: 2px; border: 1px solid var(--line); color: var(--muted); }
+.tag.ddc { color: #f5c04a; border-color: #6b5520; }
+.tag.gp { color: #b59cff; border-color: #4a3d7a; }
+
+.bar { height: 6px; background: var(--panel-2); border-radius: 3px; overflow: hidden; margin-top: 8px; }
+.bar i { display: block; height: 100%; background: var(--blue); }
+
+/* Quick buttons */
+.quick { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+.btn {
+  min-height: 52px; padding: 0 16px; border: 0; border-radius: var(--radius);
+  background: var(--blue); color: #000; font-weight: 700; font-size: 15px; letter-spacing: .03em;
+}
+.btn:active { background: var(--blue-dark); }
+.btn.ghost { background: var(--panel); color: var(--white); border: 1px solid var(--line); }
+.btn[disabled] { opacity: .5; }
+.quick .btn:last-child:nth-child(odd) { grid-column: span 2; }
+
+/* Sheet (bottom drawer for forms) */
+.sheet-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,.6); z-index: 20; }
+.sheet {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 21; max-height: 92vh; overflow: auto;
+  background: var(--panel); border-top: 1px solid var(--line); border-radius: 16px 16px 0 0;
+  padding: 8px 16px calc(20px + var(--safe-b));
+}
+.sheet-grip { width: 40px; height: 4px; border-radius: 2px; background: var(--line); margin: 4px auto 12px; }
+.form h2 { margin-top: 0; }
+.field { display: block; margin: 12px 0; }
+.field > span { display: block; font-size: 13px; font-weight: 600; color: var(--muted); margin-bottom: 6px; }
+.field input:not([type=checkbox]), .field select, .field textarea {
+  width: 100%; min-height: var(--tap); padding: 10px 12px; border-radius: 8px;
+  background: var(--black); border: 1px solid var(--line); color: var(--white); font-size: 16px;
+}
+.field textarea { min-height: 96px; resize: vertical; }
+.field input:focus, .field select:focus, .field textarea:focus { outline: 2px solid var(--blue); outline-offset: 0; border-color: transparent; }
+.field.bool { display: flex; align-items: center; gap: 12px; min-height: var(--tap); }
+.field.bool > span { margin: 0; color: var(--white); font-size: 16px; font-weight: 500; }
+.field.bool input { width: 24px; height: 24px; accent-color: var(--blue); }
+.more-toggle { background: none; border: 0; color: var(--blue); padding: 12px 0; font-weight: 600; }
+.form-actions { display: grid; grid-template-columns: 1fr 2fr; gap: 10px; margin-top: 18px; }
+.form-error { color: #ff8a8a; margin-top: 10px; }
+
+/* Bottom tabs */
+.tabbar {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 15;
+  display: grid; grid-template-columns: repeat(6, 1fr);
+  background: rgba(0,0,0,.96); border-top: 1px solid var(--line);
+  padding-bottom: var(--safe-b);
+}
+.tabbar button {
+  min-height: 60px; background: none; border: 0; color: var(--muted);
+  font-size: 12px; font-weight: 600; letter-spacing: .02em;
+}
+.tabbar button.on { color: var(--white); box-shadow: inset 0 2px 0 var(--blue); }
+
+.toast {
+  position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(80px + var(--safe-b)); z-index: 30;
+  background: var(--white); color: var(--black); padding: 12px 18px; border-radius: 999px; font-weight: 600;
+  max-width: calc(100% - 32px); box-shadow: 0 6px 24px rgba(0,0,0,.5);
+}
+.toast.err { background: var(--red); color: var(--white); }
+
+.skeleton { background: linear-gradient(90deg, var(--panel) 0%, var(--panel-2) 50%, var(--panel) 100%); background-size: 200% 100%; animation: shimmer 1.2s infinite; border-radius: var(--radius); }
+@keyframes shimmer { to { background-position: -200% 0; } }
+
+.placeholder { padding: 40px 0; color: var(--muted); }
+.menu { display: grid; gap: 10px; }
+.menu .btn { text-align: left; }
+
+
+/* ---------- shared controls (Phase B-D) ---------- */
+.btn.small { min-height: 40px; padding: 0 14px; font-size: 14px; }
+.btn.full { width: 100%; }
+a.btn { display: inline-flex; align-items: center; justify-content: center; text-decoration: none; }
+.back { background: none; border: 0; color: var(--blue); font-weight: 600; padding: 8px 0 12px; min-height: var(--tap); }
+.back::before { content: "\2039  "; font-size: 20px; }
+.search, .filters select, select[data-pf] {
+  width: 100%; min-height: var(--tap); padding: 10px 12px; border-radius: 8px;
+  background: var(--panel); border: 1px solid var(--line); color: var(--white); font-size: 16px;
+}
+.search { margin: 14px 0 10px; }
+.filters { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 14px; }
+.filters select:first-child:nth-last-child(odd) { grid-column: span 2; }
+select[data-pf] { width: auto; }
+.seg { display: flex; gap: 4px; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 4px; margin-top: 14px; overflow-x: auto; }
+.seg button { flex: 1; min-height: 40px; border: 0; border-radius: 7px; background: none; color: var(--muted); font-weight: 600; font-size: 14px; white-space: nowrap; padding: 0 10px; }
+.seg button.on { background: var(--panel-2); color: var(--white); box-shadow: inset 0 -2px 0 var(--blue); }
+.count { display: inline-block; min-width: 22px; padding: 1px 7px; border-radius: 999px; background: var(--panel-2); color: var(--white); font-size: 12px; font-weight: 700; text-align: center; }
+.count.red-bg { background: var(--red); }
+.red-text { color: #ff6b6b; font-weight: 600; }
+.chips { display: flex; gap: 8px; align-items: center; margin: 8px 0; flex-wrap: wrap; }
+.chip { min-height: 40px; padding: 0 14px; border-radius: 999px; border: 1px solid var(--line); background: var(--panel); color: var(--white); font-weight: 600; font-size: 14px; }
+.chip.on { background: var(--blue); color: #000; border-color: var(--blue); }
+.badge { display: inline-block; font-size: 12px; font-weight: 700; padding: 3px 9px; border-radius: 999px; white-space: nowrap; }
+.badge.ok { background: rgba(2,137,235,.16); color: #5cb8ff; }
+.badge.due { background: rgba(255,255,255,.1); color: var(--white); }
+.badge.over { background: var(--red); color: var(--white); }
+.badge.neutral { background: var(--panel-2); color: var(--muted); }
+.notice { margin-top: 12px; padding: 12px 14px; border-radius: var(--radius); border: 1px solid var(--blue); background: rgba(2,137,235,.08); }
+.notice.red-text { border-color: var(--red); background: rgba(255,7,7,.08); }
+.item.link { cursor: pointer; }
+.item.link:active { background: var(--panel-2); }
+.empty.small { padding: 10px 12px; font-size: 14px; }
+.copybox { width: 100%; min-height: 80px; background: var(--black); color: var(--white); border: 1px solid var(--line); border-radius: 8px; padding: 10px; }
+
+/* To-Do rows */
+.task-row { display: flex; align-items: stretch; width: 100%; }
+.task-check { flex: 0 0 56px; display: grid; place-items: center; background: none; border: 0; min-height: 56px; }
+.task-body { flex: 1; display: flex; gap: 10px; align-items: flex-start; text-align: left; background: none; border: 0; padding: 14px 14px 14px 0; }
+.task-body:active, .task-check:active { background: var(--panel-2); }
+.task-row.done .check { background: var(--blue); border-color: var(--blue); }
+.task-row.done .check::after { content: ""; width: 7px; height: 13px; border: solid #000; border-width: 0 3px 3px 0; transform: rotate(45deg) translate(-1px, -1px); }
+.task-row.done .txt { color: var(--muted); text-decoration: line-through; }
+.task-body .txt { flex: 1; }
+.task-body .mins { color: var(--muted); font-size: 13px; }
+.task-row.onb { gap: 12px; padding: 14px; background: none; border: 0; text-align: left; align-items: center; min-height: 56px; }
+.task-row.onb[disabled] { opacity: .6; }
+.task-row.onb.done .txt { text-decoration: none; color: var(--white); }
+.group-label.row-between .sub { font-size: 12px; letter-spacing: 0; text-transform: none; font-weight: 500; }
+
+/* Clients */
+.client-row { display: block; width: 100%; text-align: left; background: none; border: 0; padding: 14px; }
+.client-row:active { background: var(--panel-2); }
+.client-row .t { font-weight: 600; }
+.client-row .d { color: var(--muted); font-size: 14px; margin-top: 2px; }
+.client-row .d.warn, .d.warn { color: #f5c04a; }
+.actions { display: grid; grid-template-columns: 1fr; gap: 8px; margin-top: 16px; }
+.kv .kvrow { display: flex; justify-content: space-between; gap: 12px; padding: 12px 14px; }
+.kv .kvrow.three { display: grid; grid-template-columns: 1.4fr 1fr 1fr; }
+.kv .kvrow.three span:not(:first-child) { text-align: right; }
+.notes { white-space: pre-wrap; background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 16px; font-size: 17px; line-height: 1.6; min-height: 80px; max-height: 60vh; overflow: auto; }
+.fields .frow { display: grid; grid-template-columns: 1fr; gap: 6px; padding: 10px 14px; }
+.fields .fl { font-size: 13px; color: var(--muted); font-weight: 600; }
+.fields .fv input:not([type=checkbox]), .fields .fv select { width: 100%; min-height: 44px; padding: 8px 10px; border-radius: 8px; background: var(--black); border: 1px solid var(--line); color: var(--white); font-size: 16px; }
+.fields .fv input[type=checkbox] { width: 24px; height: 24px; accent-color: var(--blue); }
+.fields .ro { padding: 6px 0; }
+.saved { font-size: 12px; color: #5cb8ff; min-height: 14px; }
+.consent { margin-top: 6px; font-size: 13px; font-weight: 700; }
+.consent.ok { color: #5cb8ff; }
+.consent.no { color: #ff6b6b; }
+.consent.warn { color: #f5c04a; }
+
+/* Leads */
+.linkrow { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 12px; padding: 8px 14px; background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); }
+.board { display: grid; gap: 12px; }
+.col { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); }
+.col-head { display: flex; justify-content: space-between; align-items: center; width: 100%; padding: 12px 14px; background: none; border: 0; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; font-size: 13px; color: var(--blue); }
+.col.collapsed .col-body { display: none; }
+.col-body { padding: 0 8px 8px; display: grid; gap: 8px; }
+.lead-card { background: var(--panel-2); border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+.lead-card.overdue { border-color: var(--red); }
+.lead-open { display: grid; gap: 2px; width: 100%; text-align: left; background: none; border: 0; padding: 12px; }
+.lead-open .t { font-weight: 600; }
+.lead-open .d { color: var(--muted); font-size: 13px; }
+.lead-card.overdue .na { color: #ff6b6b; }
+.stage-pick { width: 100%; min-height: 40px; border: 0; border-top: 1px solid var(--line); background: transparent; color: var(--muted); padding: 0 12px; font-size: 14px; }
+.panel { margin-top: 16px; padding: 4px 14px 12px; background: var(--panel); border: 1px solid var(--blue); border-radius: var(--radius); }
+.panel.overdue { border-color: var(--red); }
+.panel .label { color: var(--muted); font-size: 12px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; margin-top: 10px; }
+.panel input, .panel select { width: 100%; min-height: var(--tap); padding: 10px 12px; border-radius: 8px; background: var(--black); border: 1px solid var(--line); color: var(--white); font-size: 16px; }
+
+/* Charts */
+.chart { position: relative; }
+.chart svg { width: 100%; height: auto; display: block; touch-action: pan-y; }
+.chart .grid { stroke: rgba(255,255,255,.08); stroke-width: 1; }
+.chart .axis { stroke: rgba(255,255,255,.3); stroke-width: 1; }
+.chart .cross { stroke: rgba(255,255,255,.35); stroke-width: 1; }
+.chart .tick { fill: var(--muted); font-size: 11px; font-family: var(--font-body); }
+.tip { position: absolute; top: 0; pointer-events: none; background: #fff; color: #000; border-radius: 8px; padding: 8px 10px; font-size: 13px; box-shadow: 0 6px 20px rgba(0,0,0,.4); min-width: 120px; }
+.tip div { display: flex; align-items: center; gap: 6px; }
+.tip div span { margin-left: auto; font-weight: 700; padding-left: 10px; }
+.tip i, .legend i { display: inline-block; width: 10px; height: 10px; border-radius: 2px; }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 13px; color: var(--muted); margin-bottom: 8px; }
+.legend span { display: inline-flex; align-items: center; gap: 6px; }
+.tableview { margin-top: 8px; color: var(--muted); font-size: 14px; }
+.tableview summary { cursor: pointer; padding: 8px 0; min-height: 40px; }
+.scroll-x { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; font-size: 14px; color: var(--white); }
+th, td { padding: 8px 10px; border-bottom: 1px solid var(--line); text-align: right; white-space: nowrap; }
+th:first-child, td:first-child { text-align: left; }
+thead th { color: var(--muted); font-weight: 600; }
+table.log td:last-child { white-space: normal; min-width: 220px; text-align: left; }
+
+/* Content calendar */
+.cal-head { margin: 14px 0 8px; }
+.cal { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
+.cal-dow { font-size: 11px; color: var(--muted); text-align: center; padding: 4px 0; }
+.cal-cell { min-height: 64px; background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 4px; display: flex; flex-direction: column; gap: 3px; overflow: hidden; }
+.cal-cell.empty { background: none; border: 0; }
+.cal-cell.today { border-color: var(--blue); }
+.cal-n { font-size: 11px; color: var(--muted); }
+.cal-post { font-size: 11px; line-height: 1.2; text-align: left; background: rgba(2,137,235,.2); color: var(--white); border: 0; border-radius: 4px; padding: 3px 4px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 100%; }
+
+@media (min-width: 760px) {
+  .actions { grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); }
+  .filters { grid-template-columns: repeat(3, 1fr); }
+  .filters select:first-child:nth-last-child(odd) { grid-column: auto; }
+  .fields .frow { grid-template-columns: 200px 1fr 60px; align-items: center; }
+  .board { grid-auto-flow: column; grid-auto-columns: minmax(220px, 1fr); overflow-x: auto; align-items: start; padding-bottom: 8px; }
+  .col.collapsed .col-body { display: grid; }
+  .col-body { min-height: 80px; }
+  .cal-cell { min-height: 90px; }
+}
+
+/* Desktop */
+@media (min-width: 760px) {
+  body { padding-bottom: 0; padding-top: 0; }
+  .tabbar { position: sticky; top: 73px; bottom: auto; max-width: 1100px; margin: 0 auto; border: 0; border-bottom: 1px solid var(--line); background: var(--bg); grid-template-columns: repeat(6, max-content); gap: 8px; padding: 0 16px; }
+  .tabbar button { min-height: 48px; padding: 0 14px; font-size: 14px; }
+  .tabbar button.on { box-shadow: inset 0 -2px 0 var(--blue); }
+  body { display: flex; flex-direction: column; }
+  .topbar { order: 0; } .tabbar { order: 1; } main { order: 2; width: 100%; }
+  .cards { grid-template-columns: repeat(3, 1fr); }
+  .home-cols { display: grid; grid-template-columns: 3fr 2fr; gap: 24px; }
+  .quick { grid-template-columns: repeat(5, 1fr); }
+  .quick .btn:last-child:nth-child(odd) { grid-column: auto; }
+  .sheet { left: 50%; right: auto; width: 560px; transform: translateX(-50%); bottom: 24px; border-radius: 16px; border: 1px solid var(--line); }
+  .toast { bottom: 24px; }
+}
+@media (min-width: 1000px) {
+  .cards { grid-template-columns: repeat(6, 1fr); }
+}
+/* Mac app window */
+.install-btn { margin-left: auto; margin-right: 8px; }
+html.in-app .topbar { padding-left: 88px; min-height: 64px; -webkit-app-region: drag; app-region: drag; }
+html.in-app .topbar button, html.in-app .topbar a { -webkit-app-region: no-drag; app-region: no-drag; }
+html.in-app .tabbar { top: 64px; }
+</style>
+<header class="topbar">
+    <div class="brand">323 <span class="key">Hub</span></div>
+    <button class="icon-btn" id="refreshBtn" aria-label="Refresh">
+      <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path fill="currentColor" d="M17.65 6.35A7.96 7.96 0 0 0 12 4a8 8 0 1 0 7.75 10h-2.08A6 6 0 1 1 12 6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg>
+    </button>
+  </header>
+
+  <main id="view" aria-live="polite"></main>
+
+  <nav class="tabbar" id="tabbar">
+    <button data-tab="home" class="on">Home</button>
+    <button data-tab="todo">To-Do</button>
+    <button data-tab="clients">Clients</button>
+    <button data-tab="leads">Leads</button>
+    <button data-tab="money">Money</button>
+    <button data-tab="more">More</button>
+  </nav>
+
+  <div class="sheet-backdrop" id="sheetBackdrop" hidden></div>
+  <section class="sheet" id="sheet" role="dialog" aria-modal="true" hidden>
+    <div class="sheet-grip"></div>
+    <div id="sheetBody"></div>
+  </section>
+
+  <div class="toast" id="toast" role="status" hidden></div>
+
+<script>
+/**
+ * 323 Hub configuration.
+ * Tab names and header names live here. Column letters never do.
+ */
+var CONFIG = {
+  SPREADSHEET_ID: '1ur9PASWDn6vUrh15oqsXvAQpWbjkWvZdfiXrZ4SoeCU',
+  OWNER_EMAIL: '323mperformance@gmail.com',
+  TZ: 'America/Boise',
+  CACHE_SECONDS: 60,
+
+  TABS: {
+    SCORECARD: 'Scorecard',
+    TODO: 'Daily To-Do',
+    LEADS: 'Leads',
+    CLIENTS: 'Clients',
+    PAYMENTS: 'Payments',
+    CONTENT: 'Content',
+    WINS: 'Wins',
+    EXPENSES: 'Expenses',
+    MONEY: 'Money',
+    SOCIAL: 'Social',
+    SETTINGS: 'Settings'
+  },
+
+  // A row counts only if at least one of these headers has a value.
+  // Blank rows, rows with only checkboxes, and half-filled rows (a date and nothing else) are skipped.
+  KEY_HEADERS: {
+    'Daily To-Do': ['Task'],
+    'Leads': ['Parent name', 'Athlete name', 'Contact (IG or email)'],
+    'Clients': ['Athlete name'],
+    'Payments': ['Athlete'],
+    'Content': ['Topic', 'Hook'],
+    'Wins': ['Athlete', 'Win'],
+    'Expenses': ['Vendor', 'Amount'],
+    'Money': ['Description', 'Amount']
+  },
+
+  // Tabs the app may append rows to, and the fields shown first in the add form.
+  // Any other writable column still shows under "More fields", so new columns appear automatically.
+  ADD_FORMS: {
+    'Daily To-Do': { title: 'Add task', primary: ['Date', 'Block', 'Task', 'Minutes'], hidden: ['Day', 'Week', 'Done'] },
+    'Leads': { title: 'Add lead', primary: ['Parent name', 'Athlete name', 'Grad year', 'Contact (IG or email)', 'Source', 'Program interest', 'Stage', 'Next action', 'Next action due', 'Notes'], hidden: ['Last touch'] },
+    'Payments': { title: 'Log payment', primary: ['Date received', 'Athlete', 'Amount', 'Paid through', 'Next payment due', 'Notes'], hidden: [] },
+    'Expenses': { title: 'Log expense', primary: ['Date', 'Vendor', 'Category', "What it's for", 'Amount', 'Billing', 'Paid with', 'Receipt link'], hidden: [] },
+    'Wins': { title: 'Log win', primary: ['Date', 'Athlete', 'Area', 'Win', 'Evidence', 'Media consent', 'OK to post'], hidden: [] },
+    'Content': { title: 'Add post', primary: ['Post date', 'Pillar', 'Format', 'Topic', 'Teaching point', 'Hook', 'CTA', 'Status', 'Link'], hidden: [] },
+    'Clients': { title: 'Add client', primary: ['Athlete name', 'Parent name', 'Parent email', 'Program', 'Plan', 'Monthly rate', 'Start date', 'Term (months)', 'Status', 'Notes'], hidden: [] }
+  },
+
+  // Tabs whose existing rows the generic editor may change (Clients and Leads have their own functions).
+  EDIT_TABS: ['Content', 'Wins', 'Payments', 'Expenses', 'Daily To-Do'],
+
+  // Values filled in on a new row when left blank.
+  NEW_ROW_DEFAULTS: {
+    'Leads': { 'Stage': 'New' },
+    'Clients': { 'Status': 'Onboarding' }
+  },
+
+  // Headers that default to today when left blank on a new row.
+  TODAY_DEFAULTS: {
+    'Daily To-Do': ['Date'],
+    'Leads': ['Date added', 'Last touch'],
+    'Payments': ['Date received'],
+    'Expenses': ['Date'],
+    'Wins': ['Date'],
+    'Clients': ['Start date']
+  },
+
+  // Notes columns that take timestamped entries (M/D/YYYY: text, newest first).
+  NOTE_HEADERS: { 'Leads': 'Notes', 'Clients': 'Notes' },
+
+  // Header names used in logic. If you rename one in the sheet, change it here too.
+  H: {
+    todo: { date: 'Date', day: 'Day', week: 'Week', block: 'Block', task: 'Task', minutes: 'Minutes', done: 'Done' },
+    leads: { parent: 'Parent name', athlete: 'Athlete name', stage: 'Stage', lastTouch: 'Last touch', nextAction: 'Next action', nextDue: 'Next action due' },
+    clients: {
+      athlete: 'Athlete name', parent: 'Parent name', program: 'Program', plan: 'Plan', status: 'Status',
+      paid: 'Paid this month', onboarding: ['Agreement signed', 'Intake form done', 'Velo Beam set up', 'First call held']
+    },
+    payments: { date: 'Date received', athlete: 'Athlete', program: 'Program', amount: 'Amount', nextDue: 'Next payment due', status: 'Status' }
+  },
+
+  ACTIVE_CLIENT_STATUSES: ['Active', 'Onboarding'],
+  CLOSED_LEAD_STAGES: ['Won', 'Lost'],
+  // Paid this month values that do not need attention.
+  PAID_OK_VALUES: ['Paid', 'No charge', 'Prepaid', '']
+};
+
+
+/**
+ * Data layer: reads any tab into objects keyed by header name.
+ *
+ * readTab_(name) returns:
+ *   { name, headers, meta, rows: [{ _row: 7, 'Athlete name': 'X', ... }] }
+ * Dates come back as 'YYYY-MM-DD' strings (google.script.run cannot send Date objects).
+ * Results are cached for CONFIG.CACHE_SECONDS and cleared on any write.
+ */
+
+var __ss = null;
+function ss_() {
+  if (!__ss) __ss = SpreadsheetApp.openById(CONFIG.SPREADSHEET_ID);
+  return __ss;
+}
+
+function sheet_(name) {
+  var sh = ss_().getSheetByName(name);
+  if (!sh) throw new Error('Tab not found: ' + name);
+  return sh;
+}
+
+function sheetTz_() {
+  return ss_().getSpreadsheetTimeZone() || CONFIG.TZ;
+}
+
+/* ---------- small helpers ---------- */
+
+function norm_(s) {
+  return String(s == null ? '' : s).toLowerCase().replace(/[^a-z0-9]/g, '');
+}
+
+function isBlank_(v) {
+  return v === '' || v === null || v === undefined || v === false;
+}
+
+function isDate_(v) {
+  return Object.prototype.toString.call(v) === '[object Date]' && !isNaN(v.getTime());
+}
+
+/** 'YYYY-MM-DD' for today in Boise. */
+function todayStr_() {
+  return Utilities.formatDate(new Date(), CONFIG.TZ, 'yyyy-MM-dd');
+}
+
+/** Add days to a 'YYYY-MM-DD' string. */
+function addDays_(ymd, n) {
+  var p = ymd.split('-');
+  var d = new Date(Date.UTC(+p[0], +p[1] - 1, +p[2] + n));
+  return d.toISOString().slice(0, 10);
+}
+
+function serialize_(v, tz) {
+  if (isDate_(v)) {
+    var hm = Utilities.formatDate(v, tz, 'HH:mm');
+    var day = Utilities.formatDate(v, tz, 'yyyy-MM-dd');
+    return hm === '00:00' ? day : day + 'T' + hm;
+  }
+  return v;
+}
+
+/** Turn a cell value into a 'YYYY-MM-DD' string if it looks like a date, else ''. */
+function asYmd_(v) {
+  if (!v) return '';
+  var s = String(v);
+  if (/^\d{4}-\d{2}-\d{2}/.test(s)) return s.slice(0, 10);
+  var m = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+  if (m) return m[3] + '-' + ('0' + m[1]).slice(-2) + '-' + ('0' + m[2]).slice(-2);
+  return '';
+}
+
+function asNumber_(v) {
+  if (typeof v === 'number') return v;
+  if (v === '' || v == null) return 0;
+  var n = Number(String(v).replace(/[$,\s]/g, ''));
+  return isNaN(n) ? 0 : n;
+}
+
+/* ---------- cache (chunked: CacheService caps each value at 100KB) ---------- */
+
+var CACHE_PREFIX = 'hub:v1:';
+var CHUNK = 90000;
+
+function cacheGet_(key) {
+  var c = CacheService.getScriptCache();
+  var head = c.get(CACHE_PREFIX + key);
+  if (!head) return null;
+  var n = Number(head);
+  var keys = [];
+  for (var i = 0; i < n; i++) keys.push(CACHE_PREFIX + key + ':' + i);
+  var parts = c.getAll(keys);
+  var s = '';
+  for (var j = 0; j < n; j++) {
+    var p = parts[keys[j]];
+    if (p == null) return null;
+    s += p;
+  }
+  try { return JSON.parse(s); } catch (e) { return null; }
+}
+
+function cachePut_(key, obj) {
+  var s = JSON.stringify(obj);
+  var map = {};
+  var n = Math.ceil(s.length / CHUNK) || 1;
+  for (var i = 0; i < n; i++) map[CACHE_PREFIX + key + ':' + i] = s.slice(i * CHUNK, (i + 1) * CHUNK);
+  map[CACHE_PREFIX + key] = String(n);
+  try { CacheService.getScriptCache().putAll(map, CONFIG.CACHE_SECONDS); } catch (e) { /* cache is optional */ }
+}
+
+/** Clear every cached read. Called after any write. */
+function bustCache_() {
+  var keys = [];
+  Object.keys(CONFIG.TABS).forEach(function (k) {
+    keys.push(CACHE_PREFIX + 'tab:' + CONFIG.TABS[k]);
+  });
+  keys.push(CACHE_PREFIX + 'scorecard', CACHE_PREFIX + 'settings');
+  CacheService.getScriptCache().removeAll(keys);
+}
+
+/* ---------- table metadata ---------- */
+
+/**
+ * Reads row 1 and the first data row of a tab and works out, per header:
+ *  - index: zero-based column index
+ *  - computed: true if the column is filled by a formula (ARRAYFORMULA in row 1 or 2). Never written.
+ *  - type: 'bool' | 'date' | 'number' | 'text'
+ *  - choices: dropdown values from data validation, if any
+ * The table ends at the first blank header, so summary blocks to the right are ignored.
+ */
+function buildMeta_(sh, values) {
+  var header = values[0] || [];
+  var width = 0;
+  while (width < header.length && String(header[width]).trim() !== '') width++;
+  var headers = header.slice(0, width).map(function (h) { return String(h).trim(); });
+
+  var maxRows = sh.getMaxRows();
+  var probeRows = Math.min(2, maxRows);
+  var formulas = width ? sh.getRange(1, 1, probeRows, width).getFormulas() : [[]];
+  var validations = (width && maxRows >= 2) ? sh.getRange(2, 1, 1, width).getDataValidations()[0] : [];
+
+  var cols = {};
+  headers.forEach(function (h, i) {
+    var f1 = (formulas[0] && formulas[0][i]) || '';
+    var f2 = (formulas[1] && formulas[1][i]) || '';
+    var computed = !!f1 || /arrayformula/i.test(f2);
+    var col = { index: i, computed: computed, type: 'text', choices: null, choiceSource: null };
+
+    var dv = validations[i];
+    if (dv) {
+      var t = dv.getCriteriaType();
+      var C = SpreadsheetApp.DataValidationCriteria;
+      var args = dv.getCriteriaValues() || [];
+      if (t === C.CHECKBOX) col.type = 'bool';
+      else if (t === C.DATE_IS_VALID_DATE) col.type = 'date';
+      else if (t === C.VALUE_IN_LIST) { col.choices = (args[0] || []).map(String); col.choiceSource = 'list'; }
+      else if (t === C.VALUE_IN_RANGE && args[0]) {
+        try {
+          var seen = {};
+          col.choices = args[0].getValues().map(function (r) { return String(r[0]).trim(); })
+            .filter(function (v) { if (!v || seen[v]) return false; seen[v] = 1; return true; });
+          col.choiceSource = 'range';
+        } catch (e) { /* ignore */ }
+      }
+    }
+
+    if (col.type === 'text' && !col.choices) col.type = inferType_(h, values, i);
+    cols[h] = col;
+  });
+
+  return { headers: headers, width: width, cols: cols };
+}
+
+function inferType_(header, values, i) {
+  var dates = 0, nums = 0, bools = 0, seen = 0;
+  for (var r = 1; r < values.length && seen < 40; r++) {
+    var v = values[r][i];
+    if (v === '' || v == null) continue;
+    seen++;
+    if (isDate_(v)) dates++;
+    else if (typeof v === 'number') nums++;
+    else if (typeof v === 'boolean') bools++;
+  }
+  if (seen) {
+    if (bools === seen) return 'bool';
+    if (dates / seen > 0.6) return 'date';
+    if (nums / seen > 0.6) return 'number';
+  }
+  if (/(^|\b)(date|due|ends|touch|booked on|received|week of)(\b|$)/i.test(header)) return 'date';
+  if (/amount|minutes|rate|reach|saves|dms started|\(months\)/i.test(header)) return 'number';
+  return 'text';
+}
+
+/* ---------- reading tabs ---------- */
+
+function rowHasKey_(name, headers, row) {
+  var keys = CONFIG.KEY_HEADERS[name];
+  if (keys) {
+    return keys.some(function (k) {
+      var i = headers.indexOf(k);
+      return i >= 0 && !isBlank_(row[i]) && String(row[i]).trim() !== '';
+    });
+  }
+  return row.some(function (v) { return !isBlank_(v) && String(v).trim() !== ''; });
+}
+
+/**
+ * Read a tab. Uses the 60 second cache unless fresh is true.
+ * Rows without a value in any KEY_HEADERS column are skipped.
+ */
+function readTab_(name, fresh) {
+  if (!fresh) {
+    var hit = cacheGet_('tab:' + name);
+    if (hit) return hit;
+  }
+  var sh = sheet_(name);
+  var lastRow = sh.getLastRow();
+  var lastCol = sh.getLastColumn();
+  var values = lastRow && lastCol ? sh.getRange(1, 1, lastRow, lastCol).getValues() : [[]];
+  var meta = buildMeta_(sh, values);
+  var tz = sheetTz_();
+  var rows = [];
+  var errors = [];
+  for (var r = 1; r < values.length; r++) {
+    var raw = values[r].slice(0, meta.width);
+    if (!rowHasKey_(name, meta.headers, raw)) continue;
+    var obj = { _row: r + 1 };
+    meta.headers.forEach(function (h, i) {
+      var v = serialize_(raw[i], tz);
+      if (typeof v === 'string' && /^#(REF!|N\/A|VALUE!|DIV\/0!|NAME\?|ERROR!|NUM!)/.test(v)) {
+        errors.push({ tab: name, row: r + 1, header: h, error: v });
+      }
+      obj[h] = v;
+    });
+    rows.push(obj);
+  }
+  var out = { name: name, headers: meta.headers, meta: meta, rows: rows, errors: errors };
+  cachePut_('tab:' + name, out);
+  return out;
+}
+
+/* ---------- summary-layout tabs (found by label text, not cell address) ---------- */
+
+function findCell_(grid, label, opts) {
+  opts = opts || {};
+  var target = norm_(label);
+  var maxRow = opts.maxRow == null ? grid.length : opts.maxRow;
+  for (var r = 0; r < maxRow; r++) {
+    for (var c = 0; c < grid[r].length; c++) {
+      var n = norm_(grid[r][c]);
+      if (!n) continue;
+      if (opts.exact ? n === target : n.indexOf(target) === 0) return { r: r, c: c };
+    }
+  }
+  return null;
+}
+
+/**
+ * Scorecard: each label's value sits in the cell to its right.
+ * The cash-by-month table and the weekly log are found by their header text.
+ */
+function readScorecard_(fresh) {
+  if (!fresh) {
+    var hit = cacheGet_('scorecard');
+    if (hit) return hit;
+  }
+  var sh = sheet_(CONFIG.TABS.SCORECARD);
+  var tz = sheetTz_();
+  var grid = sh.getDataRange().getValues().map(function (row) {
+    return row.map(function (v) { return serialize_(v, tz); });
+  });
+
+  var logHead = findCell_(grid, 'Week of', { exact: true });
+  var limit = logHead ? logHead.r : grid.length;
+
+  function val(label, exact) {
+    var at = findCell_(grid, label, { maxRow: limit, exact: exact });
+    return at ? grid[at.r][at.c + 1] : null;
+  }
+
+  var stages = {};
+  ['New', 'Talking', 'Call booked', 'Call held', 'Recap sent', 'Won', 'Lost', 'Nurture'].forEach(function (s) {
+    stages[s] = val(s, true);
+  });
+
+  var out = {
+    weekOf: val('Week starting'),
+    conversations: val('Conversations started'),
+    callsBooked: val('Calls booked', true),
+    callsHeld: val('Calls held', true),
+    closes: val('Closes', true),
+    enrolled: val('Enrolled athletes'),
+    mrr: val('Monthly recurring revenue'),
+    mrrTarget: val('MRR target'),
+    gap: val('Gap to target'),
+    spots: val('Spots to next price step'),
+    recurringCosts: val('Recurring costs per month'),
+    net: val('Net per month'),
+    ddcMonthly: val('DDC group'),
+    paid323: val('Paid 323 athletes'),
+    cashMonth: val('Cash collected this month'),
+    cashYtd: val('Cash collected year to date'),
+    overdueFollowups: val('Overdue follow-ups'),
+    stages: stages,
+    cashByMonth: readBlockTable_(grid, findCell_(grid, 'Cash collected', { exact: true, maxRow: limit })),
+    weeklyLog: readBlockTable_(grid, logHead)
+  };
+  cachePut_('scorecard', out);
+  return out;
+}
+
+/** Read a small table whose top-left header cell is at `at`. Stops at the first row with a blank first cell. */
+function readBlockTable_(grid, at) {
+  if (!at) return { headers: [], rows: [] };
+  var head = grid[at.r];
+  var headers = [];
+  for (var c = at.c; c < head.length && String(head[c]).trim() !== ''; c++) headers.push(String(head[c]).trim());
+  var rows = [];
+  for (var r = at.r + 1; r < grid.length; r++) {
+    var first = grid[r][at.c];
+    if (first === '' || first == null) break;
+    var obj = {};
+    headers.forEach(function (h, i) { obj[h] = grid[r][at.c + i]; });
+    rows.push(obj);
+  }
+  return { headers: headers, rows: rows };
+}
+
+/**
+ * Settings: the program price table (found by its "Program" header) plus label/value pairs.
+ */
+function readSettings_(fresh) {
+  if (!fresh) {
+    var hit = cacheGet_('settings');
+    if (hit) return hit;
+  }
+  var grid = sheet_(CONFIG.TABS.SETTINGS).getDataRange().getValues();
+  var head = findCell_(grid, 'Program', { exact: true });
+  var programs = [];
+  var headers = [];
+  var tableEnd = head ? head.r : -1;
+  if (head) {
+    for (var c = head.c; c < grid[head.r].length && String(grid[head.r][c]).trim() !== ''; c++) headers.push(String(grid[head.r][c]).trim());
+    var paysIdx = headers.map(norm_).indexOf('paysthrough');
+    for (var r = head.r + 1; r < grid.length; r++) {
+      var name = String(grid[r][head.c]).trim();
+      var pays = paysIdx >= 0 ? String(grid[r][head.c + paysIdx]).trim() : 'x';
+      if (!name || !pays) break;
+      var p = {};
+      headers.forEach(function (h, i) { p[h] = grid[r][head.c + i]; });
+      programs.push(p);
+      tableEnd = r;
+    }
+  }
+  var pairs = {};
+  for (var rr = tableEnd + 1; rr < grid.length; rr++) {
+    var label = String(grid[rr][0]).trim();
+    if (label) pairs[label] = grid[rr][1];
+  }
+  function pick(prefix) {
+    var key = Object.keys(pairs).filter(function (k) { return norm_(k).indexOf(norm_(prefix)) === 0; })[0];
+    return key ? pairs[key] : null;
+  }
+  var agreements = {};
+  Object.keys(pairs).forEach(function (k) {
+    var m = k.match(/^Agreement:\s*(.+)$/i);
+    if (m) agreements[m[1].trim()] = pairs[k];
+  });
+  var out = {
+    programs: programs,
+    programHeaders: headers,
+    firstStep: pick('First price step'),
+    secondStep: pick('Second price step'),
+    increasePerStep: pick('Increase per step'),
+    mrrTarget: pick('MRR target'),
+    discoveryLink: pick('Discovery call link'),
+    businessEmail: pick('Business email'),
+    agreements: agreements,
+    raw: pairs
+  };
+  cachePut_('settings', out);
+  return out;
+}
+
+/** Tag a program so DDC and Guinea Pig never read as 323 revenue. */
+function programTag_(program) {
+  var p = norm_(program);
+  if (!p) return '';
+  if (p.indexOf('ddc') >= 0 || p.indexOf('diamonddevelopment') >= 0) return 'DDC';
+  if (p.indexOf('guineapig') >= 0) return 'Guinea Pig';
+  return '323';
+}
+
+
+/**
+ * Safe write helpers. Every write:
+ *  - runs inside a script lock (two quick taps cannot double-write)
+ *  - maps columns by header name, read live from row 1
+ *  - skips formula cells and formula-filled (ARRAYFORMULA) columns
+ *  - clears the read cache afterwards
+ */
+
+function withLock_(fn) {
+  var lock = LockService.getScriptLock();
+  if (!lock.tryLock(15000)) throw new Error('The sheet is busy. Try again in a moment.');
+  try {
+    return fn();
+  } finally {
+    lock.releaseLock();
+  }
+}
+
+/**
+ * Run fn once per requestId. A repeat of the same request (double tap, retry) returns the first result.
+ */
+function once_(requestId, fn) {
+  if (!requestId) return fn();
+  var c = CacheService.getScriptCache();
+  var key = CACHE_PREFIX + 'req:' + String(requestId).slice(0, 64);
+  var prev = c.get(key);
+  if (prev) return JSON.parse(prev);
+  var res = fn();
+  try { c.put(key, JSON.stringify(res), 600); } catch (e) { /* ignore */ }
+  return res;
+}
+
+/** Live header map for writes (never cached, so a column added a second ago is respected). */
+function liveMeta_(name) {
+  var sh = sheet_(name);
+  var lastCol = Math.max(1, sh.getLastColumn());
+  var probe = Math.min(Math.max(2, sh.getLastRow()), 60);
+  var values = sh.getRange(1, 1, probe, lastCol).getValues();
+  return { sh: sh, meta: buildMeta_(sh, values) };
+}
+
+/** Convert an app value to what the sheet should hold for that column type. */
+function coerce_(col, v) {
+  if (v === null || v === undefined) return '';
+  if (col.type === 'bool') return v === true || v === 'true' || v === 'TRUE';
+  if (col.type === 'date') {
+    var ymd = asYmd_(v);
+    if (!ymd) return '';
+    return Utilities.parseDate(ymd, sheetTz_(), 'yyyy-MM-dd');
+  }
+  if (col.type === 'number') {
+    if (v === '') return '';
+    var n = Number(String(v).replace(/[$,\s]/g, ''));
+    return isNaN(n) ? String(v) : n;
+  }
+  var s = String(v);
+  // A leading = + - @ would turn typed text into a formula. Store it as text.
+  if (/^[=+\-@]/.test(s)) s = "'" + s;
+  return s;
+}
+
+function writeCells_(sh, meta, row, changes) {
+  var written = [], skipped = [];
+  var rowFormulas = sh.getRange(row, 1, 1, meta.width).getFormulas()[0];
+  Object.keys(changes).forEach(function (h) {
+    var col = meta.cols[h];
+    if (!col) { skipped.push({ header: h, reason: 'no such column' }); return; }
+    if (col.computed || rowFormulas[col.index]) { skipped.push({ header: h, reason: 'formula' }); return; }
+    sh.getRange(row, col.index + 1).setValue(coerce_(col, changes[h]));
+    written.push(h);
+  });
+  return { written: written, skipped: skipped };
+}
+
+/**
+ * Update cells in one row.
+ * expect: { header: value } that must still match before writing, so a sorted or edited sheet
+ * never gets a value written into the wrong row.
+ */
+function updateRow_(name, row, changes, expect) {
+  return withLock_(function () {
+    var lm = liveMeta_(name);
+    var sh = lm.sh, meta = lm.meta;
+    row = Number(row);
+    if (!(row >= 2) || row > sh.getLastRow()) throw new Error('That row no longer exists. Refresh and try again.');
+    if (expect) {
+      var current = sh.getRange(row, 1, 1, meta.width).getValues()[0];
+      Object.keys(expect).forEach(function (h) {
+        var col = meta.cols[h];
+        if (!col) return;
+        if (String(serialize_(current[col.index], sheetTz_())).trim() !== String(expect[h]).trim()) {
+          throw new Error('That row changed in the sheet. Refresh and try again.');
+        }
+      });
+    }
+    var res = writeCells_(sh, meta, row, changes);
+    SpreadsheetApp.flush();
+    bustCache_();
+    res.row = row;
+    return res;
+  });
+}
+
+/**
+ * Append a record after the last row that has real content.
+ * Checkbox-only rows (FALSE) and formula output do not count as content, so a tab pre-filled with
+ * empty checkboxes gets its next row filled instead of row 1001.
+ */
+function appendRow_(name, record) {
+  return withLock_(function () {
+    var lm = liveMeta_(name);
+    var sh = lm.sh, meta = lm.meta;
+    var target = firstFreeRow_(sh, meta);
+    if (target > sh.getMaxRows()) sh.insertRowsAfter(sh.getMaxRows(), 1);
+    var res = writeCells_(sh, meta, target, record);
+    SpreadsheetApp.flush();
+    bustCache_();
+    res.row = target;
+    return res;
+  });
+}
+
+function firstFreeRow_(sh, meta) {
+  var last = sh.getLastRow();
+  if (last < 2) return 2;
+  var values = sh.getRange(2, 1, last - 1, meta.width).getValues();
+  var writable = meta.headers.filter(function (h) { return !meta.cols[h].computed; })
+    .map(function (h) { return meta.cols[h].index; });
+  for (var r = values.length - 1; r >= 0; r--) {
+    var has = writable.some(function (i) {
+      var v = values[r][i];
+      return v !== '' && v !== null && v !== false;
+    });
+    if (has) return r + 3;
+  }
+  return 2;
+}
+
+/**
+ * Add a timestamped note to the top of a notes cell. Reads the cell inside the lock,
+ * so a note typed in the sheet a second ago is kept.
+ */
+function prependNote_(name, row, header, text, expect) {
+  if (!String(text || '').trim()) throw new Error('Type a note first.');
+  return withLock_(function () {
+    var lm = liveMeta_(name);
+    var sh = lm.sh, meta = lm.meta;
+    var col = meta.cols[header];
+    if (!col) throw new Error('No ' + header + ' column on ' + name + '.');
+    row = Number(row);
+    if (!(row >= 2) || row > sh.getLastRow()) throw new Error('That row no longer exists. Refresh and try again.');
+    var current = sh.getRange(row, 1, 1, meta.width).getValues()[0];
+    Object.keys(expect || {}).forEach(function (h) {
+      var c = meta.cols[h];
+      if (c && String(current[c.index]).trim() !== String(expect[h]).trim()) {
+        throw new Error('That row changed in the sheet. Refresh and try again.');
+      }
+    });
+    var changes = {};
+    changes[header] = stampNote_(current[col.index], text);
+    var res = writeCells_(sh, meta, row, changes);
+    if (res.written.indexOf(header) < 0) throw new Error('Notes could not be saved (that cell holds a formula).');
+    SpreadsheetApp.flush();
+    bustCache_();
+    return changes[header];
+  });
+}
+
+/** Prepend a timestamped line to a notes value: "M/D/YYYY: text", newest first. */
+function stampNote_(existing, text) {
+  var d = Utilities.formatDate(new Date(), CONFIG.TZ, 'M/d/yyyy');
+  var line = d + ': ' + String(text).trim();
+  existing = String(existing || '').trim();
+  return existing ? line + '\n' + existing : line;
+}
+
+
+/**
+ * Functions the front end calls with google.script.run.
+ * Names without a trailing underscore are public to the page. Each one checks the owner first.
+ * Error messages never include sheet values, so nothing personal ends up in logs.
+ */
+
+/* ---------- Home ---------- */
+
+/** fresh = true skips the 60 second cache (the refresh button). */
+function getHome(fresh) {
+  assertOwner_();
+  var T = CONFIG.TABS;
+  fresh = fresh === true;
+  var today = todayStr_();
+  var sc = readScorecard_(fresh);
+  var todo = readTab_(T.TODO, fresh);
+  var leads = readTab_(T.LEADS, fresh);
+  var clients = readTab_(T.CLIENTS, fresh);
+  var payments = readTab_(T.PAYMENTS, fresh);
+
+  var H = CONFIG.H;
+  var todos = todo.rows.filter(function (r) { return asYmd_(r[H.todo.date]) === today; })
+    .map(todoView_);
+
+  var minutesPlanned = 0, minutesLeft = 0;
+  todos.forEach(function (t) {
+    minutesPlanned += t.minutes;
+    if (!t.done) minutesLeft += t.minutes;
+  });
+
+  return {
+    today: today,
+    weekOf: sc.weekOf,
+    cards: {
+      mrr: sc.mrr, mrrTarget: sc.mrrTarget, gap: sc.gap, enrolled: sc.enrolled,
+      paid323: sc.paid323, cashMonth: sc.cashMonth, spots: sc.spots
+    },
+    week: { conversations: sc.conversations, callsBooked: sc.callsBooked, callsHeld: sc.callsHeld, closes: sc.closes },
+    todos: todos,
+    minutesPlanned: minutesPlanned,
+    minutesLeft: minutesLeft,
+    attention: needsAttention_(today, leads, clients, payments),
+    sheetErrors: [].concat(todo.errors, leads.errors, clients.errors, payments.errors)
+  };
+}
+
+function todoView_(r) {
+  var H = CONFIG.H.todo;
+  return {
+    row: r._row,
+    date: asYmd_(r[H.date]),
+    day: r[H.day] || '',
+    block: r[H.block] || 'Other',
+    task: r[H.task] || '',
+    minutes: asNumber_(r[H.minutes]),
+    done: r[H.done] === true
+  };
+}
+
+function needsAttention_(today, leads, clients, payments) {
+  var H = CONFIG.H;
+  var items = [];
+  var soon = addDays_(today, 7);
+
+  leads.rows.forEach(function (l) {
+    var due = asYmd_(l[H.leads.nextDue]);
+    var stage = l[H.leads.stage] || '';
+    if (due && due < today && CONFIG.CLOSED_LEAD_STAGES.indexOf(stage) < 0) {
+      items.push({
+        kind: 'lead', level: 'overdue', tab: CONFIG.TABS.LEADS, row: l._row,
+        title: l[H.leads.athlete] || l[H.leads.parent] || 'Lead',
+        detail: 'Follow-up was due ' + due + (l[H.leads.nextAction] ? '. ' + l[H.leads.nextAction] : ''),
+        date: due
+      });
+    }
+  });
+
+  clients.rows.forEach(function (c) {
+    var status = c[H.clients.status] || '';
+    if (CONFIG.ACTIVE_CLIENT_STATUSES.indexOf(status) < 0) return;
+    var name = c[H.clients.athlete];
+    var tag = programTag_(c[H.clients.program]);
+    var paid = String(c[H.clients.paid] == null ? '' : c[H.clients.paid]).trim();
+    if (CONFIG.PAID_OK_VALUES.indexOf(paid) < 0) {
+      items.push({
+        kind: 'client-pay', level: 'due', tab: CONFIG.TABS.CLIENTS, row: c._row, tag: tag,
+        title: name, detail: 'Paid this month: ' + paid
+      });
+    }
+    var missing = H.clients.onboarding.filter(function (h) { return h in c && c[h] !== true; });
+    if (missing.length) {
+      items.push({
+        kind: 'onboarding', level: 'info', tab: CONFIG.TABS.CLIENTS, row: c._row, tag: tag,
+        title: name, detail: 'Onboarding left: ' + missing.join(', ')
+      });
+    }
+  });
+
+  payments.rows.forEach(function (p) {
+    var due = asYmd_(p[H.payments.nextDue]);
+    if (!due || p[H.payments.status] === 'Paid' || due > soon) return;
+    items.push({
+      kind: 'payment', level: due < today ? 'overdue' : 'due', tab: CONFIG.TABS.PAYMENTS, row: p._row,
+      tag: programTag_(p[H.payments.program] || p[H.payments.athlete]),
+      title: p[H.payments.athlete], detail: (due < today ? 'Payment past due since ' : 'Payment due ') + due, date: due
+    });
+  });
+
+  var rank = { overdue: 0, due: 1, info: 2 };
+  items.sort(function (a, b) { return rank[a.level] - rank[b.level] || String(a.date || '').localeCompare(String(b.date || '')); });
+  return items;
+}
+
+/* ---------- To-Do ---------- */
+
+function setTaskDone(row, task, done) {
+  assertOwner_();
+  var H = CONFIG.H.todo;
+  var changes = {}; changes[H.done] = !!done;
+  var expect = {}; expect[H.task] = task;
+  var res = updateRow_(CONFIG.TABS.TODO, row, changes, expect);
+  if (res.written.indexOf(H.done) < 0) throw new Error('Done could not be saved (that cell holds a formula).');
+  return { ok: true };
+}
+
+/* ---------- Add forms ---------- */
+
+/** Field list for an add form, built from the live headers, so new columns show up on their own. */
+function getFormSpec(tab) {
+  assertOwner_();
+  var cfg = CONFIG.ADD_FORMS[tab];
+  if (!cfg) throw new Error('No add form for that tab.');
+  var t = readTab_(tab);
+  var meta = t.meta;
+  var settings = tab === CONFIG.TABS.CLIENTS ? readSettings_() : null;
+  var fields = meta.headers.filter(function (h) {
+    return !meta.cols[h].computed && cfg.hidden.indexOf(h) < 0;
+  }).map(function (h) {
+    var col = meta.cols[h];
+    var choices = col.choices, source = col.choiceSource;
+    if (settings && h === CONFIG.H.clients.program) {
+      if (!choices) choices = settings.programs.map(function (p) { return String(p.Program); });
+      source = 'list';
+    }
+    if (settings && !choices && h === CONFIG.H.clients.plan) { choices = planNames_(settings); source = 'list'; }
+    var suggestions = null;
+    if (!choices && col.type === 'text') suggestions = distinctValues_(t.rows, h, 15);
+    return {
+      name: h,
+      type: col.type,
+      choices: choices,
+      choiceSource: source,
+      suggestions: suggestions,
+      primary: cfg.primary.indexOf(h) >= 0,
+      required: (CONFIG.KEY_HEADERS[tab] || []).indexOf(h) === 0,
+      defaultToday: (CONFIG.TODAY_DEFAULTS[tab] || []).indexOf(h) >= 0
+    };
+  });
+  fields.sort(function (a, b) {
+    var ia = cfg.primary.indexOf(a.name), ib = cfg.primary.indexOf(b.name);
+    if (ia < 0 && ib < 0) return 0;
+    if (ia < 0) return 1;
+    if (ib < 0) return -1;
+    return ia - ib;
+  });
+  var out = { tab: tab, title: cfg.title, today: todayStr_(), fields: fields };
+  if (settings) out.prices = priceTable_(settings);
+  return out;
+}
+
+/**
+ * Values already used in a column, offered as typing suggestions.
+ * Only for category-like columns (values repeat), so names and contacts are never suggested.
+ */
+function distinctValues_(rows, h, max) {
+  var count = {}, total = 0;
+  rows.forEach(function (r) {
+    var v = r[h];
+    if (typeof v !== 'string') return;
+    v = v.trim();
+    if (!v || v.length > 40) return;
+    count[v] = (count[v] || 0) + 1;
+    total++;
+  });
+  var keys = Object.keys(count);
+  var repeats = keys.some(function (k) { return count[k] > 1; });
+  if (keys.length < 2 || !repeats || keys.length > total * 0.6) return null;
+  return keys.sort().slice(0, max);
+}
+
+/**
+ * Append one row to an allowed tab. requestId makes a repeated submit a no-op.
+ */
+function addRecord(tab, record, requestId) {
+  assertOwner_();
+  if (!CONFIG.ADD_FORMS[tab]) throw new Error('Adding rows to that tab is not allowed.');
+  return once_(requestId, function () {
+    var rec = {};
+    Object.keys(record || {}).forEach(function (k) {
+      var v = record[k];
+      if (v !== '' && v !== null && v !== undefined) rec[k] = v;
+    });
+    var keys = CONFIG.KEY_HEADERS[tab] || [];
+    if (keys.length && !keys.some(function (k) { return rec[k] !== undefined && String(rec[k]).trim() !== ''; })) {
+      throw new Error('Fill in ' + keys.join(' or ') + ' first.');
+    }
+    var today = todayStr_();
+    (CONFIG.TODAY_DEFAULTS[tab] || []).forEach(function (h) { if (!rec[h]) rec[h] = today; });
+    var noteH = CONFIG.NOTE_HEADERS[tab];
+    if (noteH && rec[noteH]) rec[noteH] = stampNote_('', rec[noteH]);
+    var defs = CONFIG.NEW_ROW_DEFAULTS[tab] || {};
+    Object.keys(defs).forEach(function (h) { if (!rec[h]) rec[h] = defs[h]; });
+    if (tab === CONFIG.TABS.TODO) deriveTodoFields_(rec);
+
+    var res = appendRow_(tab, rec);
+    return { ok: true, row: res.row, skipped: res.skipped.map(function (s) { return s.header; }) };
+  });
+}
+
+/** Fill Day (Mon, Tue...) and Week (W1, W2...) for a new task, matching how the tab already labels weeks. */
+function deriveTodoFields_(rec) {
+  var H = CONFIG.H.todo;
+  var ymd = asYmd_(rec[H.date]);
+  if (!ymd) return;
+  var p = ymd.split('-');
+  var d = new Date(Date.UTC(+p[0], +p[1] - 1, +p[2]));
+  if (!rec[H.day]) rec[H.day] = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][d.getUTCDay()];
+  if (rec[H.week]) return;
+  var monday = mondayOf_(ymd);
+  var rows = readTab_(CONFIG.TABS.TODO).rows;
+  // Reuse the label of a task in the same week; otherwise count on from the most recent labeled task.
+  var ref = null;
+  for (var i = 0; i < rows.length; i++) {
+    var rd = asYmd_(rows[i][H.date]);
+    var wk = String(rows[i][H.week] || '');
+    if (!rd || !/^W\d+$/.test(wk)) continue;
+    if (mondayOf_(rd) === monday) { rec[H.week] = wk; return; }
+    if (!ref || rd > ref.date) ref = { date: rd, monday: mondayOf_(rd), n: Number(wk.slice(1)) };
+  }
+  if (ref) {
+    var weeks = Math.round((Date.parse(monday) - Date.parse(ref.monday)) / (7 * 864e5));
+    var n = ref.n + weeks;
+    if (n >= 1) rec[H.week] = 'W' + n;
+  }
+}
+
+function mondayOf_(ymd) {
+  var p = ymd.split('-');
+  var d = new Date(Date.UTC(+p[0], +p[1] - 1, +p[2]));
+  var back = (d.getUTCDay() + 6) % 7;
+  return addDays_(ymd, -back);
+}
+
+/* ---------- Misc ---------- */
+
+function getSheetUrl() {
+  assertOwner_();
+  return ss_().getUrl();
+}
+
+/** { program: { plan: monthly rate } } from Settings, used to prefill Monthly rate. */
+function priceTable_(settings) {
+  var plans = planNames_(settings);
+  var out = {};
+  settings.programs.forEach(function (p) {
+    out[p.Program] = {};
+    plans.forEach(function (pl) { if (typeof p[pl] === 'number') out[p.Program][pl] = p[pl]; });
+  });
+  return out;
+}
+
+
+/**
+ * To-Do screen.
+ */
+
+/** All tasks (the page filters into Today, Tomorrow, This week, Overdue). */
+function getTodos(fresh) {
+  assertOwner_();
+  var t = readTab_(CONFIG.TABS.TODO, fresh === true);
+  var blocks = {};
+  var rows = t.rows.map(todoView_).filter(function (x) { return x.date; });
+  rows.forEach(function (x) { blocks[x.block] = 1; });
+  var col = t.meta.cols[CONFIG.H.todo.block];
+  return {
+    today: todayStr_(),
+    weekStart: mondayOf_(todayStr_()),
+    tasks: rows,
+    blocks: (col && col.choices) || Object.keys(blocks).sort()
+  };
+}
+
+/**
+ * Edit a task. changes may hold Date, Block, Task, Minutes.
+ * Moving to a new date also updates Day and Week.
+ */
+function updateTask(row, expectTask, changes) {
+  assertOwner_();
+  var H = CONFIG.H.todo;
+  var allowed = [H.date, H.block, H.task, H.minutes, H.done];
+  var c = {};
+  Object.keys(changes || {}).forEach(function (k) { if (allowed.indexOf(k) >= 0) c[k] = changes[k]; });
+  if (c[H.task] !== undefined && !String(c[H.task]).trim()) throw new Error('Task cannot be blank.');
+  if (c[H.date] !== undefined) {
+    if (!asYmd_(c[H.date])) throw new Error('Pick a date.');
+    deriveTodoFields_(c);
+  }
+  var expect = {}; expect[H.task] = expectTask;
+  updateRow_(CONFIG.TABS.TODO, row, c, expect);
+  return { ok: true };
+}
+
+/** Move several tasks to one date (used by "Move overdue to today"). items: [{ row, task }]. */
+function moveTasks(items, date) {
+  assertOwner_();
+  if (!asYmd_(date)) throw new Error('Pick a date.');
+  var moved = 0, failed = 0;
+  (items || []).slice(0, 100).forEach(function (it) {
+    try { updateTask(it.row, it.task, { Date: date }); moved++; } catch (e) { failed++; }
+  });
+  return { moved: moved, failed: failed };
+}
+
+
+/**
+ * Clients screen and client profile.
+ * Payments and Wins are matched to a client by athlete name.
+ */
+
+function sameName_(a, b) {
+  return norm_(a) !== '' && norm_(a) === norm_(b);
+}
+
+function paymentsFor_(payments, athlete) {
+  var P = CONFIG.H.payments;
+  return payments.rows.filter(function (p) { return sameName_(p[P.athlete], athlete); })
+    .map(function (p) {
+      return {
+        row: p._row, date: asYmd_(p[P.date]), amount: asNumber_(p[P.amount]),
+        method: p['Paid through'] || '', program: p[P.program] || '', notes: p['Notes'] || '',
+        nextDue: asYmd_(p[P.nextDue]), status: p[P.status] || ''
+      };
+    })
+    .sort(function (a, b) { return b.date.localeCompare(a.date); });
+}
+
+/** Paid / Due / Overdue badge, plus No charge and Prepaid as plain labels. */
+function payBadge_(client, pays) {
+  var paid = String(client[CONFIG.H.clients.paid] == null ? '' : client[CONFIG.H.clients.paid]).trim();
+  if (pays.some(function (p) { return /^overdue$/i.test(p.status); })) return 'Overdue';
+  if (paid === 'Paid') return 'Paid';
+  if (paid === 'Due') return 'Due';
+  return paid;
+}
+
+function termInfo_(client, today) {
+  var start = asYmd_(client['Start date']);
+  var ends = asYmd_(client['Term ends']);
+  var info = { start: start, ends: ends, months: client['Term (months)'] || '', monthsIn: null, daysLeft: null, endsSoon: false };
+  if (start && start <= today) {
+    var s = start.split('-').map(Number), t = today.split('-').map(Number);
+    var m = (t[0] - s[0]) * 12 + (t[1] - s[1]) - (t[2] < s[2] ? 1 : 0);
+    info.monthsIn = Math.max(0, m);
+  }
+  if (ends) {
+    info.daysLeft = Math.round((Date.parse(ends) - Date.parse(today)) / 864e5);
+    info.endsSoon = info.daysLeft >= 0 && info.daysLeft <= 30;
+  }
+  return info;
+}
+
+/** The Settings link column for a plan: "6 months" -> "6-month link". */
+function planLink_(settings, program, plan) {
+  var p = settings.programs.filter(function (x) { return sameName_(x.Program, program); })[0];
+  if (!p || !plan) return '';
+  var want = norm_(String(plan).replace(/s\b/gi, ''));
+  var key = Object.keys(p).filter(function (h) {
+    var n = norm_(h);
+    return /link$/.test(n) && n.indexOf(want) === 0;
+  })[0];
+  return key ? String(p[key] || '') : '';
+}
+
+function getClients(fresh) {
+  assertOwner_();
+  fresh = fresh === true;
+  var C = CONFIG.H.clients;
+  var today = todayStr_();
+  var clients = readTab_(CONFIG.TABS.CLIENTS, fresh);
+  var payments = readTab_(CONFIG.TABS.PAYMENTS, fresh);
+  var list = clients.rows.map(function (c) {
+    var pays = paymentsFor_(payments, c[C.athlete]);
+    var term = termInfo_(c, today);
+    return {
+      row: c._row, athlete: c[C.athlete], parent: c[C.parent] || '', email: c['Parent email'] || '',
+      program: c[C.program] || '', plan: c[C.plan] || '', rate: c['Monthly rate'], status: c[C.status] || '',
+      tag: programTag_(c[C.program]), pay: payBadge_(c, pays), endsSoon: term.endsSoon, daysLeft: term.daysLeft
+    };
+  });
+  var statusCol = clients.meta.cols[C.status];
+  return {
+    today: today,
+    clients: list,
+    statuses: (statusCol && statusCol.choices) || [],
+    programs: unique_(list.map(function (c) { return c.program; }))
+  };
+}
+
+function unique_(arr) {
+  var seen = {}, out = [];
+  arr.forEach(function (v) { if (v && !seen[v]) { seen[v] = 1; out.push(v); } });
+  return out.sort();
+}
+
+function getClient(row, fresh) {
+  assertOwner_();
+  fresh = fresh === true;
+  var C = CONFIG.H.clients;
+  var today = todayStr_();
+  var clients = readTab_(CONFIG.TABS.CLIENTS, fresh);
+  var c = clients.rows.filter(function (r) { return r._row === Number(row); })[0];
+  if (!c) throw new Error('Client not found. Refresh and try again.');
+  var payments = readTab_(CONFIG.TABS.PAYMENTS, fresh);
+  var wins = readTab_(CONFIG.TABS.WINS, fresh);
+  var settings = readSettings_(fresh);
+  var meta = clients.meta;
+  var pays = paymentsFor_(payments, c[C.athlete]);
+  var total = pays.reduce(function (s, p) { return s + p.amount; }, 0);
+
+  var fields = meta.headers.map(function (h) {
+    var col = meta.cols[h];
+    var choices = col.choices;
+    if (!choices && h === C.program) choices = settings.programs.map(function (p) { return String(p.Program); });
+    if (!choices && h === C.plan) choices = planNames_(settings);
+    if (choices && c[h] !== '' && c[h] != null && choices.indexOf(String(c[h])) < 0) choices = choices.concat([String(c[h])]);
+    return { name: h, value: c[h], type: col.type, choices: choices, computed: col.computed };
+  });
+
+  return {
+    row: c._row,
+    athlete: c[C.athlete],
+    today: today,
+    tag: programTag_(c[C.program]),
+    pay: payBadge_(c, pays),
+    paidThisMonth: c[C.paid] || '',
+    fields: fields,
+    onboarding: C.onboarding.filter(function (h) { return h in c; }).map(function (h) {
+      return { name: h, done: c[h] === true, computed: meta.cols[h].computed };
+    }),
+    term: termInfo_(c, today),
+    payments: pays,
+    totalPaid: total,
+    nextDue: pays.length ? pays[0].nextDue : '',
+    wins: wins.rows.filter(function (w) { return sameName_(w['Athlete'], c[C.athlete]); })
+      .map(function (w) { var o = {}; wins.headers.forEach(function (h) { o[h] = w[h]; }); o._row = w._row; return o; })
+      .sort(function (a, b) { return String(b['Date']).localeCompare(String(a['Date'])); }),
+    notes: c[CONFIG.NOTE_HEADERS[CONFIG.TABS.CLIENTS]] || '',
+    links: {
+      email: c['Parent email'] || '',
+      payment: planLink_(settings, c[C.program], c[C.plan]),
+      agreement: agreementFor_(settings, c[C.program])
+    }
+  };
+}
+
+function agreementFor_(settings, program) {
+  var key = Object.keys(settings.agreements).filter(function (k) { return sameName_(k, program); })[0];
+  return key ? String(settings.agreements[key]) : '';
+}
+
+/** Plan names from the Settings price table headers (Month to month, 6 months, 12 months). */
+function planNames_(settings) {
+  return (settings.programHeaders || []).filter(function (h) {
+    var n = norm_(h);
+    return n !== 'program' && n !== 'paysthrough' && !/link$/.test(n);
+  });
+}
+
+/** Save one or more fields on a client row. expectName guards against a moved row. */
+function updateClient(row, expectName, changes) {
+  assertOwner_();
+  var res = updateRow_(CONFIG.TABS.CLIENTS, row, changes || {}, expectAthlete_(expectName));
+  return { ok: true, written: res.written, skipped: res.skipped.map(function (s) { return s.header; }) };
+}
+
+function addClientNote(row, expectName, text) {
+  assertOwner_();
+  return prependNote_(CONFIG.TABS.CLIENTS, row, CONFIG.NOTE_HEADERS[CONFIG.TABS.CLIENTS], text, expectAthlete_(expectName));
+}
+
+function expectAthlete_(name) {
+  var e = {}; e[CONFIG.H.clients.athlete] = name; return e;
+}
+
+
+/**
+ * Leads pipeline.
+ * Rows are guarded by their names (Parent name + Athlete name) so a sorted sheet never gets the wrong row written.
+ */
+
+function leadExpect_(lead) {
+  var L = CONFIG.H.leads, e = {};
+  e[L.parent] = lead[L.parent] == null ? '' : lead[L.parent];
+  e[L.athlete] = lead[L.athlete] == null ? '' : lead[L.athlete];
+  return e;
+}
+
+function getLeads(fresh) {
+  assertOwner_();
+  fresh = fresh === true;
+  var L = CONFIG.H.leads;
+  var today = todayStr_();
+  var t = readTab_(CONFIG.TABS.LEADS, fresh);
+  var settings = readSettings_(fresh);
+  var stageCol = t.meta.cols[L.stage];
+  var stages = (stageCol && stageCol.choices) || ['New', 'Talking', 'Call booked', 'Call held', 'Recap sent', 'Won', 'Lost', 'Nurture'];
+  var leads = t.rows.map(function (r) {
+    var o = { row: r._row };
+    t.headers.forEach(function (h) { o[h] = r[h]; });
+    var due = asYmd_(r[L.nextDue]);
+    o._overdue = !!due && due < today && CONFIG.CLOSED_LEAD_STAGES.indexOf(r[L.stage]) < 0;
+    return o;
+  });
+  return {
+    today: today,
+    stages: stages,
+    leads: leads,
+    fields: t.meta.headers.map(function (h) {
+      var c = t.meta.cols[h];
+      return { name: h, type: c.type, choices: c.choices, computed: c.computed };
+    }),
+    discoveryLink: settings.discoveryLink || '',
+    programs: settings.programs.map(function (p) { return String(p.Program); })
+  };
+}
+
+/**
+ * Save fields on a lead. expect holds the Parent name and Athlete name the page last saw.
+ * Changing Stage sets Last touch to today.
+ */
+function updateLead(row, expect, changes) {
+  assertOwner_();
+  var L = CONFIG.H.leads;
+  changes = changes || {};
+  if (changes[L.stage] !== undefined && changes[L.lastTouch] === undefined) changes[L.lastTouch] = todayStr_();
+  var res = updateRow_(CONFIG.TABS.LEADS, row, changes, expect || {});
+  return { ok: true, written: res.written, skipped: res.skipped.map(function (s) { return s.header; }) };
+}
+
+/** Add a timestamped note and set Last touch to today. */
+function addLeadNote(row, expect, text) {
+  assertOwner_();
+  var L = CONFIG.H.leads;
+  var notes = prependNote_(CONFIG.TABS.LEADS, row, CONFIG.NOTE_HEADERS[CONFIG.TABS.LEADS], text, expect || {});
+  var c = {}; c[L.lastTouch] = todayStr_();
+  updateRow_(CONFIG.TABS.LEADS, row, c, expect || {});
+  return { notes: notes, lastTouch: c[L.lastTouch] };
+}
+
+
+/**
+ * Money screen, Content, Wins, Scorecard history, and a generic row editor.
+ */
+
+/** Values to the right of a label cell anywhere on a tab, e.g. 'Total spent' -> [This month, Year to date]. */
+function labelRow_(tab, label) {
+  var grid = sheet_(tab).getDataRange().getValues();
+  var at = findCell_(grid, label, { exact: true }) || findCell_(grid, label);
+  if (!at) return null;
+  return { values: grid[at.r].slice(at.c + 1), header: findHeaderAbove_(grid, at) };
+}
+
+/** The header row above a summary label (first row above with text in the next column). */
+function findHeaderAbove_(grid, at) {
+  for (var r = at.r - 1; r >= 0; r--) {
+    if (String(grid[r][at.c + 1] || '').trim()) return grid[r].slice(at.c + 1).map(String);
+  }
+  return [];
+}
+
+function getMoney(fresh) {
+  assertOwner_();
+  fresh = fresh === true;
+  var T = CONFIG.TABS;
+  var today = todayStr_();
+  var month = today.slice(0, 7), year = today.slice(0, 4);
+  var sc = readScorecard_(fresh);
+  var pays = readTab_(T.PAYMENTS, fresh);
+  var exps = readTab_(T.EXPENSES, fresh);
+
+  // Expenses summary block (This month, Year to date) by label.
+  var spent = labelRow_(T.EXPENSES, 'Total spent');
+  var spentMonth = null, spentYtd = null;
+  if (spent) {
+    var hm = spent.header.map(norm_);
+    spentMonth = spent.values[hm.indexOf('thismonth')];
+    spentYtd = spent.values[hm.indexOf('yeartodate')];
+  }
+  // Fall back to summing rows if the block is missing.
+  if (spentMonth == null || spentYtd == null) {
+    spentMonth = 0; spentYtd = 0;
+    exps.rows.forEach(function (e) {
+      var d = asYmd_(e['Date']);
+      if (d.slice(0, 7) === month) spentMonth += asNumber_(e['Amount']);
+      if (d.slice(0, 4) === year) spentYtd += asNumber_(e['Amount']);
+    });
+  }
+
+  var rateRow = labelRow_(T.MONEY, 'Tax set-aside rate');
+  var taxRate = rateRow ? asNumber_(rateRow.values[0]) : 0;
+
+  // This month's split from the Scorecard cash table (323 vs DDC).
+  var cash = sc.cashByMonth;
+  var cols = cash.headers.slice(1);
+  var thisMonthRow = cash.rows.filter(function (r) { return String(r[cash.headers[0]]).slice(0, 7) === month; })[0] || {};
+  var ytdRow = cash.rows.filter(function (r) { return norm_(r[cash.headers[0]]) === 'yeartodate'; })[0] || {};
+
+  var cashIn = asNumber_(sc.cashMonth);
+  var net = cashIn - asNumber_(spentMonth);
+  var tax = cashIn * taxRate;
+
+  return {
+    today: today,
+    cash: { headers: cash.headers, rows: cash.rows, cols: cols },
+    split: {
+      month: cols.map(function (c) { return { name: c, value: asNumber_(thisMonthRow[c]) }; }),
+      ytd: cols.map(function (c) { return { name: c, value: asNumber_(ytdRow[c]) }; })
+    },
+    month: { cashIn: cashIn, spent: asNumber_(spentMonth), net: net, taxRate: taxRate, tax: tax, left: net - tax },
+    ytd: { cashIn: asNumber_(sc.cashYtd), spent: asNumber_(spentYtd) },
+    payments: pays.rows.map(function (p) {
+      return {
+        row: p._row, date: asYmd_(p['Date received']), athlete: p['Athlete'], program: p['Program'] || '',
+        method: p['Paid through'] || '', amount: asNumber_(p['Amount']), notes: p['Notes'] || '',
+        nextDue: asYmd_(p['Next payment due']), status: p['Status'] || '',
+        tag: programTag_(p['Program'] || p['Athlete'])
+      };
+    }).sort(function (a, b) { return b.date.localeCompare(a.date); }),
+    expenses: exps.rows.map(function (e) {
+      var o = { row: e._row };
+      exps.headers.forEach(function (h) { o[h] = e[h]; });
+      o.date = asYmd_(e['Date']); o.amount = asNumber_(e['Amount']);
+      return o;
+    }).sort(function (a, b) { return b.date.localeCompare(a.date); })
+  };
+}
+
+/* ---------- Content ---------- */
+
+function getContent(fresh) {
+  assertOwner_();
+  fresh = fresh === true;
+  var today = todayStr_();
+  var t = readTab_(CONFIG.TABS.CONTENT, fresh);
+  var posts = t.rows.map(function (r) {
+    var o = { row: r._row };
+    t.headers.forEach(function (h) { o[h] = r[h]; });
+    o.date = asYmd_(r['Post date']);
+    return o;
+  });
+  var pillarCol = t.meta.cols['Pillar'], statusCol = t.meta.cols['Status'];
+  var pillars = (pillarCol && pillarCol.choices) || unique_(posts.map(function (p) { return p['Pillar']; }));
+  var statuses = (statusCol && statusCol.choices) || unique_(posts.map(function (p) { return p['Status']; }));
+
+  // A post counts as posted if its Status says so, or (when no status says so) its date has passed.
+  var postedWord = statuses.filter(function (s) { return /posted|live|published/i.test(s); });
+  function isPosted(p) {
+    if (postedWord.length) return postedWord.indexOf(p['Status']) >= 0;
+    return p.date && p.date <= today;
+  }
+  var last = {};
+  posts.forEach(function (p) {
+    if (!p['Pillar'] || !isPosted(p)) return;
+    if (!last[p['Pillar']] || p.date > last[p['Pillar']]) last[p['Pillar']] = p.date;
+  });
+  var stale = pillars.map(function (pl) {
+    var d = last[pl] || '';
+    return { pillar: pl, last: d, days: d ? Math.round((Date.parse(today) - Date.parse(d)) / 864e5) : null };
+  }).sort(function (a, b) {
+    if (a.days === null) return -1;
+    if (b.days === null) return 1;
+    return b.days - a.days;
+  });
+
+  return { today: today, posts: posts, pillars: pillars, statuses: statuses, stale: stale, postedRule: postedWord.length ? 'status' : 'date' };
+}
+
+/* ---------- Wins ---------- */
+
+function getWins(fresh) {
+  assertOwner_();
+  var t = readTab_(CONFIG.TABS.WINS, fresh === true);
+  var wins = t.rows.map(function (r) {
+    var o = { row: r._row };
+    t.headers.forEach(function (h) { o[h] = r[h]; });
+    return o;
+  }).sort(function (a, b) { return String(b['Date']).localeCompare(String(a['Date'])); });
+  return { wins: wins, athletes: unique_(wins.map(function (w) { return w['Athlete']; })) };
+}
+
+/* ---------- Scorecard history ---------- */
+
+function getHistory(fresh) {
+  assertOwner_();
+  var sc = readScorecard_(fresh === true);
+  return { headers: sc.weeklyLog.headers, rows: sc.weeklyLog.rows };
+}
+
+/* ---------- generic row editor ---------- */
+
+/** Editable fields for a tab: every column that is not formula-filled. */
+function getEditSpec(tab) {
+  assertOwner_();
+  if (CONFIG.EDIT_TABS.indexOf(tab) < 0) throw new Error('Editing that tab is not allowed here.');
+  var t = readTab_(tab);
+  return {
+    tab: tab,
+    fields: t.meta.headers.filter(function (h) { return !t.meta.cols[h].computed; }).map(function (h) {
+      var c = t.meta.cols[h];
+      return { name: h, type: c.type, choices: c.choices, choiceSource: c.choiceSource };
+    })
+  };
+}
+
+/** Update a row on an allowed tab. expect: values the page last saw, checked before writing. */
+function updateRecord(tab, row, expect, changes) {
+  assertOwner_();
+  if (CONFIG.EDIT_TABS.indexOf(tab) < 0) throw new Error('Editing that tab is not allowed here.');
+  var res = updateRow_(tab, row, changes || {}, expect || {});
+  return { ok: true, skipped: res.skipped.map(function (s) { return s.header; }) };
+}
+
+
+/**
+ * Web app entry point.
+ * Deployed as: Execute as me, Access: only myself.
+ */
+function doGet() {
+  assertOwner_();
+  var out = HtmlService.createTemplateFromFile('Index').evaluate()
+    .setTitle('323 Hub')
+    .addMetaTag('viewport', 'width=device-width, initial-scale=1, viewport-fit=cover');
+  try { out.setFaviconUrl('https://323pitchingperformance.com/assets/favicon.png'); } catch (e) { /* optional */ }
+  return out;
+}
+
+/** Used by templates: <?!= include_('Styles') ?> */
+function include_(name) {
+  return HtmlService.createHtmlOutputFromFile(name).getContent();
+}
+
+/**
+ * Second lock on the door. The deployment already limits access to the owner;
+ * this also stops any server call if that setting is ever changed by mistake.
+ */
+function assertOwner_() {
+  var email = '';
+  try { email = Session.getActiveUser().getEmail(); } catch (e) { email = ''; }
+  if (String(email).toLowerCase() !== CONFIG.OWNER_EMAIL.toLowerCase()) {
+    throw new Error('Not authorized.');
+  }
+}
+
+</script>
+<script>
+/*
+ * 323 Hub for Mac: runs the same server code as the Apps Script version (src/*.js),
+ * against a live copy of the Command Center read through the viewer's Google Sheets connector.
+ *
+ * How it works
+ *  - Each tab is read with get_spreadsheet (values, formulas, number formats, dropdown rules).
+ *  - The rows become an in-memory book that answers the SpreadsheetApp calls the server code makes.
+ *  - Reads run against that copy. Before any write, the tabs involved are re-read fresh, so the
+ *    row checks and formula checks see the sheet as it is right now.
+ *  - Cells the server code changes are sent back with update_values, one call per row, with null
+ *    for every cell left alone (the connector skips nulls), so formulas are never touched.
+ *  - Writes run one at a time.
+ */
+(function (root) {
+  'use strict';
+
+  var SERVER = 'Google Sheets';
+  var TZ = 'America/Boise';
+  var ALL_TABS = ['Scorecard', 'Daily To-Do', 'Leads', 'Clients', 'Payments', 'Settings', 'Content', 'Wins', 'Expenses', 'Money'];
+  var FIELDS = [
+    'properties.timeZone',
+    'sheets.properties.title',
+    'sheets.properties.gridProperties.rowCount',
+    'sheets.data.startRow',
+    'sheets.data.startColumn',
+    'sheets.data.rowData.values.effectiveValue',
+    'sheets.data.rowData.values.userEnteredValue',
+    'sheets.data.rowData.values.effectiveFormat.numberFormat.type',
+    'sheets.data.rowData.values.dataValidation.condition'
+  ];
+  var STALE_MS = 60000;
+
+  /* ---------- dates and time zones ---------- */
+
+  function tzParts(date, tz) {
+    var f = new Intl.DateTimeFormat('en-US', {
+      timeZone: tz, year: 'numeric', month: '2-digit', day: '2-digit',
+      hour: '2-digit', minute: '2-digit', second: '2-digit', hourCycle: 'h23', weekday: 'short'
+    });
+    var o = {};
+    f.formatToParts(date).forEach(function (p) { o[p.type] = p.value; });
+    return o;
+  }
+
+  /** Midnight (plus optional minutes) on y-m-d in tz, as a Date. */
+  function localTime(y, m, d, tz, minutes) {
+    var guess = new Date(Date.UTC(y, m - 1, d, 12));
+    var p = tzParts(guess, tz);
+    var offsetMs = Date.UTC(+p.year, +p.month - 1, +p.day, +p.hour, +p.minute) - guess.getTime();
+    return new Date(Date.UTC(y, m - 1, d) - offsetMs + (minutes || 0) * 60000);
+  }
+
+  /** Sheets serial number (days since 12/30/1899) to a Date in the sheet's time zone. */
+  function serialToDate(serial, tz) {
+    var days = Math.floor(serial);
+    var minutes = Math.round((serial - days) * 1440);
+    var base = new Date(Date.UTC(1899, 11, 30 + days));
+    return localTime(base.getUTCFullYear(), base.getUTCMonth() + 1, base.getUTCDate(), tz, minutes);
+  }
+
+  var Utilities = {
+    formatDate: function (date, tz, pattern) {
+      var p = tzParts(date, tz);
+      return pattern.replace(/yyyy|MM|dd|HH|mm|EEE|M|d/g, function (t) {
+        switch (t) {
+          case 'yyyy': return p.year;
+          case 'MM': return p.month;
+          case 'dd': return p.day;
+          case 'HH': return p.hour;
+          case 'mm': return p.minute;
+          case 'EEE': return p.weekday;
+          case 'M': return String(Number(p.month));
+          case 'd': return String(Number(p.day));
+        }
+      });
+    },
+    parseDate: function (str, tz) {
+      var a = str.split('-').map(Number);
+      return localTime(a[0], a[1], a[2], tz);
+    }
+  };
+
+  /* ---------- the in-memory book ---------- */
+
+  var Criteria = { CHECKBOX: 'CHECKBOX', DATE_IS_VALID_DATE: 'DATE_IS_VALID_DATE', VALUE_IN_LIST: 'VALUE_IN_LIST', VALUE_IN_RANGE: 'VALUE_IN_RANGE' };
+
+  function Validation(type, args) { this.type = type; this.args = args || []; }
+  Validation.prototype.getCriteriaType = function () { return this.type; };
+  Validation.prototype.getCriteriaValues = function () { return this.args; };
+
+  var ERRORS = { REF: '#REF!', NAME: '#NAME?', VALUE: '#VALUE!', DIVIDE_BY_ZERO: '#DIV/0!', NUM: '#NUM!', N_A: '#N/A', NULL_VALUE: '#NULL!', ERROR: '#ERROR!', LOADING: '#LOADING' };
+
+  function colLetters(n) {
+    var s = '';
+    while (n > 0) { var m = (n - 1) % 26; s = String.fromCharCode(65 + m) + s; n = Math.floor((n - 1) / 26); }
+    return s;
+  }
+  function colNumber(letters) {
+    var n = 0;
+    for (var i = 0; i < letters.length; i++) n = n * 26 + (letters.charCodeAt(i) - 64);
+    return n;
+  }
+
+  /** A range named in a dropdown rule, such as =Clients!$A$2:$A, read from the book. */
+  function RuleRange(book, ref) {
+    this.book = book; this.ref = ref;
+  }
+  RuleRange.prototype.getValues = function () {
+    var m = String(this.ref).replace(/^=/, '').match(/^'?([^'!]+)'?!\$?([A-Z]+)\$?(\d+)?(?::\$?([A-Z]+)\$?(\d+)?)?$/);
+    if (!m) return [];
+    var sh = this.book.sheets[m[1]];
+    if (!sh) return [];
+    var c = colNumber(m[2]), r1 = Number(m[3] || 1), r2 = m[5] ? Number(m[5]) : sh.values.length;
+    var out = [];
+    for (var r = r1; r <= r2; r++) out.push([sh.cell(r, c)]);
+    return out;
+  };
+
+  function Sheet(name, book) {
+    this.name = name; this.book = book;
+    this.values = []; this.formulas = {}; this.validations = {}; this.maxRows = 0;
+    this.writes = [];
+  }
+  Sheet.prototype.load = function (grid, rowCount, tz) {
+    var self = this;
+    this.values = []; this.formulas = {}; this.validations = {}; this.maxRows = rowCount || 0;
+    (grid.rowData || []).forEach(function (row, ri) {
+      var r = (grid.startRow || 0) + ri + 1;
+      var out = [];
+      (row.values || []).forEach(function (cell, ci) {
+        var c = (grid.startColumn || 0) + ci + 1;
+        out[c - 1] = cellValue(cell, tz);
+        var uv = cell.userEnteredValue;
+        if (uv && uv.formulaValue) self.formulas[r + ',' + c] = uv.formulaValue;
+        if (r === 2 && cell.dataValidation && cell.dataValidation.condition) {
+          var v = toValidation(cell.dataValidation.condition, self.book);
+          if (v) self.validations[c] = v;
+        }
+      });
+      for (var i = 0; i < out.length; i++) if (out[i] === undefined) out[i] = '';
+      while (self.values.length < r - 1) self.values.push([]);
+      self.values[r - 1] = out;
+    });
+    this.writes = [];
+  };
+  Sheet.prototype.cell = function (r, c) { var row = this.values[r - 1]; return row && row[c - 1] !== undefined ? row[c - 1] : ''; };
+  Sheet.prototype.getLastRow = function () {
+    for (var r = this.values.length; r >= 1; r--) {
+      var row = this.values[r - 1] || [];
+      if (row.some(function (v) { return v !== '' && v !== null && v !== undefined; })) return r;
+    }
+    return 0;
+  };
+  Sheet.prototype.getLastColumn = function () {
+    var m = 0;
+    this.values.forEach(function (row) {
+      for (var c = row.length; c >= 1; c--) { if (row[c - 1] !== '' && row[c - 1] != null) { m = Math.max(m, c); break; } }
+    });
+    return m;
+  };
+  Sheet.prototype.getMaxRows = function () { return this.maxRows || this.values.length; };
+  Sheet.prototype.insertRowsAfter = function () {
+    throw new Error('The ' + this.name + ' tab is full. Add more empty rows at the bottom of the tab in the sheet, then try again.');
+  };
+  Sheet.prototype.getRange = function (r, c, nr, nc) { return new Range(this, r, c, nr || 1, nc || 1); };
+  Sheet.prototype.getDataRange = function () { return this.getRange(1, 1, Math.max(1, this.getLastRow()), Math.max(1, this.getLastColumn())); };
+
+  function cellValue(cell, tz) {
+    var ev = cell.effectiveValue;
+    if (!ev) return '';
+    if ('boolValue' in ev) return ev.boolValue;
+    if ('errorValue' in ev) return ERRORS[ev.errorValue.type] || '#ERROR!';
+    if ('stringValue' in ev) return ev.stringValue;
+    if ('numberValue' in ev) {
+      var t = cell.effectiveFormat && cell.effectiveFormat.numberFormat && cell.effectiveFormat.numberFormat.type;
+      if (t === 'DATE' || t === 'DATE_TIME') return serialToDate(ev.numberValue, tz);
+      return ev.numberValue;
+    }
+    return '';
+  }
+
+  function toValidation(cond, book) {
+    var vals = (cond.values || []).map(function (v) { return v.userEnteredValue; });
+    switch (cond.type) {
+      case 'BOOLEAN': return new Validation(Criteria.CHECKBOX);
+      case 'DATE_IS_VALID': return new Validation(Criteria.DATE_IS_VALID_DATE);
+      case 'ONE_OF_LIST': return new Validation(Criteria.VALUE_IN_LIST, [vals, true]);
+      case 'ONE_OF_RANGE': return new Validation(Criteria.VALUE_IN_RANGE, [new RuleRange(book, vals[0]), true]);
+    }
+    return null;
+  }
+
+  function Range(sh, r, c, nr, nc) { this.sh = sh; this.r = r; this.c = c; this.nr = nr; this.nc = nc; }
+  Range.prototype.map = function (fn) {
+    var out = [];
+    for (var i = 0; i < this.nr; i++) {
+      var row = [];
+      for (var j = 0; j < this.nc; j++) row.push(fn(this.r + i, this.c + j));
+      out.push(row);
+    }
+    return out;
+  };
+  Range.prototype.getValues = function () { var sh = this.sh; return this.map(function (r, c) { return sh.cell(r, c); }); };
+  Range.prototype.getFormulas = function () { var sh = this.sh; return this.map(function (r, c) { return sh.formulas[r + ',' + c] || ''; }); };
+  Range.prototype.getDataValidations = function () { var sh = this.sh; return this.map(function (r, c) { return r >= 2 ? (sh.validations[c] || null) : null; }); };
+  Range.prototype.getValue = function () { return this.sh.cell(this.r, this.c); };
+  Range.prototype.getFormula = function () { return this.sh.formulas[this.r + ',' + this.c] || ''; };
+  Range.prototype.setValue = function (v) {
+    if (this.getFormula()) throw new Error('That cell holds a formula and was not changed.');
+    if (this.r > this.sh.getMaxRows()) this.sh.insertRowsAfter();
+    var local = (typeof v === 'string' && v.charAt(0) === "'") ? v.slice(1) : v;
+    var sh = this.sh;
+    while (sh.values.length < this.r) sh.values.push([]);
+    var row = sh.values[this.r - 1];
+    while (row.length < this.c) row.push('');
+    row[this.c - 1] = local;
+    sh.writes.push({ r: this.r, c: this.c, v: v });
+    return this;
+  };
+
+  function Book() { this.sheets = {}; this.tz = TZ; this.loadedAt = {}; }
+  Book.prototype.getSheetByName = function (n) { return this.sheets[n] || null; };
+  Book.prototype.getSpreadsheetTimeZone = function () { return this.tz; };
+  Book.prototype.getUrl = function () { return 'https://docs.google.com/spreadsheets/d/' + root.CONFIG.SPREADSHEET_ID + '/edit'; };
+
+  var book = new Book();
+
+  /* ---------- in-memory stand-ins for CacheService, LockService, Session ---------- */
+
+  var cacheMap = {};
+  var cache = {
+    get: function (k) { return k in cacheMap ? cacheMap[k] : null; },
+    getAll: function (ks) { var o = {}; ks.forEach(function (k) { if (k in cacheMap) o[k] = cacheMap[k]; }); return o; },
+    put: function (k, v) { cacheMap[k] = v; },
+    putAll: function (o) { Object.keys(o).forEach(function (k) { cacheMap[k] = o[k]; }); },
+    remove: function (k) { delete cacheMap[k]; },
+    removeAll: function (ks) { ks.forEach(function (k) { delete cacheMap[k]; }); }
+  };
+  function clearCache() { cacheMap = {}; }
+
+  root.Utilities = Utilities;
+  root.SpreadsheetApp = { openById: function () { return book; }, flush: function () {}, DataValidationCriteria: Criteria };
+  root.CacheService = { getScriptCache: function () { return cache; } };
+  root.LockService = { getScriptLock: function () { return { tryLock: function () { return true; }, waitLock: function () {}, releaseLock: function () {} }; } };
+  // Access is enforced by Google: the connector reads the sheet as the person using the app.
+  root.Session = { getActiveUser: function () { return { getEmail: function () { return root.CONFIG.OWNER_EMAIL; } }; } };
+
+  /* ---------- talking to the connector ---------- */
+
+  var mcp = null;
+
+  function friendly(err, isWrite) {
+    var code = err && err.code;
+    var e = new Error(messageFor(code, err, isWrite));
+    e.code = code || 'error';
+    e.retryable = !!(err && err.retryable);
+    return e;
+  }
+
+  function messageFor(code, err, isWrite) {
+    switch (code) {
+      case 'needs_reauth': return 'Google Sheets needs to be reconnected. Reconnect it in claude.ai Settings, Connectors, then tap refresh.';
+      case 'server_not_connected': return 'Google Sheets is not connected. Add it in claude.ai Settings, Connectors, then tap refresh.';
+      case 'selection_required': return 'You have more than one Google Sheets connector. Pick one when Claude asks, then tap refresh.';
+      case 'not_in_manifest':
+      case 'approval_required':
+      case 'consent_required': return 'This app needs your OK to use Google Sheets. Tap refresh and choose Allow.';
+      case 'blocked_by_policy': return 'Your organization blocks Google Sheets for this app.';
+      case 'server_unavailable':
+      case 'upstream_error':
+        return isWrite ? 'Google Sheets did not confirm the save. Tap refresh to check the sheet before trying again.'
+          : 'Google Sheets did not answer. Tap refresh to try again.';
+      case 'tool_error': return 'Google Sheets refused the request: ' + String((err && err.message) || '').slice(0, 200);
+      case 'not_granted':
+      case 'capability_disabled':
+      case 'capability_removed': return 'Connectors are not available in this window. Open the app from the Claude desktop app.';
+    }
+    return (err && err.message) ? String(err.message).slice(0, 200) : 'Something went wrong talking to Google Sheets.';
+  }
+
+  function payloadOf(res) {
+    var p = res && (res.payload !== undefined ? res.payload : res.structuredContent);
+    if (typeof p === 'string') { try { p = JSON.parse(p); } catch (e) { /* keep */ } }
+    if (p && p.content && !p.sheets && typeof p.content === 'object' && !Array.isArray(p.content)) p = p.content;
+    return p;
+  }
+
+  function call(tool, input, isWrite) {
+    if (!mcp) return Promise.reject(friendly({ code: 'capability_disabled' }, isWrite));
+    return mcp.callTool(SERVER, tool, input, { cache: false })
+      .then(payloadOf)
+      .catch(function (err) { throw friendly(err, isWrite); });
+  }
+
+  var inflight = {};
+  function loadTab(name) {
+    if (inflight[name]) return inflight[name];
+    var p = call('get_spreadsheet', {
+      spreadsheetId: root.CONFIG.SPREADSHEET_ID,
+      ranges: ["'" + name.replace(/'/g, "''") + "'"],
+      includeGridData: true,
+      fields: FIELDS
+    }).then(function (data) {
+      if (data && data.properties && data.properties.timeZone) book.tz = data.properties.timeZone;
+      var sheet = (data && data.sheets || []).filter(function (s) { return s.properties && s.properties.title === name; })[0] || (data && data.sheets || [])[0];
+      if (!sheet) throw new Error('Tab not found in the Command Center: ' + name);
+      var sh = book.sheets[name] || (book.sheets[name] = new Sheet(name, book));
+      sh.load((sheet.data || [])[0] || {}, sheet.properties.gridProperties && sheet.properties.gridProperties.rowCount, book.tz);
+      book.loadedAt[name] = Date.now();
+      clearCache();
+    });
+    inflight[name] = p;
+    var done = function () { delete inflight[name]; };
+    p.then(done, done);
+    return p;
+  }
+
+  /** Make sure the named tabs are loaded; fresh re-reads them regardless of age. */
+  function ensure(tabs, fresh) {
+    return Promise.all(tabs.map(function (t) {
+      var at = book.loadedAt[t];
+      if (!fresh && at && Date.now() - at < STALE_MS) return null;
+      if (!fresh && at && inflight[t]) return inflight[t];
+      return loadTab(t);
+    }));
+  }
+
+  function markStale(tabs) { tabs.forEach(function (t) { book.loadedAt[t] = 0; }); clearCache(); }
+
+  /* ---------- sending writes ---------- */
+
+  function a1(name, r, c1, c2) {
+    return "'" + name.replace(/'/g, "''") + "'!" + colLetters(c1) + r + ':' + colLetters(c2) + r;
+  }
+
+  // Sheets reads typed text the way it reads the keyboard. Text that would turn into a number,
+  // date or TRUE/FALSE gets a leading apostrophe so it stays text.
+  var PARSEABLE = /^\s*([-+]?\$?[\d,]*\.?\d+%?|\d{1,4}[\/.-]\d{1,2}([\/.-]\d{1,4})?|\d{1,2}:\d{2}(:\d{2})?(\s*[ap]m)?|true|false)\s*$/i;
+
+  function wireValue(v) {
+    if (v === '' || v === null || v === undefined) return '';
+    if (Object.prototype.toString.call(v) === '[object Date]') {
+      var hm = Utilities.formatDate(v, book.tz, 'HH:mm');
+      return Utilities.formatDate(v, book.tz, 'M/d/yyyy') + (hm === '00:00' ? '' : ' ' + hm);
+    }
+    if (typeof v === 'boolean' || typeof v === 'number') return v;
+    var s = String(v);
+    if (s.charAt(0) === "'") return s;
+    if (PARSEABLE.test(s)) return "'" + s;
+    return s;
+  }
+
+  function flushWrites() {
+    var jobs = [];
+    Object.keys(book.sheets).forEach(function (name) {
+      var sh = book.sheets[name];
+      if (!sh.writes.length) return;
+      var byRow = {};
+      sh.writes.forEach(function (w) { (byRow[w.r] = byRow[w.r] || {})[w.c] = w.v; });
+      sh.writes = [];
+      Object.keys(byRow).forEach(function (r) {
+        var cols = Object.keys(byRow[r]).map(Number).sort(function (a, b) { return a - b; });
+        var c1 = cols[0], c2 = cols[cols.length - 1];
+        var row = [];
+        for (var c = c1; c <= c2; c++) row.push(c in byRow[r] ? wireValue(byRow[r][c]) : null);
+        jobs.push({ name: name, range: a1(name, Number(r), c1, c2), values: [row] });
+      });
+    });
+    var chain = Promise.resolve();
+    jobs.forEach(function (j) {
+      chain = chain.then(function () {
+        return call('update_values', { spreadsheetId: root.CONFIG.SPREADSHEET_ID, range: j.range, values: j.values }, true);
+      });
+    });
+    return chain.then(function () { return jobs.map(function (j) { return j.name; }); });
+  }
+
+  /* ---------- which tabs each server function needs ---------- */
+
+  var T = { SC: 'Scorecard', TODO: 'Daily To-Do', LEADS: 'Leads', CLIENTS: 'Clients', PAY: 'Payments', SET: 'Settings', CONTENT: 'Content', WINS: 'Wins', EXP: 'Expenses', MONEY: 'Money' };
+  var READS = {
+    getHome: [T.SC, T.TODO, T.LEADS, T.CLIENTS, T.PAY],
+    getTodos: [T.TODO],
+    getClients: [T.CLIENTS, T.PAY],
+    getClient: [T.CLIENTS, T.PAY, T.WINS, T.SET],
+    getLeads: [T.LEADS, T.SET],
+    getMoney: [T.SC, T.PAY, T.EXP, T.MONEY],
+    getContent: [T.CONTENT],
+    getWins: [T.WINS],
+    getHistory: [T.SC],
+    getSheetUrl: []
+  };
+  function formTabs(tab) { return [tab, T.CLIENTS, T.SET]; }
+  var WRITES = {
+    setTaskDone: function () { return [T.TODO]; },
+    updateTask: function () { return [T.TODO]; },
+    moveTasks: function () { return [T.TODO]; },
+    addRecord: function (args) { return formTabs(args[0]); },
+    updateClient: function () { return [T.CLIENTS]; },
+    addClientNote: function () { return [T.CLIENTS]; },
+    updateLead: function () { return [T.LEADS]; },
+    addLeadNote: function () { return [T.LEADS]; },
+    updateRecord: function (args) { return formTabs(args[0]); }
+  };
+  var SPEC = { getFormSpec: function (args) { return formTabs(args[0]); }, getEditSpec: function (args) { return formTabs(args[0]); } };
+
+  // Writes run one at a time, so two quick taps never interleave.
+  var queue = Promise.resolve();
+
+  function run(name, args) {
+    var fn = root[name];
+    if (typeof fn !== 'function' || /_$/.test(name)) return Promise.reject(new Error('Unknown action: ' + name));
+    var plain = function (x) { return JSON.parse(JSON.stringify(x === undefined ? null : x)); };
+
+    if (WRITES[name]) {
+      var tabs = WRITES[name](args).filter(uniq);
+      var job = queue.then(function () {
+        return ensure(tabs, true).then(function () {
+          var result = fn.apply(null, args);
+          return flushWrites().then(function (written) {
+            markStale(written.concat([T.SC, T.CLIENTS, T.PAY]).filter(uniq));
+            return plain(result);
+          }, function (err) {
+            markStale(tabs.concat([T.SC]));
+            throw err;
+          });
+        });
+      });
+      queue = job.catch(function () {});
+      return job;
+    }
+
+    var need = READS[name] || (SPEC[name] ? SPEC[name](args) : ALL_TABS);
+    var fresh = args.length && args[args.length - 1] === true;
+    return ensure(need.filter(uniq), fresh).then(function () { return plain(fn.apply(null, args)); });
+  }
+
+  function uniq(v, i, a) { return v && a.indexOf(v) === i; }
+
+  /** google.script.run stand-in: same chaining API the page already uses. */
+  function makeRun(ok, fail) {
+    return new Proxy({}, {
+      get: function (_, k) {
+        if (k === 'withSuccessHandler') return function (f) { return makeRun(f, fail); };
+        if (k === 'withFailureHandler') return function (f) { return makeRun(ok, f); };
+        return function () {
+          var args = Array.prototype.slice.call(arguments);
+          run(k, args).then(function (r) { if (ok) ok(r); }, function (e) { if (fail) fail(e); });
+        };
+      }
+    });
+  }
+
+  root.google = { script: { run: makeRun(null, null) } };
+
+  root.HubBridge = {
+    attach: function (m) { mcp = m; },
+    preload: function () { return ensure(ALL_TABS, false); },
+    tabs: ALL_TABS,
+    _book: book,
+    _serialToDate: serialToDate,
+    _wireValue: wireValue
+  };
+})(typeof window !== 'undefined' ? window : globalThis);
+
+</script>
+<script>
+(function () {
+  'use strict';
+
+  /* ---------- server calls ---------- */
+  function api(fn) {
+    var args = Array.prototype.slice.call(arguments, 1);
+    return new Promise(function (resolve, reject) {
+      var runner = google.script.run
+        .withSuccessHandler(resolve)
+        .withFailureHandler(function (err) { reject(err && err.message ? err.message : String(err)); });
+      runner[fn].apply(runner, args);
+    });
+  }
+
+  function requestId() {
+    if (window.crypto && crypto.randomUUID) return crypto.randomUUID();
+    return Date.now().toString(36) + Math.random().toString(36).slice(2);
+  }
+
+  /* ---------- formatting ---------- */
+  var DAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+
+  function esc(s) {
+    return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+    });
+  }
+  function ymd(v) {
+    var s = String(v || '');
+    return /^\d{4}-\d{2}-\d{2}/.test(s) ? s.slice(0, 10) : '';
+  }
+  function fmtDate(v) {
+    var s = ymd(v);
+    if (!s) return v ? esc(v) : '';
+    var p = s.split('-');
+    return Number(p[1]) + '/' + Number(p[2]) + '/' + p[0];
+  }
+  function dayName(v) {
+    var p = ymd(v).split('-');
+    return DAYS[new Date(Date.UTC(+p[0], +p[1] - 1, +p[2])).getUTCDay()];
+  }
+  function num(v) {
+    if (typeof v === 'number') return v;
+    var n = Number(String(v == null ? '' : v).replace(/[$,\s]/g, ''));
+    return isNaN(n) ? 0 : n;
+  }
+  function money(v) {
+    var n = num(v);
+    var cents = Math.round(n * 100) % 100 !== 0;
+    return (n < 0 ? '-$' : '$') + Math.abs(n).toLocaleString('en-US', { minimumFractionDigits: cents ? 2 : 0, maximumFractionDigits: 2 });
+  }
+  function mins(n) {
+    n = num(n);
+    if (n < 60) return n + ' min';
+    var h = Math.floor(n / 60), m = n % 60;
+    return h + ' hr' + (m ? ' ' + m + ' min' : '');
+  }
+  function tagHtml(tag) {
+    if (tag === 'DDC') return '<span class="tag ddc">DDC</span>';
+    if (tag === 'Guinea Pig') return '<span class="tag gp">Guinea Pig</span>';
+    return '';
+  }
+
+  /* ---------- UI helpers ---------- */
+  var $view = document.getElementById('view');
+  var toastTimer;
+  function toast(msg, isErr) {
+    var t = document.getElementById('toast');
+    t.textContent = msg;
+    t.className = 'toast' + (isErr ? ' err' : '');
+    t.hidden = false;
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { t.hidden = true; }, isErr ? 5000 : 2200);
+  }
+  function setBusy(on) {
+    document.getElementById('refreshBtn').classList.toggle('spin', !!on);
+  }
+
+  /* ---------- state + routing ---------- */
+  var state = { tab: 'home', opts: {}, home: null, homeAt: 0, specs: {} };
+  // Screens in other files register here: views.x(opts) renders, handlers.x = { click, change, input }.
+  var handlers = {};
+  var views = {
+    home: loadHome,
+    more: renderMore
+  };
+
+  function go(tab, opts) {
+    state.tab = tab;
+    state.opts = opts || {};
+    Array.prototype.forEach.call(document.querySelectorAll('#tabbar button'), function (b) {
+      var main = ['home', 'todo', 'clients', 'leads', 'money'].indexOf(tab) >= 0 ? tab : 'more';
+      b.classList.toggle('on', b.getAttribute('data-tab') === main);
+    });
+    window.scrollTo(0, 0);
+    views[tab](opts || {});
+  }
+
+  document.getElementById('tabbar').addEventListener('click', function (e) {
+    var b = e.target.closest('button[data-tab]');
+    if (b) go(b.getAttribute('data-tab'));
+  });
+  document.getElementById('refreshBtn').addEventListener('click', function () {
+    var o = {}; Object.keys(state.opts).forEach(function (k) { o[k] = state.opts[k]; });
+    o.fresh = true;
+    views[state.tab](o);
+  });
+  /* ---------- keeping views in sync ---------- */
+  // Each screen registers a function that marks its data stale. Any write calls invalidate().
+  var staleFns = [];
+  function onStale(fn) { staleFns.push(fn); }
+  function invalidate() { state.home = null; staleFns.forEach(function (f) { f(); }); }
+
+  // Today in Boise, computed in the browser, so the app rolls over at midnight even if left open.
+  function boiseToday() {
+    try {
+      var p = {};
+      new Intl.DateTimeFormat('en-US', { timeZone: 'America/Boise', year: 'numeric', month: '2-digit', day: '2-digit' })
+        .formatToParts(new Date()).forEach(function (x) { p[x.type] = x.value; });
+      return p.year + '-' + p.month + '-' + p.day;
+    } catch (e) { return ''; }
+  }
+  var lastDay = boiseToday();
+  function checkDay(force) {
+    var d = boiseToday();
+    var sheetOpen = !document.getElementById('sheet').hidden;
+    if (d && d !== lastDay) {
+      lastDay = d;
+      invalidate();
+      if (!sheetOpen) { toast('New day. Lists updated.'); refreshCurrent(); }
+      return;
+    }
+    if (force && !sheetOpen && ['home', 'todo'].indexOf(state.tab) >= 0) refreshCurrent();
+  }
+  function refreshCurrent() {
+    var o = {}; Object.keys(state.opts).forEach(function (k) { o[k] = state.opts[k]; });
+    o.fresh = true;
+    views[state.tab](o);
+  }
+  // Every minute while the app is on screen: roll over to a new day, and quietly pull changes made
+  // in the sheet (by you, or by Claude) unless you are typing or have a form open.
+  function busyTyping() {
+    var a = document.activeElement;
+    return a && /INPUT|TEXTAREA|SELECT/.test(a.tagName);
+  }
+  setInterval(function () {
+    if (document.visibilityState !== 'visible') return;
+    checkDay(false);
+    if (!document.getElementById('sheet').hidden || busyTyping()) return;
+    if (['home', 'todo', 'clients', 'leads', 'money', 'content', 'wins'].indexOf(state.tab) < 0) return;
+    invalidate();
+    var o = {}; Object.keys(state.opts).forEach(function (k) { o[k] = state.opts[k]; });
+    o.fresh = true; o.quiet = true;
+    views[state.tab](o);
+  }, 60000);
+  document.addEventListener('visibilitychange', function () {
+    if (document.visibilityState !== 'visible') return;
+    // Coming back to the app: new day, or stale data on Home and To-Do, gets refreshed.
+    var stale = Date.now() - state.homeAt > 60000;
+    checkDay(stale);
+  });
+
+  function placeholder(title, text) {
+    $view.innerHTML = '<h1>' + esc(title) + '</h1><p class="placeholder">' + esc(text) + '</p>';
+  }
+
+  /* ---------- Home ---------- */
+  function loadHome(opts) {
+    if (state.home && !opts.fresh && Date.now() - state.homeAt < 60000) { renderHome(state.home); return; }
+    if (!state.home) $view.innerHTML = homeSkeleton();
+    setBusy(true);
+    return api('getHome', !!opts.fresh).then(function (data) {
+      state.home = data; state.homeAt = Date.now();
+      if (state.tab === 'home') renderHome(data);
+    }).catch(function (msg) {
+      toast(msg, true);
+      if (!state.home) $view.innerHTML = '<h1>Home</h1><p class="placeholder">' + esc(msg) + '</p><button class="btn" data-retry>Try again</button>';
+    }).then(function () { setBusy(false); });
+  }
+
+  function homeSkeleton() {
+    var c = '';
+    for (var i = 0; i < 6; i++) c += '<div class="card skeleton"></div>';
+    return '<div class="skeleton" style="height:40px;width:60%"></div><div class="cards">' + c + '</div>';
+  }
+
+  function renderHome(d) {
+    var c = d.cards;
+    var cards = [
+      { label: 'MRR (323 only)', v: money(c.mrr), accent: true },
+      { label: 'Gap to ' + money(c.mrrTarget || 5000), v: money(c.gap) },
+      { label: 'Enrolled athletes', v: num(c.enrolled) },
+      { label: 'Paid 323 athletes', v: num(c.paid323) },
+      { label: 'Cash this month', v: money(c.cashMonth) },
+      { label: 'Spots to next price step', v: num(c.spots) }
+    ];
+    var w = d.week;
+
+    var html = '';
+    html += '<div class="row-between"><div><h1>' + esc(dayName(d.today)) + ' <span class="key">' + fmtDate(d.today) + '</span></h1>';
+    html += '<div class="sub">Week of ' + fmtDate(d.weekOf) + '</div></div></div>';
+
+    html += '<div class="cards">' + cards.map(function (k) {
+      return '<div class="card' + (k.accent ? ' accent' : '') + '"><div class="label">' + esc(k.label) + '</div><div class="num">' + esc(k.v) + '</div></div>';
+    }).join('') + '</div>';
+
+    html += '<h2>This week</h2><div class="week">' + [
+      ['Conversations', w.conversations], ['Calls booked', w.callsBooked], ['Calls held', w.callsHeld], ['Closes', w.closes]
+    ].map(function (x) { return '<div><div class="num">' + num(x[1]) + '</div><div class="label">' + esc(x[0]) + '</div></div>'; }).join('') + '</div>';
+
+    html += '<div class="home-cols"><div>';
+    html += todayTodosHtml(d);
+    html += '</div><div>';
+    html += attentionHtml(d);
+    html += '</div></div>';
+
+    html += '<h2>Quick add</h2><div class="quick">' + [
+      ['Leads', 'Add lead'], ['Daily To-Do', 'Add task'], ['Payments', 'Log payment'], ['Expenses', 'Log expense'], ['Wins', 'Log win']
+    ].map(function (q) { return '<button class="btn" data-add="' + esc(q[0]) + '">' + esc(q[1]) + '</button>'; }).join('') + '</div>';
+
+    $view.innerHTML = html;
+  }
+
+  function todayTodosHtml(d) {
+    var done = d.minutesPlanned - d.minutesLeft;
+    var pct = d.minutesPlanned ? Math.round(done / d.minutesPlanned * 100) : 0;
+    var h = '<h2 class="row-between"><span>Today</span><span class="sub" id="minsLeft">' + mins(d.minutesLeft) + ' left</span></h2>';
+    if (!d.todos.length) return h + '<div class="list"><div class="empty">Nothing on the list for today.</div></div>';
+    h += '<div class="sub" id="minsDone">' + mins(done) + ' of ' + mins(d.minutesPlanned) + ' done</div><div class="bar"><i id="minsBar" style="width:' + pct + '%"></i></div>';
+    var groups = {}, order = [];
+    d.todos.forEach(function (t) {
+      if (!groups[t.block]) { groups[t.block] = []; order.push(t.block); }
+      groups[t.block].push(t);
+    });
+    h += '<div class="list" style="margin-top:12px">';
+    order.forEach(function (b) {
+      h += '<div class="group-label">' + esc(b) + '</div>';
+      groups[b].forEach(function (t) {
+        h += '<button class="task' + (t.done ? ' done' : '') + '" data-task-row="' + t.row + '">' +
+          '<span class="check"></span><span class="txt">' + esc(t.task) + '</span>' +
+          (t.minutes ? '<span class="mins">' + t.minutes + 'm</span>' : '') + '</button>';
+      });
+    });
+    return h + '</div>';
+  }
+
+  function attentionHtml(d) {
+    var h = '<h2>Needs attention</h2>';
+    var items = d.attention.slice();
+    (d.sheetErrors || []).forEach(function (e) {
+      items.push({ level: 'info', title: 'Sheet check: ' + e.tab + ' row ' + e.row, detail: e.header + ' shows ' + e.error });
+    });
+    if (!items.length) return h + '<div class="list"><div class="empty">All clear.</div></div>';
+    return h + '<div class="list">' + items.map(function (it) {
+      var open = it.tab === 'Clients' ? ' data-open-client="' + it.row + '" role="button" tabindex="0"' : '';
+      return '<div class="item ' + esc(it.level) + (open ? ' link' : '') + '"' + open + '><span class="dot ' + esc(it.level) + '"></span><div>' +
+        '<div class="t">' + esc(it.title) + tagHtml(it.tag) + '</div>' +
+        '<div class="d">' + esc(String(it.detail || '').replace(/\d{4}-\d{2}-\d{2}/g, function (m) { return fmtDate(m); })) + '</div></div></div>';
+    }).join('') + '</div>';
+  }
+
+  ['click', 'change', 'input'].forEach(function (type) {
+    $view.addEventListener(type, function (e) {
+      var h = handlers[state.tab];
+      if (h && h[type]) h[type](e);
+    });
+  });
+
+  handlers.home = { click: function (e) {
+    var open = e.target.closest('[data-open-client]');
+    if (open) return go('clients', { row: Number(open.getAttribute('data-open-client')) });
+    var task = e.target.closest('[data-task-row]');
+    if (task) return toggleTask(task);
+    var add = e.target.closest('[data-add]');
+    if (add) return openForm(add.getAttribute('data-add'));
+    if (e.target.closest('[data-retry]')) return loadHome({ fresh: true });
+    var menu = e.target.closest('[data-menu]');
+    if (menu) return menuAction(menu.getAttribute('data-menu'));
+  } };
+  handlers.more = handlers.home;
+
+  function toggleTask(el) {
+    if (el.classList.contains('saving')) return;
+    var row = Number(el.getAttribute('data-task-row'));
+    var t = state.home.todos.filter(function (x) { return x.row === row; })[0];
+    if (!t) return;
+    var next = !t.done;
+    t.done = next;
+    el.classList.toggle('done', next);
+    el.classList.add('saving');
+    updateMinutes();
+    api('setTaskDone', row, t.task, next).then(function () {
+      el.classList.remove('saving');
+      var keep = state.home; invalidate(); state.home = keep;
+    }).catch(function (msg) {
+      t.done = !next;
+      el.classList.toggle('done', !next);
+      el.classList.remove('saving');
+      updateMinutes();
+      toast(msg, true);
+    });
+  }
+
+  function updateMinutes() {
+    var d = state.home, left = 0;
+    d.todos.forEach(function (t) { if (!t.done) left += t.minutes; });
+    d.minutesLeft = left;
+    var done = d.minutesPlanned - left;
+    var a = document.getElementById('minsLeft'), b = document.getElementById('minsDone'), bar = document.getElementById('minsBar');
+    if (a) a.textContent = mins(left) + ' left';
+    if (b) b.textContent = mins(done) + ' of ' + mins(d.minutesPlanned) + ' done';
+    if (bar) bar.style.width = (d.minutesPlanned ? Math.round(done / d.minutesPlanned * 100) : 0) + '%';
+  }
+
+  /* ---------- More ---------- */
+  function renderMore() {
+    $view.innerHTML = '<h1>More</h1><div class="menu" style="margin-top:16px">' +
+      '<button class="btn ghost" data-menu="content">Content</button>' +
+      '<button class="btn ghost" data-menu="wins">Wins</button>' +
+      '<button class="btn ghost" data-menu="history">Scorecard history</button>' +
+      '<a class="btn ghost" id="sheetLink" href="#" target="_blank" rel="noopener">Open the Command Center sheet</a>' +
+      '</div>';
+    api('getSheetUrl').then(function (url) {
+      var a = document.getElementById('sheetLink');
+      if (a && isUrl(url)) a.href = url;
+    }).catch(function () {});
+  }
+  function menuAction(what) {
+    if (what === 'sheet') {
+      api('getSheetUrl').then(function (url) { window.open(url, '_blank', 'noopener'); }).catch(function (m) { toast(m, true); });
+    } else {
+      go(what);
+    }
+  }
+
+  /* ---------- Add forms (built from live headers) ---------- */
+  var sheetEl = document.getElementById('sheet');
+  var backdrop = document.getElementById('sheetBackdrop');
+  function openSheet(html) {
+    document.getElementById('sheetBody').innerHTML = html;
+    sheetEl.hidden = false; backdrop.hidden = false;
+  }
+  function closeSheet() { sheetEl.hidden = true; backdrop.hidden = true; }
+  backdrop.addEventListener('click', closeSheet);
+
+  function openForm(tab, presets, onSaved) {
+    state.formPresets = presets || {};
+    state.formSaved = onSaved || null;
+    var cached = state.specs[tab];
+    var p = cached ? Promise.resolve(cached) : api('getFormSpec', tab);
+    if (!cached) openSheet('<div class="skeleton" style="height:300px"></div>');
+    p.then(function (spec) {
+      state.specs[tab] = spec;
+      openSheet(formHtml(spec));
+      var f = sheetEl.querySelector('form');
+      Object.keys(state.formPresets).forEach(function (k) {
+        var el = f.elements[k];
+        if (!el) return;
+        if (el.type === 'checkbox') el.checked = !!state.formPresets[k]; else el.value = state.formPresets[k];
+      });
+      var first = sheetEl.querySelector('input:not([type=checkbox]),select,textarea');
+      if (first && window.matchMedia('(min-width: 760px)').matches) first.focus();
+    }).catch(function (msg) { closeSheet(); toast(msg, true); });
+  }
+
+  function isLong(name) { return /notes|^task$|^win$|evidence|teaching point/i.test(name); }
+
+  function fieldHtml(f, today) {
+    var id = 'f_' + f.name.replace(/[^a-z0-9]/gi, '_');
+    var label = esc(f.name) + (f.required ? ' *' : '');
+    var nameAttr = ' name="' + esc(f.name) + '" id="' + id + '"';
+    if (f.type === 'bool') {
+      return '<label class="field bool"><input type="checkbox"' + nameAttr + '><span>' + label + '</span></label>';
+    }
+    var input;
+    if (f.choices && f.choiceSource === 'list') {
+      input = '<select' + nameAttr + '><option value=""></option>' + f.choices.map(function (c) {
+        return '<option>' + esc(c) + '</option>';
+      }).join('') + '</select>';
+    } else if (f.type === 'date') {
+      input = '<input type="date"' + nameAttr + (f.defaultToday ? ' value="' + esc(today) + '"' : '') + '>';
+    } else if (f.type === 'number') {
+      input = '<input type="text" inputmode="decimal"' + nameAttr + '>';
+    } else if (isLong(f.name)) {
+      input = '<textarea' + nameAttr + '></textarea>';
+    } else {
+      var list = f.choices || f.suggestions;
+      input = '<input type="text" autocomplete="off"' + nameAttr + (list ? ' list="' + id + '_l"' : '') + '>' +
+        (list ? '<datalist id="' + id + '_l">' + list.map(function (c) { return '<option value="' + esc(c) + '">'; }).join('') + '</datalist>' : '');
+    }
+    return '<label class="field"><span>' + label + '</span>' + input + '</label>';
+  }
+
+  function formHtml(spec) {
+    var prim = spec.fields.filter(function (f) { return f.primary; });
+    var rest = spec.fields.filter(function (f) { return !f.primary; });
+    var h = '<form class="form" data-tab="' + esc(spec.tab) + '" novalidate><h2>' + esc(spec.title) + '</h2>';
+    h += prim.map(function (f) { return fieldHtml(f, spec.today); }).join('');
+    if (rest.length) {
+      h += '<button type="button" class="more-toggle" data-more>More fields (' + rest.length + ')</button>';
+      h += '<div class="more hidden">' + rest.map(function (f) { return fieldHtml(f, spec.today); }).join('') + '</div>';
+    }
+    h += '<div class="form-error" hidden></div>';
+    h += '<div class="form-actions"><button type="button" class="btn ghost" data-cancel>Cancel</button><button type="submit" class="btn">Save</button></div></form>';
+    return h;
+  }
+
+  sheetEl.addEventListener('click', function (e) {
+    if (e.target.closest('[data-cancel]')) return closeSheet();
+    var more = e.target.closest('[data-more]');
+    if (more) { more.nextElementSibling.classList.toggle('hidden'); more.remove(); }
+  });
+
+  // Add client: fill Monthly rate from the Settings price table once Program and Plan are picked.
+  sheetEl.addEventListener('change', function (e) {
+    var form = e.target.form;
+    if (!form) return;
+    var spec = state.specs[form.getAttribute('data-tab')];
+    if (!spec || !spec.prices) return;
+    var prog = form.elements['Program'], plan = form.elements['Plan'], rate = form.elements['Monthly rate'];
+    if (!prog || !plan || !rate || (e.target !== prog && e.target !== plan)) return;
+    var p = spec.prices[prog.value];
+    if (p && p[plan.value] != null && (!rate.value || rate.getAttribute('data-auto'))) {
+      rate.value = p[plan.value];
+      rate.setAttribute('data-auto', '1');
+    }
+  });
+
+  sheetEl.addEventListener('submit', function (e) {
+    e.preventDefault();
+    var form = e.target;
+    var tab = form.getAttribute('data-tab');
+    var spec = state.specs[tab];
+    var rec = {};
+    spec.fields.forEach(function (f) {
+      var el = form.elements[f.name];
+      if (!el) return;
+      if (f.type === 'bool') { if (el.checked) rec[f.name] = true; return; }
+      var v = String(el.value || '').trim();
+      if (v) rec[f.name] = v;
+    });
+    var errEl = form.querySelector('.form-error');
+    var missing = spec.fields.filter(function (f) { return f.required && !rec[f.name]; });
+    if (missing.length) { errEl.textContent = 'Fill in ' + missing[0].name + '.'; errEl.hidden = false; return; }
+    var btn = form.querySelector('[type=submit]');
+    if (btn.disabled) return;
+    btn.disabled = true; btn.textContent = 'Saving';
+    var rid = form.getAttribute('data-rid') || requestId();
+    form.setAttribute('data-rid', rid);
+    api('addRecord', tab, rec, rid).then(function (res) {
+      closeSheet();
+      toast('Saved to ' + tab + ', row ' + res.row);
+      invalidate();
+      if (state.formSaved) state.formSaved(res);
+      else if (state.tab === 'home') loadHome({ fresh: true });
+    }).catch(function (msg) {
+      btn.disabled = false; btn.textContent = 'Save';
+      errEl.textContent = msg; errEl.hidden = false;
+    });
+  });
+
+  /* ---------- clipboard and links (work inside the Apps Script frame) ---------- */
+  function copyText(text) {
+    function fallback() {
+      var ta = document.createElement('textarea');
+      ta.value = text; ta.setAttribute('readonly', '');
+      ta.style.position = 'fixed'; ta.style.opacity = '0';
+      document.body.appendChild(ta); ta.select();
+      var ok = false;
+      try { ok = document.execCommand('copy'); } catch (e) { ok = false; }
+      document.body.removeChild(ta);
+      return ok;
+    }
+    var done = function () { toast('Copied'); };
+    var fail = function () { if (fallback()) done(); else openSheet('<h2>Copy this</h2><textarea class="copybox" readonly>' + esc(text) + '</textarea>'); };
+    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(done, fail);
+    else fail();
+  }
+  function isUrl(s) { return /^https?:\/\//i.test(String(s || '')); }
+
+  window.Hub = {
+    api: api, esc: esc, ymd: ymd, fmtDate: fmtDate, dayName: dayName, num: num, money: money, mins: mins,
+    tagHtml: tagHtml, toast: toast, setBusy: setBusy, go: go, views: views, handlers: handlers, state: state,
+    openForm: openForm, openSheet: openSheet, closeSheet: closeSheet, copyText: copyText, isUrl: isUrl,
+    requestId: requestId, view: $view, invalidate: invalidate, onStale: onStale, boiseToday: boiseToday
+  };
+})();
+</script>
+
+<script>
+/*
+ * Small SVG charts: stacked bars and lines, one y-axis, hover tooltip, legend, table view.
+ * Colors are validated for the dark surface (blue 323, amber DDC; five-series set for history).
+ */
+(function (H) {
+  'use strict';
+  var esc = H.esc;
+  H.SERIES = ['#0289eb', '#e76624', '#00a888', '#d28e05', '#e24d8b'];
+
+  function niceMax(v) {
+    if (v <= 0) return 1;
+    var p = Math.pow(10, Math.floor(Math.log10(v)));
+    var n = v / p;
+    var step = n <= 1 ? 1 : n <= 2 ? 2 : n <= 5 ? 5 : 10;
+    return step * p;
+  }
+
+  function frame(el, opts) {
+    var w = Math.max(280, el.clientWidth || 320), h = opts.height || 220;
+    var m = { t: 12, r: 12, b: 28, l: opts.left || 44 };
+    return { w: w, h: h, m: m, iw: w - m.l - m.r, ih: h - m.t - m.b };
+  }
+
+  function legend(series) {
+    if (series.length < 2) return '';
+    return '<div class="legend">' + series.map(function (s) {
+      return '<span><i style="background:' + s.color + '"></i>' + esc(s.name) + '</span>';
+    }).join('') + '</div>';
+  }
+
+  function table(labels, series, fmt) {
+    return '<details class="tableview"><summary>Show as table</summary><div class="scroll-x"><table><thead><tr><th></th>' +
+      series.map(function (s) { return '<th>' + esc(s.name) + '</th>'; }).join('') + '</tr></thead><tbody>' +
+      labels.map(function (l, i) {
+        return '<tr><th>' + esc(l) + '</th>' + series.map(function (s) { return '<td>' + esc(fmt(s.values[i])) + '</td>'; }).join('') + '</tr>';
+      }).join('') + '</tbody></table></div></details>';
+  }
+
+  function axis(f, max, fmt) {
+    var out = '';
+    for (var i = 0; i <= 4; i++) {
+      var v = max * i / 4, y = f.m.t + f.ih - f.ih * i / 4;
+      out += '<line class="grid" x1="' + f.m.l + '" x2="' + (f.w - f.m.r) + '" y1="' + y + '" y2="' + y + '"/>' +
+        '<text class="tick" x="' + (f.m.l - 6) + '" y="' + (y + 4) + '" text-anchor="end">' + esc(fmt(v, true)) + '</text>';
+    }
+    return out;
+  }
+
+  function xLabels(f, labels, x, every) {
+    return labels.map(function (l, i) {
+      if (i % every !== 0 && i !== labels.length - 1) return '';
+      return '<text class="tick" x="' + x(i) + '" y="' + (f.h - 8) + '" text-anchor="middle">' + esc(l) + '</text>';
+    }).join('');
+  }
+
+  function hover(wrap, f, labels, series, fmt, x, crosshair) {
+    var svg = wrap.querySelector('svg'), tip = wrap.querySelector('.tip'), cross = wrap.querySelector('.cross');
+    function show(evt) {
+      var r = svg.getBoundingClientRect();
+      var px = (evt.clientX - r.left) * (f.w / r.width);
+      var best = 0, bd = Infinity;
+      labels.forEach(function (_, i) { var d = Math.abs(x(i) - px); if (d < bd) { bd = d; best = i; } });
+      tip.innerHTML = '<b>' + esc(labels[best]) + '</b>' + series.map(function (s) {
+        return '<div><i style="background:' + s.color + '"></i>' + esc(s.name) + ' <span>' + esc(fmt(s.values[best])) + '</span></div>';
+      }).join('');
+      tip.hidden = false;
+      var left = x(best) / f.w * r.width;
+      tip.style.left = Math.min(Math.max(0, left - tip.offsetWidth / 2), r.width - tip.offsetWidth) + 'px';
+      if (crosshair && cross) { cross.setAttribute('x1', x(best)); cross.setAttribute('x2', x(best)); cross.style.display = ''; }
+    }
+    svg.addEventListener('pointermove', show);
+    svg.addEventListener('pointerdown', show);
+    svg.addEventListener('pointerleave', function () { tip.hidden = true; if (cross) cross.style.display = 'none'; });
+  }
+
+  /** Stacked bars. data: { labels, series: [{ name, color, values }], fmt } */
+  H.stackedBars = function (el, data) {
+    var f = frame(el, data);
+    var n = data.labels.length;
+    var totals = data.labels.map(function (_, i) { return data.series.reduce(function (s, x) { return s + (x.values[i] || 0); }, 0); });
+    var max = niceMax(Math.max.apply(null, totals.concat([0])));
+    var band = f.iw / n, bw = Math.max(6, Math.min(36, band * 0.6));
+    var x = function (i) { return f.m.l + band * i + band / 2; };
+    var y = function (v) { return f.ih * v / max; };
+    var bars = '';
+    data.labels.forEach(function (_, i) {
+      var base = f.m.t + f.ih;
+      var segs = data.series.filter(function (s) { return (s.values[i] || 0) > 0; });
+      segs.forEach(function (s, k) {
+        var hgt = y(s.values[i]);
+        var top = k === segs.length - 1;
+        var gap = k > 0 ? 2 : 0;
+        var yy = base - hgt;
+        var r = top ? Math.min(4, bw / 2, hgt - gap) : 0;
+        var hh = Math.max(0, hgt - gap);
+        bars += r > 0
+          ? '<path fill="' + s.color + '" d="M' + (x(i) - bw / 2) + ',' + (yy + hh) + 'V' + (yy + r) + 'Q' + (x(i) - bw / 2) + ',' + yy + ' ' + (x(i) - bw / 2 + r) + ',' + yy +
+            'H' + (x(i) + bw / 2 - r) + 'Q' + (x(i) + bw / 2) + ',' + yy + ' ' + (x(i) + bw / 2) + ',' + (yy + r) + 'V' + (yy + hh) + 'Z"/>'
+          : '<rect fill="' + s.color + '" x="' + (x(i) - bw / 2) + '" y="' + yy + '" width="' + bw + '" height="' + hh + '"/>';
+        base = yy;
+      });
+    });
+    el.innerHTML = legend(data.series) + '<div class="chart"><svg viewBox="0 0 ' + f.w + ' ' + f.h + '" role="img" aria-label="' + esc(data.title || 'Chart') + '">' +
+      axis(f, max, data.fmt) + bars + '<line class="axis" x1="' + f.m.l + '" x2="' + (f.w - f.m.r) + '" y1="' + (f.m.t + f.ih) + '" y2="' + (f.m.t + f.ih) + '"/>' +
+      xLabels(f, data.labels, x, n > 8 && f.w < 500 ? 2 : 1) + '</svg><div class="tip" hidden></div></div>' +
+      table(data.labels, data.series, data.fmt);
+    hover(el.querySelector('.chart'), f, data.labels, data.series, data.fmt, x, false);
+  };
+
+  /** Line chart. data: { labels, series: [{ name, color, values }], fmt } */
+  H.lineChart = function (el, data) {
+    var f = frame(el, data);
+    var n = data.labels.length;
+    var all = [];
+    data.series.forEach(function (s) { s.values.forEach(function (v) { all.push(v || 0); }); });
+    var max = niceMax(Math.max.apply(null, all.concat([0])));
+    var x = function (i) { return n === 1 ? f.m.l + f.iw / 2 : f.m.l + f.iw * i / (n - 1); };
+    var y = function (v) { return f.m.t + f.ih - f.ih * (v || 0) / max; };
+    var lines = data.series.map(function (s) {
+      var d = s.values.map(function (v, i) { return (i ? 'L' : 'M') + x(i) + ',' + y(v); }).join('');
+      var dots = s.values.map(function (v, i) { return '<circle cx="' + x(i) + '" cy="' + y(v) + '" r="4" fill="' + s.color + '" stroke="#0d0f12" stroke-width="2"/>'; }).join('');
+      return '<path d="' + d + '" fill="none" stroke="' + s.color + '" stroke-width="2" stroke-linejoin="round"/>' + (n <= 26 ? dots : '');
+    }).join('');
+    var every = Math.ceil(n / Math.max(1, Math.floor(f.iw / 64)));
+    el.innerHTML = legend(data.series) + '<div class="chart"><svg viewBox="0 0 ' + f.w + ' ' + f.h + '" role="img" aria-label="' + esc(data.title || 'Chart') + '">' +
+      axis(f, max, data.fmt) + '<line class="cross" y1="' + f.m.t + '" y2="' + (f.m.t + f.ih) + '" style="display:none"/>' + lines +
+      xLabels(f, data.labels, x, every) + '</svg><div class="tip" hidden></div></div>' +
+      table(data.labels, data.series, data.fmt);
+    hover(el.querySelector('.chart'), f, data.labels, data.series, data.fmt, x, true);
+  };
+})(window.Hub);
+</script>
+
+<script>
+/* To-Do screen: Today, Tomorrow, This week, Overdue. */
+(function (H) {
+  'use strict';
+  var esc = H.esc, fmtDate = H.fmtDate, mins = H.mins;
+  var S = { data: null, at: 0, mode: 'today' };
+  H.onStale(function () { S.at = 0; });
+
+  function addDays(ymd, n) {
+    var p = ymd.split('-');
+    return new Date(Date.UTC(+p[0], +p[1] - 1, +p[2] + n)).toISOString().slice(0, 10);
+  }
+  function shortDay(ymd) { return H.dayName(ymd).slice(0, 3) + ' ' + fmtDate(ymd).replace(/\/\d{4}$/, ''); }
+
+  H.views.todo = function (opts) {
+    if (opts.mode) S.mode = opts.mode;
+    if (S.data && !opts.fresh && Date.now() - S.at < 60000) return render();
+    if (!S.data) H.view.innerHTML = '<h1>To-Do</h1><div class="skeleton" style="height:320px;margin-top:16px"></div>';
+    H.setBusy(true);
+    H.api('getTodos', !!opts.fresh).then(function (d) {
+      S.data = d; S.at = Date.now();
+      if (H.state.tab === 'todo') render();
+    }).catch(function (m) { H.toast(m, true); }).then(function () { H.setBusy(false); });
+  };
+
+  function overdue(d) {
+    return d.tasks.filter(function (t) { return t.date < d.today && !t.done; });
+  }
+
+  function selected() {
+    var d = S.data, t = d.today;
+    if (S.mode === 'today') return d.tasks.filter(function (x) { return x.date === t; });
+    if (S.mode === 'tomorrow') return d.tasks.filter(function (x) { return x.date === addDays(t, 1); });
+    if (S.mode === 'week') { var end = addDays(d.weekStart, 6); return d.tasks.filter(function (x) { return x.date >= d.weekStart && x.date <= end; }); }
+    return overdue(d);
+  }
+
+  function modeDate() {
+    var t = S.data.today;
+    if (S.mode === 'tomorrow') return addDays(t, 1);
+    return t;
+  }
+
+  function render() {
+    var d = S.data;
+    var list = selected();
+    var od = overdue(d).length;
+    var tabs = [['today', 'Today'], ['tomorrow', 'Tomorrow'], ['week', 'This week'], ['overdue', 'Overdue']];
+    var h = '<div class="row-between"><h1>To-Do</h1><button class="btn small" data-todo-add>Add task</button></div>';
+    h += '<div class="seg">' + tabs.map(function (x) {
+      var badge = x[0] === 'overdue' && od ? ' <span class="count red-bg">' + od + '</span>' : '';
+      return '<button data-mode="' + x[0] + '" class="' + (S.mode === x[0] ? 'on' : '') + '">' + x[1] + badge + '</button>';
+    }).join('') + '</div>';
+
+    var planned = 0, done = 0;
+    list.forEach(function (t) { planned += t.minutes; if (t.done) done += t.minutes; });
+    if (S.mode !== 'overdue') {
+      var pct = planned ? Math.round(done / planned * 100) : 0;
+      h += '<div class="row-between sub" style="margin-top:14px"><span>' + mins(done) + ' done of ' + mins(planned) + ' planned</span><span>' + mins(planned - done) + ' left</span></div>';
+      h += '<div class="bar"><i style="width:' + pct + '%"></i></div>';
+    }
+
+    if (S.mode === 'overdue' && list.length) {
+      h += '<button class="btn full" data-move-overdue style="margin-top:14px">Move all ' + list.length + ' to today</button>';
+    }
+
+    if (!list.length) {
+      h += '<div class="list" style="margin-top:14px"><div class="empty">' +
+        (S.mode === 'overdue' ? 'Nothing overdue.' : 'No tasks here yet.') + '</div></div>';
+      H.view.innerHTML = h;
+      return;
+    }
+
+    if (S.mode === 'week' || S.mode === 'overdue') {
+      var days = {}, order = [];
+      list.forEach(function (t) { if (!days[t.date]) { days[t.date] = []; order.push(t.date); } days[t.date].push(t); });
+      order.sort();
+      order.forEach(function (day) {
+        var p = 0, dn = 0;
+        days[day].forEach(function (t) { p += t.minutes; if (t.done) dn += t.minutes; });
+        h += '<h2 class="row-between"><span>' + esc(shortDay(day)) + (day === d.today ? ' <span class="key">Today</span>' : '') + '</span><span class="sub">' + mins(dn) + ' / ' + mins(p) + '</span></h2>';
+        h += blocksHtml(days[day], true);
+      });
+    } else {
+      h += '<div style="margin-top:14px">' + blocksHtml(list, false) + '</div>';
+    }
+    H.view.innerHTML = h;
+  }
+
+  function blocksHtml(tasks, compact) {
+    var groups = {}, order = [];
+    tasks.forEach(function (t) { if (!groups[t.block]) { groups[t.block] = []; order.push(t.block); } groups[t.block].push(t); });
+    var h = '<div class="list">';
+    order.forEach(function (b) {
+      var p = 0, dn = 0;
+      groups[b].forEach(function (t) { p += t.minutes; if (t.done) dn += t.minutes; });
+      h += '<div class="group-label row-between"><span>' + esc(b) + '</span><span class="sub">' + (compact ? '' : mins(dn) + ' / ' + mins(p)) + '</span></div>';
+      groups[b].forEach(function (t) {
+        h += '<div class="task-row' + (t.done ? ' done' : '') + '">' +
+          '<button class="task-check" data-check="' + t.row + '" aria-label="Done"><span class="check"></span></button>' +
+          '<button class="task-body" data-edit="' + t.row + '"><span class="txt">' + esc(t.task) + '</span>' +
+          (t.minutes ? '<span class="mins">' + t.minutes + 'm</span>' : '') + '</button></div>';
+      });
+    });
+    return h + '</div>';
+  }
+
+  function find(row) { return S.data.tasks.filter(function (t) { return t.row === row; })[0]; }
+
+  function toggle(row, btn) {
+    var t = find(row);
+    if (!t || btn.disabled) return;
+    var next = !t.done;
+    t.done = next; btn.disabled = true;
+    render();
+    H.api('setTaskDone', row, t.task, next).then(function () {
+      H.invalidate();
+    }).catch(function (m) {
+      t.done = !next; render(); H.toast(m, true);
+    });
+  }
+
+  function moveOverdue(btn) {
+    var items = overdue(S.data).map(function (t) { return { row: t.row, task: t.task }; });
+    if (!items.length) return;
+    btn.disabled = true; btn.textContent = 'Moving';
+    H.api('moveTasks', items, S.data.today).then(function (r) {
+      H.toast('Moved ' + r.moved + ' to today' + (r.failed ? '. ' + r.failed + ' changed in the sheet, refresh and retry.' : ''));
+      H.invalidate();
+      S.mode = 'today';
+      H.views.todo({ fresh: true });
+    }).catch(function (m) { btn.disabled = false; H.toast(m, true); });
+  }
+
+  function openEdit(row) {
+    var t = find(row);
+    if (!t) return;
+    var blocks = S.data.blocks.slice();
+    if (blocks.indexOf(t.block) < 0) blocks.push(t.block);
+    var today = S.data.today;
+    var nextMon = addDays(S.data.weekStart, 7);
+    H.openSheet(
+      '<form class="form" id="taskForm" data-row="' + t.row + '"><h2>Edit task</h2>' +
+      '<label class="field"><span>Task</span><textarea name="Task">' + esc(t.task) + '</textarea></label>' +
+      '<label class="field"><span>Block</span><input name="Block" list="blockList" value="' + esc(t.block) + '" autocomplete="off">' +
+      '<datalist id="blockList">' + blocks.map(function (b) { return '<option value="' + esc(b) + '">'; }).join('') + '</datalist></label>' +
+      '<label class="field"><span>Minutes</span><input name="Minutes" inputmode="numeric" value="' + esc(t.minutes || '') + '"></label>' +
+      '<label class="field"><span>Date</span><input type="date" name="Date" value="' + esc(t.date) + '"></label>' +
+      '<div class="chips"><span class="sub">Move to</span>' +
+      '<button type="button" class="chip" data-move="' + today + '">Today</button>' +
+      '<button type="button" class="chip" data-move="' + addDays(today, 1) + '">Tomorrow</button>' +
+      '<button type="button" class="chip" data-move="' + nextMon + '">Next Monday</button></div>' +
+      '<div class="form-error" hidden></div>' +
+      '<div class="form-actions"><button type="button" class="btn ghost" data-cancel>Cancel</button><button type="submit" class="btn">Save</button></div></form>'
+    );
+  }
+
+  document.getElementById('sheet').addEventListener('click', function (e) {
+    var mv = e.target.closest('[data-move]');
+    if (mv) {
+      var f = document.getElementById('taskForm');
+      if (f) f.elements['Date'].value = mv.getAttribute('data-move');
+    }
+  });
+
+  document.getElementById('sheet').addEventListener('submit', function (e) {
+    if (e.target.id !== 'taskForm') return;
+    e.preventDefault();
+    e.stopImmediatePropagation();
+    var f = e.target, row = Number(f.getAttribute('data-row')), t = find(row);
+    var changes = {};
+    var v = { Task: f.elements['Task'].value.trim(), Block: f.elements['Block'].value.trim(), Minutes: f.elements['Minutes'].value.trim(), Date: f.elements['Date'].value };
+    if (v.Task !== t.task) changes.Task = v.Task;
+    if (v.Block !== t.block) changes.Block = v.Block;
+    if (String(v.Minutes) !== String(t.minutes || '')) changes.Minutes = v.Minutes;
+    if (v.Date !== t.date) changes.Date = v.Date;
+    if (!Object.keys(changes).length) return H.closeSheet();
+    var err = f.querySelector('.form-error');
+    if (!v.Task) { err.textContent = 'Task cannot be blank.'; err.hidden = false; return; }
+    var btn = f.querySelector('[type=submit]');
+    btn.disabled = true; btn.textContent = 'Saving';
+    H.api('updateTask', row, t.task, changes).then(function () {
+      H.closeSheet();
+      H.toast(changes.Date ? 'Moved to ' + fmtDate(changes.Date) : 'Saved');
+      H.invalidate();
+      H.views.todo({ fresh: true });
+    }).catch(function (m) {
+      btn.disabled = false; btn.textContent = 'Save';
+      err.textContent = m; err.hidden = false;
+    });
+  }, true);
+
+  H.handlers.todo = {
+    click: function (e) {
+      var m = e.target.closest('[data-mode]');
+      if (m) { S.mode = m.getAttribute('data-mode'); H.state.opts.mode = S.mode; return render(); }
+      var c = e.target.closest('[data-check]');
+      if (c) return toggle(Number(c.getAttribute('data-check')), c);
+      var ed = e.target.closest('[data-edit]');
+      if (ed) return openEdit(Number(ed.getAttribute('data-edit')));
+      var mo = e.target.closest('[data-move-overdue]');
+      if (mo) return moveOverdue(mo);
+      if (e.target.closest('[data-todo-add]')) {
+        H.openForm('Daily To-Do', { Date: modeDate() }, function () { H.views.todo({ fresh: true }); });
+      }
+    }
+  };
+})(window.Hub);
+</script>
+
+<script>
+/* Clients list and client profile. */
+(function (H) {
+  'use strict';
+  var esc = H.esc, fmtDate = H.fmtDate, money = H.money;
+  var S = { list: null, at: 0, q: '', program: '', status: 'current', pay: '', profile: null };
+  H.onStale(function () { S.at = 0; });
+
+  H.views.clients = function (opts) {
+    if (opts.row) return loadProfile(opts.row, opts.fresh);
+    S.profile = null;
+    if (S.list && !opts.fresh && Date.now() - S.at < 60000) return renderList();
+    if (!S.list) H.view.innerHTML = '<h1>Clients</h1><div class="skeleton" style="height:320px;margin-top:16px"></div>';
+    H.setBusy(true);
+    H.api('getClients', !!opts.fresh).then(function (d) {
+      S.list = d; S.at = Date.now();
+      if (H.state.tab === 'clients' && !H.state.opts.row) renderList();
+    }).catch(function (m) { H.toast(m, true); }).then(function () { H.setBusy(false); });
+  };
+
+  function badge(pay) {
+    if (!pay) return '';
+    var cls = pay === 'Paid' ? 'ok' : pay === 'Due' ? 'due' : pay === 'Overdue' ? 'over' : 'neutral';
+    return '<span class="badge ' + cls + '">' + esc(pay) + '</span>';
+  }
+  H.payBadge = badge;
+
+  function opt(v, label, cur) { return '<option value="' + esc(v) + '"' + (v === cur ? ' selected' : '') + '>' + esc(label) + '</option>'; }
+
+  function renderList() {
+    var d = S.list;
+    var h = '<div class="row-between"><h1>Clients</h1><button class="btn small" data-add-client>Add client</button></div>';
+    h += '<input class="search" type="search" placeholder="Search athlete, parent, email" data-q value="' + esc(S.q) + '">';
+    h += '<div class="filters">' +
+      '<select data-f="program">' + opt('', 'All programs', S.program) + d.programs.map(function (p) { return opt(p, p, S.program); }).join('') + '</select>' +
+      '<select data-f="status">' + opt('current', 'Active + Onboarding', S.status) + opt('', 'All statuses', S.status) + d.statuses.map(function (s) { return opt(s, s, S.status); }).join('') + '</select>' +
+      '<select data-f="pay">' + opt('', 'Any payment', S.pay) + ['Paid', 'Due', 'Overdue', 'No charge', 'Prepaid'].map(function (s) { return opt(s, s, S.pay); }).join('') + '</select>' +
+      '</div><div id="clientRows"></div>';
+    H.view.innerHTML = h;
+    renderRows();
+  }
+
+  function renderRows() {
+    var q = S.q.toLowerCase();
+    var rows = S.list.clients.filter(function (c) {
+      if (q && [c.athlete, c.parent, c.email].join(' ').toLowerCase().indexOf(q) < 0) return false;
+      if (S.program && c.program !== S.program) return false;
+      if (S.status === 'current' && ['Active', 'Onboarding'].indexOf(c.status) < 0) return false;
+      if (S.status && S.status !== 'current' && c.status !== S.status) return false;
+      if (S.pay && c.pay !== S.pay) return false;
+      return true;
+    });
+    var el = document.getElementById('clientRows');
+    if (!rows.length) { el.innerHTML = '<div class="list"><div class="empty">No clients match.</div></div>'; return; }
+    el.innerHTML = '<div class="list">' + rows.map(function (c) {
+      var rate = c.rate === '' || c.rate == null ? '' : (typeof c.rate === 'number' ? money(c.rate) + '/mo' : esc(c.rate));
+      return '<button class="client-row" data-client="' + c.row + '">' +
+        '<div class="row-between"><span class="t">' + esc(c.athlete) + H.tagHtml(c.tag) + '</span>' + badge(c.pay) + '</div>' +
+        '<div class="d">' + [esc(c.program), esc(c.plan), rate, esc(c.status)].filter(Boolean).join(' · ') + '</div>' +
+        (c.endsSoon ? '<div class="d warn">Term ends in ' + c.daysLeft + ' days. Talk renewal.</div>' : '') +
+        '</button>';
+    }).join('') + '</div>';
+  }
+
+  /* ---------- profile ---------- */
+
+  function loadProfile(row, fresh) {
+    if (!S.profile || S.profile.row !== row) H.view.innerHTML = '<div class="skeleton" style="height:420px"></div>';
+    H.setBusy(true);
+    return H.api('getClient', row, !!fresh).then(function (p) {
+      S.profile = p;
+      if (H.state.tab === 'clients' && H.state.opts.row === row) renderProfile();
+    }).catch(function (m) { H.toast(m, true); }).then(function () { H.setBusy(false); });
+  }
+
+  function fieldInput(f) {
+    var name = esc(f.name), v = f.value;
+    if (f.computed) {
+      var shown = f.type === 'date' ? fmtDate(v) : (typeof v === 'number' && /rate|amount/i.test(f.name) ? money(v) : esc(v));
+      return '<div class="ro">' + (shown || '<span class="sub">blank</span>') + ' <span class="sub">(formula)</span></div>';
+    }
+    if (f.type === 'bool') return '<input type="checkbox" data-field="' + name + '"' + (v === true ? ' checked' : '') + '>';
+    if (f.choices) {
+      return '<select data-field="' + name + '"><option value=""></option>' + f.choices.map(function (c) {
+        return '<option' + (String(c) === String(v) ? ' selected' : '') + '>' + esc(c) + '</option>';
+      }).join('') + '</select>';
+    }
+    if (f.type === 'date') return '<input type="date" data-field="' + name + '" value="' + esc(H.ymd(v)) + '">';
+    if (f.type === 'number') return '<input inputmode="decimal" data-field="' + name + '" value="' + esc(v) + '">';
+    return '<input data-field="' + name + '" value="' + esc(v) + '" autocomplete="off">';
+  }
+
+  function renderProfile() {
+    var p = S.profile, t = p.term;
+    var h = '<button class="back" data-back>Clients</button>';
+    h += '<h1>' + esc(p.athlete) + '</h1><div class="sub">' + H.tagHtml(p.tag).replace('margin-left:6px', '') + ' ' + badge(p.pay) + '</div>';
+
+    // Quick actions
+    h += '<div class="actions">';
+    h += p.links.email
+      ? '<a class="btn ghost" href="mailto:' + esc(p.links.email) + '" target="_top">Email parent</a>' +
+        '<button class="btn ghost" data-copy="' + esc(p.links.email) + '">Copy ' + esc(p.links.email) + '</button>'
+      : '<button class="btn ghost" disabled>No parent email</button>';
+    if (H.isUrl(p.links.payment)) h += '<button class="btn ghost" data-copy="' + esc(p.links.payment) + '">Copy payment link</button>';
+    else h += '<button class="btn ghost" disabled>' + (p.links.payment ? 'Pays by ' + esc(p.links.payment) : 'No payment link') + '</button>';
+    h += H.isUrl(p.links.agreement) ? '<a class="btn ghost" href="' + esc(p.links.agreement) + '" target="_blank" rel="noopener">Open agreement</a>' : '<button class="btn ghost" disabled>No agreement link</button>';
+    h += '</div>';
+
+    // Term
+    h += '<h2>Term</h2><div class="list kv">' +
+      kv('Start date', fmtDate(t.start)) + kv('Term ends', fmtDate(t.ends)) + kv('Term', t.months ? esc(t.months) + ' months' : '') +
+      kv('Months in', t.monthsIn == null ? '' : t.monthsIn) +
+      kv('Days left', t.daysLeft == null ? '' : (t.daysLeft < 0 ? 'Ended ' + (-t.daysLeft) + ' days ago' : t.daysLeft)) +
+      '</div>';
+    if (t.endsSoon) h += '<div class="notice">Term ends in ' + t.daysLeft + ' days. Talk renewal.</div>';
+
+    // Onboarding
+    h += '<h2>Onboarding</h2><div class="list">' + p.onboarding.map(function (o) {
+      return '<button class="task-row onb' + (o.done ? ' done' : '') + '" data-onb="' + esc(o.name) + '"' + (o.computed ? ' disabled' : '') + '>' +
+        '<span class="check"></span><span class="txt">' + esc(o.name) + '</span></button>';
+    }).join('') + '</div>';
+
+    // Payments
+    h += '<h2>Payments</h2><div class="list kv">' +
+      kv('This month', esc(p.paidThisMonth) + ' ' + badge(p.pay === p.paidThisMonth ? '' : p.pay)) +
+      kv('Next payment due', fmtDate(p.nextDue) || '<span class="sub">none set</span>') +
+      kv('Total paid to date', money(p.totalPaid)) + '</div>';
+    h += p.payments.length ? '<div class="list" style="margin-top:10px">' + p.payments.map(function (x) {
+      return '<div class="item"><div style="flex:1"><div class="row-between"><span class="t">' + money(x.amount) + '</span><span class="sub">' + fmtDate(x.date) + '</span></div>' +
+        '<div class="d">' + [esc(x.method), esc(x.status), x.notes ? esc(x.notes) : ''].filter(Boolean).join(' · ') + '</div></div></div>';
+    }).join('') + '</div>' : '<div class="list" style="margin-top:10px"><div class="empty">No payments logged.</div></div>';
+    h += '<button class="btn ghost full" data-log-payment style="margin-top:10px">Log payment</button>';
+
+    // Wins
+    h += '<h2>Wins</h2>';
+    h += p.wins.length ? '<div class="list">' + p.wins.map(function (w) {
+      return '<div class="item"><div style="flex:1"><div class="row-between"><span class="t">' + esc(w['Win']) + '</span><span class="sub">' + fmtDate(w['Date']) + '</span></div>' +
+        '<div class="d">' + esc(w['Area'] || '') + (w['Evidence'] ? ' · ' + esc(w['Evidence']) : '') + '</div>' +
+        H.consentHtml(w) + '</div></div>';
+    }).join('') + '</div>' : '<div class="list"><div class="empty">No wins logged yet.</div></div>';
+    h += '<button class="btn ghost full" data-log-win style="margin-top:10px">Log win</button>';
+
+    // Notes
+    h += '<h2>Notes</h2><div class="notes" id="notesBox">' + (p.notes ? esc(p.notes) : '<span class="sub">No notes yet.</span>') + '</div>' +
+      '<label class="field"><span>Add a note</span><textarea id="newNote" placeholder="What happened"></textarea></label>' +
+      '<div class="form-actions"><button class="btn ghost" data-edit-notes>Edit all</button><button class="btn" data-add-note>Add note</button></div>';
+
+    // Details
+    h += '<h2>All fields</h2><div class="list fields">' + p.fields.filter(function (f) {
+      return f.name !== 'Notes' && p.onboarding.every(function (o) { return o.name !== f.name; });
+    }).map(function (f) {
+      return '<label class="frow"><span class="fl">' + esc(f.name) + '</span><span class="fv">' + fieldInput(f) + '</span><span class="saved" data-saved="' + esc(f.name) + '"></span></label>';
+    }).join('') + '</div>';
+
+    H.view.innerHTML = h;
+  }
+
+  function kv(k, v) { return '<div class="kvrow"><span class="sub">' + esc(k) + '</span><span>' + (v === '' || v == null ? '<span class="sub">-</span>' : v) + '</span></div>'; }
+
+  function save(changes, afterOk) {
+    var p = S.profile;
+    return H.api('updateClient', p.row, p.athlete, changes).then(function (res) {
+      if (res.skipped && res.skipped.length) H.toast(res.skipped.join(', ') + ' not saved (formula).', true);
+      if (changes['Athlete name'] !== undefined && res.written.indexOf('Athlete name') >= 0) p.athlete = changes['Athlete name'];
+      H.invalidate();
+      if (afterOk) afterOk(res);
+      // Formula columns (Term ends, Paid this month) may have changed. Reload quietly.
+      return H.api('getClient', p.row, true).then(function (fresh) {
+        S.profile = fresh;
+        var a = document.activeElement;
+        var typing = a && H.view.contains(a) && /INPUT|TEXTAREA|SELECT/.test(a.tagName);
+        if (!typing && H.state.tab === 'clients' && H.state.opts.row === fresh.row) renderProfile();
+      });
+    }).catch(function (m) { H.toast(m, true); throw m; });
+  }
+
+  function saveField(el) {
+    var name = el.getAttribute('data-field');
+    var v = el.type === 'checkbox' ? el.checked : el.value;
+    if (name === 'Athlete name' && !String(v).trim()) { H.toast('Athlete name cannot be blank.', true); el.value = S.profile.athlete; return; }
+    var mark = H.view.querySelector('[data-saved="' + CSS.escape(name) + '"]');
+    if (mark) mark.textContent = 'Saving';
+    var c = {}; c[name] = v;
+    save(c, function () { if (mark) mark.textContent = 'Saved'; }).catch(function () { if (mark) mark.textContent = ''; });
+  }
+
+  function toggleOnb(btn) {
+    var name = btn.getAttribute('data-onb');
+    var o = S.profile.onboarding.filter(function (x) { return x.name === name; })[0];
+    if (!o || btn.disabled) return;
+    o.done = !o.done;
+    btn.classList.toggle('done', o.done);
+    btn.disabled = true;
+    var c = {}; c[name] = o.done;
+    save(c).catch(function () { o.done = !o.done; btn.classList.toggle('done', o.done); }).then(function () { btn.disabled = false; });
+  }
+
+  function addNote(btn) {
+    var ta = document.getElementById('newNote');
+    var text = ta.value.trim();
+    if (!text) return H.toast('Type a note first.', true);
+    btn.disabled = true;
+    H.api('addClientNote', S.profile.row, S.profile.athlete, text).then(function (notes) {
+      S.profile.notes = notes; ta.value = '';
+      document.getElementById('notesBox').textContent = notes;
+      H.toast('Note added');
+    }).catch(function (m) { H.toast(m, true); }).then(function () { btn.disabled = false; });
+  }
+
+  function editNotes() {
+    H.openSheet('<form class="form" id="notesForm"><h2>Edit notes</h2><label class="field"><span>Notes</span>' +
+      '<textarea name="notes" style="min-height:300px">' + esc(S.profile.notes) + '</textarea></label>' +
+      '<div class="form-error" hidden></div><div class="form-actions"><button type="button" class="btn ghost" data-cancel>Cancel</button><button type="submit" class="btn">Save</button></div></form>');
+  }
+
+  document.getElementById('sheet').addEventListener('submit', function (e) {
+    if (e.target.id !== 'notesForm') return;
+    e.preventDefault(); e.stopImmediatePropagation();
+    var btn = e.target.querySelector('[type=submit]');
+    btn.disabled = true;
+    save({ Notes: e.target.elements['notes'].value }).then(function () { H.closeSheet(); H.toast('Notes saved'); })
+      .catch(function () { btn.disabled = false; });
+  }, true);
+
+  H.handlers.clients = {
+    click: function (e) {
+      var c = e.target.closest('[data-client]');
+      if (c) return H.go('clients', { row: Number(c.getAttribute('data-client')) });
+      if (e.target.closest('[data-back]')) return H.go('clients');
+      if (e.target.closest('[data-add-client]')) return H.openForm('Clients', {}, function () { H.views.clients({ fresh: true }); });
+      var cp = e.target.closest('[data-copy]');
+      if (cp) return H.copyText(cp.getAttribute('data-copy'));
+      var op = e.target.closest('[data-open]');
+      if (op) return window.open(op.getAttribute('data-open'), '_blank', 'noopener');
+      var onb = e.target.closest('[data-onb]');
+      if (onb) return toggleOnb(onb);
+      var an = e.target.closest('[data-add-note]');
+      if (an) return addNote(an);
+      if (e.target.closest('[data-edit-notes]')) return editNotes();
+      var reload = function () { H.views.clients({ row: S.profile.row, fresh: true }); };
+      if (e.target.closest('[data-log-payment]')) return H.openForm('Payments', { Athlete: S.profile.athlete }, reload);
+      if (e.target.closest('[data-log-win]')) return H.openForm('Wins', { Athlete: S.profile.athlete }, reload);
+    },
+    change: function (e) {
+      if (e.target.matches('[data-field]')) return saveField(e.target);
+      var f = e.target.getAttribute('data-f');
+      if (f) { S[f] = e.target.value; renderRows(); }
+    },
+    input: function (e) {
+      if (e.target.matches('[data-q]')) { S.q = e.target.value; renderRows(); }
+    }
+  };
+})(window.Hub);
+</script>
+
+<script>
+/* Leads pipeline: kanban on desktop, grouped list on phone, lead profile, convert to client. */
+(function (H) {
+  'use strict';
+  var esc = H.esc, fmtDate = H.fmtDate;
+  var S = { d: null, at: 0, q: '', open: { Lost: false } };
+  H.onStale(function () { S.at = 0; });
+
+  H.views.leads = function (opts) {
+    if (S.d && !opts.fresh && Date.now() - S.at < 60000) return opts.row ? renderProfile(opts.row) : renderBoard();
+    if (!S.d) H.view.innerHTML = '<h1>Leads</h1><div class="skeleton" style="height:320px;margin-top:16px"></div>';
+    H.setBusy(true);
+    return H.api('getLeads', !!opts.fresh).then(function (d) {
+      S.d = d; S.at = Date.now();
+      if (H.state.tab !== 'leads') return;
+      if (H.state.opts.row) renderProfile(H.state.opts.row); else renderBoard();
+    }).catch(function (m) { H.toast(m, true); }).then(function () { H.setBusy(false); });
+  };
+  H.leadsStale = function () { S.at = 0; };
+
+  function name(l) { return l['Athlete name'] || l['Parent name'] || l['Contact (IG or email)'] || 'Lead'; }
+  function expect(l) { return { 'Parent name': l['Parent name'] == null ? '' : l['Parent name'], 'Athlete name': l['Athlete name'] == null ? '' : l['Athlete name'] }; }
+  function find(row) { return S.d.leads.filter(function (l) { return l.row === row; })[0]; }
+
+  function card(l) {
+    var due = H.ymd(l['Next action due']);
+    var sub = [l['Athlete name'] && l['Parent name'] ? 'Parent: ' + l['Parent name'] : '', l['Grad year'] ? 'Class of ' + l['Grad year'] : '', l['Source']].filter(Boolean).map(esc).join(' · ');
+    return '<div class="lead-card' + (l._overdue ? ' overdue' : '') + '" draggable="true" data-lead="' + l.row + '">' +
+      '<button class="lead-open" data-open-lead="' + l.row + '"><span class="t">' + esc(name(l)) + '</span>' +
+      (sub ? '<span class="d">' + sub + '</span>' : '') +
+      (l['Next action'] || due ? '<span class="d na">' + esc(l['Next action'] || 'Next action') + (due ? ' · ' + fmtDate(due) : '') + '</span>' : '') +
+      '</button><select class="stage-pick" data-stage-for="' + l.row + '" aria-label="Stage">' +
+      S.d.stages.map(function (s) { return '<option' + (s === l['Stage'] ? ' selected' : '') + '>' + esc(s) + '</option>'; }).join('') +
+      '</select></div>';
+  }
+
+  function renderBoard() {
+    var d = S.d, q = S.q.toLowerCase();
+    var leads = d.leads.filter(function (l) {
+      return !q || [l['Parent name'], l['Athlete name'], l['Contact (IG or email)'], l['Notes']].join(' ').toLowerCase().indexOf(q) >= 0;
+    });
+    var by = {};
+    d.stages.forEach(function (s) { by[s] = []; });
+    var other = [];
+    leads.forEach(function (l) { (by[l['Stage']] || other).push(l); });
+    if (other.length) by['No stage'] = other;
+    var stages = d.stages.concat(other.length ? ['No stage'] : []);
+    var od = d.leads.filter(function (l) { return l._overdue; }).length;
+
+    var h = '<div class="row-between"><h1>Leads</h1><button class="btn small" data-add-lead>Add lead</button></div>';
+    if (d.discoveryLink) h += '<div class="linkrow"><span class="sub">Discovery call link</span><button class="chip" data-copy="' + esc(d.discoveryLink) + '">Copy</button></div>';
+    if (od) h += '<div class="notice red-text">' + od + ' follow-up' + (od > 1 ? 's' : '') + ' overdue</div>';
+    h += '<input class="search" type="search" placeholder="Search leads" data-lq value="' + esc(S.q) + '">';
+    h += '<div class="board">' + stages.map(function (s) {
+      var list = by[s];
+      var collapsed = S.open[s] === false;
+      return '<section class="col' + (collapsed ? ' collapsed' : '') + '" data-col="' + esc(s) + '">' +
+        '<button class="col-head" data-toggle-col="' + esc(s) + '"><span>' + esc(s) + '</span><span class="count">' + list.length + '</span></button>' +
+        '<div class="col-body">' + (list.length ? list.map(card).join('') : '<div class="empty small">None</div>') + '</div></section>';
+    }).join('') + '</div>';
+    H.view.innerHTML = h;
+  }
+
+  function moveStage(row, stage, onDone) {
+    var l = find(row);
+    if (!l || l['Stage'] === stage) return;
+    var prev = l['Stage'], prevTouch = l['Last touch'];
+    l['Stage'] = stage; l['Last touch'] = S.d.today;
+    H.api('updateLead', row, expect(l), { Stage: stage }).then(function () {
+      H.invalidate();
+      H.toast('Moved to ' + stage);
+      if (stage === 'Won') offerConvert(l);
+      if (onDone) onDone();
+    }).catch(function (m) {
+      l['Stage'] = prev; l['Last touch'] = prevTouch; H.toast(m, true);
+      if (H.state.opts.row) renderProfile(row); else renderBoard();
+    });
+    if (H.state.opts.row) renderProfile(row); else renderBoard();
+  }
+
+  /* ---------- profile ---------- */
+  function input(f, v) {
+    var n = esc(f.name);
+    if (f.computed) return '<div class="ro">' + (f.type === 'date' ? fmtDate(v) : esc(v)) + ' <span class="sub">(formula)</span></div>';
+    if (f.type === 'bool') return '<input type="checkbox" data-lf="' + n + '"' + (v === true ? ' checked' : '') + '>';
+    if (f.choices) return '<select data-lf="' + n + '"><option value=""></option>' + f.choices.map(function (c) { return '<option' + (String(c) === String(v) ? ' selected' : '') + '>' + esc(c) + '</option>'; }).join('') + '</select>';
+    if (f.type === 'date') return '<input type="date" data-lf="' + n + '" value="' + esc(H.ymd(v)) + '">';
+    if (f.type === 'number') return '<input inputmode="decimal" data-lf="' + n + '" value="' + esc(v) + '">';
+    return '<input data-lf="' + n + '" value="' + esc(v) + '" autocomplete="off">';
+  }
+  function fieldOf(name) { return S.d.fields.filter(function (f) { return f.name === name; })[0]; }
+
+  function renderProfile(row) {
+    var l = find(row);
+    if (!l) { H.toast('Lead not found. Refresh.', true); return renderBoard(); }
+    var h = '<button class="back" data-back>Leads</button><h1>' + esc(name(l)) + '</h1>';
+    h += '<div class="sub">Last touch ' + (fmtDate(l['Last touch']) || '-') + (l['Contact (IG or email)'] ? ' · ' + esc(l['Contact (IG or email)']) : '') + '</div>';
+
+    h += '<div class="panel' + (l._overdue ? ' overdue' : '') + '"><div class="label">Next action</div>' +
+      '<label class="field"><span>Next action</span>' + input(fieldOf('Next action') || { name: 'Next action' }, l['Next action']) + '</label>' +
+      '<label class="field"><span>Due</span>' + input(fieldOf('Next action due') || { name: 'Next action due', type: 'date' }, l['Next action due']) + '</label>' +
+      (l._overdue ? '<div class="red-text">Overdue</div>' : '') + '</div>';
+
+    h += '<h2>Stage</h2><div class="chips wrap">' + S.d.stages.map(function (s) {
+      return '<button class="chip' + (s === l['Stage'] ? ' on' : '') + '" data-set-stage="' + esc(s) + '">' + esc(s) + '</button>';
+    }).join('') + '</div>';
+    h += '<button class="btn' + (l['Stage'] === 'Won' ? '' : ' ghost') + ' full" data-convert style="margin-top:12px">Convert to client</button>';
+
+    h += '<h2>Notes</h2><div class="notes" id="leadNotes">' + (l['Notes'] ? esc(l['Notes']) : '<span class="sub">No notes yet.</span>') + '</div>' +
+      '<label class="field"><span>Add a note</span><textarea id="leadNewNote" placeholder="What happened"></textarea></label>' +
+      '<button class="btn full" data-lead-note>Add note</button>';
+
+    var skip = ['Next action', 'Next action due', 'Stage', 'Notes'];
+    h += '<h2>All fields</h2><div class="list fields">' + S.d.fields.filter(function (f) { return skip.indexOf(f.name) < 0; }).map(function (f) {
+      return '<label class="frow"><span class="fl">' + esc(f.name) + '</span><span class="fv">' + input(f, l[f.name]) + '</span><span class="saved" data-lsaved="' + esc(f.name) + '"></span></label>';
+    }).join('') + '</div>';
+    H.view.innerHTML = h;
+  }
+
+  function saveField(el) {
+    var row = H.state.opts.row, l = find(row);
+    var n = el.getAttribute('data-lf');
+    var v = el.type === 'checkbox' ? el.checked : el.value;
+    var mark = H.view.querySelector('[data-lsaved="' + CSS.escape(n) + '"]');
+    if (mark) mark.textContent = 'Saving';
+    var ex = expect(l);
+    var c = {}; c[n] = v;
+    H.api('updateLead', row, ex, c).then(function (res) {
+      if (res.skipped.length) H.toast(res.skipped.join(', ') + ' not saved (formula).', true);
+      l[n] = v; if (mark) mark.textContent = 'Saved';
+      if (n === 'Next action due') {
+        l._overdue = !!v && v < S.d.today && ['Won', 'Lost'].indexOf(l['Stage']) < 0;
+      }
+      H.invalidate();
+    }).catch(function (m) { if (mark) mark.textContent = ''; H.toast(m, true); });
+  }
+
+  function addNote(btn) {
+    var row = H.state.opts.row, l = find(row);
+    var ta = document.getElementById('leadNewNote');
+    if (!ta.value.trim()) return H.toast('Type a note first.', true);
+    btn.disabled = true;
+    H.api('addLeadNote', row, expect(l), ta.value.trim()).then(function (r) {
+      l['Notes'] = r.notes; l['Last touch'] = r.lastTouch; ta.value = '';
+      renderProfile(row);
+      H.toast('Note added. Last touch set to today.');
+    }).catch(function (m) { H.toast(m, true); }).then(function () { btn.disabled = false; });
+  }
+
+  /** Prefill a new Clients row from the lead. The form is the confirm step: nothing is written until Save. */
+  function offerConvert(l) {
+    var contact = String(l['Contact (IG or email)'] || '');
+    var isEmail = /@.+\./.test(contact) && contact.charAt(0) !== '@';
+    var program = S.d.programs.indexOf(l['Program interest']) >= 0 ? l['Program interest'] : '';
+    var note = 'Converted from lead' + (contact ? '. Contact: ' + contact : '') + (l['Source'] ? '. Source: ' + l['Source'] : '');
+    H.openForm('Clients', {
+      'Athlete name': l['Athlete name'] || '', 'Parent name': l['Parent name'] || '',
+      'Parent email': isEmail ? contact : '', 'Program': program, 'Notes': note
+    }, function (res) {
+      H.toast('Client added to row ' + res.row + '. Check the new client in Clients.');
+    });
+    setTimeout(function () {
+      var h2 = document.querySelector('#sheet form h2');
+      if (h2) h2.insertAdjacentHTML('afterend', '<p class="sub">Check these details, then Save to add ' + esc(name(l)) + ' to Clients. Nothing is written until you tap Save.</p>');
+    }, 50);
+  }
+
+  /* drag and drop between columns (desktop) */
+  var dragRow = null;
+  H.view.addEventListener('dragstart', function (e) {
+    var c = e.target.closest && e.target.closest('[data-lead]');
+    if (c && H.state.tab === 'leads') { dragRow = Number(c.getAttribute('data-lead')); e.dataTransfer.effectAllowed = 'move'; }
+  });
+  H.view.addEventListener('dragover', function (e) { if (dragRow && e.target.closest('[data-col]')) e.preventDefault(); });
+  H.view.addEventListener('drop', function (e) {
+    var col = e.target.closest('[data-col]');
+    if (dragRow && col) { e.preventDefault(); var s = col.getAttribute('data-col'); if (s !== 'No stage') moveStage(dragRow, s); }
+    dragRow = null;
+  });
+
+  H.handlers.leads = {
+    click: function (e) {
+      var o = e.target.closest('[data-open-lead]');
+      if (o) return H.go('leads', { row: Number(o.getAttribute('data-open-lead')) });
+      if (e.target.closest('[data-back]')) return H.go('leads');
+      if (e.target.closest('[data-add-lead]')) return H.openForm('Leads', {}, function () { H.views.leads({ fresh: true }); });
+      var cp = e.target.closest('[data-copy]');
+      if (cp) return H.copyText(cp.getAttribute('data-copy'));
+      var t = e.target.closest('[data-toggle-col]');
+      if (t) { var s = t.getAttribute('data-toggle-col'); S.open[s] = S.open[s] === false; return renderBoard(); }
+      var st = e.target.closest('[data-set-stage]');
+      if (st) return moveStage(H.state.opts.row, st.getAttribute('data-set-stage'));
+      var n = e.target.closest('[data-lead-note]');
+      if (n) return addNote(n);
+      if (e.target.closest('[data-convert]')) return offerConvert(find(H.state.opts.row));
+    },
+    change: function (e) {
+      var sp = e.target.getAttribute('data-stage-for');
+      if (sp) return moveStage(Number(sp), e.target.value);
+      if (e.target.matches('[data-lf]')) return saveField(e.target);
+    },
+    input: function (e) {
+      if (e.target.matches('[data-lq]')) {
+        S.q = e.target.value;
+        var pos = e.target.selectionStart;
+        renderBoard();
+        var el = H.view.querySelector('[data-lq]'); el.focus(); el.setSelectionRange(pos, pos);
+      }
+    }
+  };
+})(window.Hub);
+</script>
+
+<script>
+/* Money: cash by month chart, 323 vs DDC, net and tax set-aside, payments, expenses. */
+(function (H) {
+  'use strict';
+  var esc = H.esc, fmtDate = H.fmtDate, money = H.money;
+  var S = { d: null, at: 0, tab: 'payments', pf: '', pq: '' };
+  H.onStale(function () { S.at = 0; });
+  var MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+  H.views.money = function (opts) {
+    if (S.d && !opts.fresh && Date.now() - S.at < 60000) return render();
+    if (!S.d) H.view.innerHTML = '<h1>Money</h1><div class="skeleton" style="height:320px;margin-top:16px"></div>';
+    H.setBusy(true);
+    H.api('getMoney', !!opts.fresh).then(function (d) {
+      S.d = d; S.at = Date.now();
+      if (H.state.tab === 'money') render();
+    }).catch(function (m) { H.toast(m, true); }).then(function () { H.setBusy(false); });
+  };
+
+  function short(v, axis) {
+    var n = H.num(v);
+    if (axis && n >= 1000) return '$' + (n / 1000).toFixed(n % 1000 ? 1 : 0) + 'k';
+    return money(n);
+  }
+
+  function monthLabel(v) {
+    var s = String(v);
+    if (/^\d{4}-\d{2}/.test(s)) return MONTHS[Number(s.slice(5, 7)) - 1];
+    return s;
+  }
+
+  function render() {
+    var d = S.d, m = d.month;
+    var h = '<h1>Money</h1>';
+
+    h += '<div class="cards">' +
+      card('Cash in this month', money(m.cashIn), true) +
+      card('Spent this month', money(m.spent)) +
+      card('Net this month', money(m.net)) +
+      card('Tax set-aside (' + Math.round(m.taxRate * 100) + '%)', money(m.tax)) +
+      card('Left after tax', money(m.left)) +
+      card('Cash in, year to date', money(d.ytd.cashIn)) +
+      '</div>';
+
+    h += '<h2>323 vs DDC</h2><div class="list kv">' +
+      '<div class="kvrow three"><span class="sub"></span><span class="sub">This month</span><span class="sub">Year to date</span></div>' +
+      d.split.month.map(function (c, i) {
+        var tag = /ddc/i.test(c.name) ? H.tagHtml('DDC') : '';
+        return '<div class="kvrow three"><span>' + esc(c.name) + tag + '</span><span>' + money(c.value) + '</span><span>' + money(d.split.ytd[i].value) + '</span></div>';
+      }).join('') + '</div>';
+    h += '<div class="sub" style="margin-top:6px">DDC money is Venmo and not counted in 323 MRR.</div>';
+
+    h += '<h2>Cash collected by month</h2><div id="cashChart"></div>';
+
+    h += '<div class="seg" style="margin-top:28px">' +
+      '<button data-mtab="payments" class="' + (S.tab === 'payments' ? 'on' : '') + '">Payments</button>' +
+      '<button data-mtab="expenses" class="' + (S.tab === 'expenses' ? 'on' : '') + '">Expenses</button></div>';
+    h += '<div id="mlist"></div>';
+    H.view.innerHTML = h;
+
+    var rows = d.cash.rows.filter(function (r) { return /^\d{4}-\d{2}/.test(String(r[d.cash.headers[0]])); });
+    var segCols = d.cash.cols.filter(function (c) { return !/^total$/i.test(c); });
+    var colors = { 0: '#0289eb', 1: '#d28e05' };
+    H.stackedBars(document.getElementById('cashChart'), {
+      title: 'Cash collected by month',
+      labels: rows.map(function (r) { return monthLabel(r[d.cash.headers[0]]); }),
+      series: segCols.map(function (c, i) {
+        return { name: c, color: colors[i] || H.SERIES[i], values: rows.map(function (r) { return H.num(r[c]); }) };
+      }),
+      fmt: short
+    });
+    renderList();
+  }
+
+  function card(label, v, accent) {
+    return '<div class="card' + (accent ? ' accent' : '') + '"><div class="label">' + esc(label) + '</div><div class="num">' + esc(v) + '</div></div>';
+  }
+
+  function renderList() {
+    var d = S.d, el = document.getElementById('mlist');
+    var h = '';
+    if (S.tab === 'payments') {
+      h += '<div class="row-between" style="margin:14px 0 10px"><select data-pf>' +
+        ['', '323', 'DDC', 'Guinea Pig'].map(function (v) { return '<option value="' + v + '"' + (S.pf === v ? ' selected' : '') + '>' + (v || 'All payments') + '</option>'; }).join('') +
+        '</select><button class="btn small" data-log="Payments">Log payment</button></div>';
+      h += '<input class="search" type="search" placeholder="Search athlete" data-pq value="' + esc(S.pq) + '">';
+      var q = S.pq.toLowerCase();
+      var list = d.payments.filter(function (p) {
+        return (!S.pf || p.tag === S.pf) && (!q || String(p.athlete).toLowerCase().indexOf(q) >= 0);
+      });
+      var total = list.reduce(function (s, p) { return s + p.amount; }, 0);
+      h += '<div class="sub">' + list.length + ' payments · ' + money(total) + '</div>';
+      h += list.length ? '<div class="list" style="margin-top:8px">' + list.map(function (p) {
+        var st = /overdue/i.test(p.status) ? '<span class="badge over">' + esc(p.status) + '</span>' : (p.status ? '<span class="sub">' + esc(p.status) + '</span>' : '');
+        return '<div class="item"><div style="flex:1"><div class="row-between"><span class="t">' + esc(p.athlete) + H.tagHtml(p.tag) + '</span><span class="t">' + money(p.amount) + '</span></div>' +
+          '<div class="row-between d"><span>' + fmtDate(p.date) + (p.method ? ' · ' + esc(p.method) : '') + (p.nextDue ? ' · next due ' + fmtDate(p.nextDue) : '') + '</span>' + st + '</div>' +
+          (p.notes ? '<div class="d">' + esc(p.notes) + '</div>' : '') + '</div></div>';
+      }).join('') + '</div>' : '<div class="list" style="margin-top:8px"><div class="empty">No payments.</div></div>';
+    } else {
+      h += '<div class="row-between" style="margin:14px 0 10px"><span class="sub">This month ' + money(d.month.spent) + ' · Year to date ' + money(d.ytd.spent) + '</span>' +
+        '<button class="btn small" data-log="Expenses">Log expense</button></div>';
+      h += d.expenses.length ? '<div class="list">' + d.expenses.map(function (e) {
+        var link = H.isUrl(e['Receipt link']) ? ' · <a href="' + esc(e['Receipt link']) + '" target="_blank" rel="noopener">Receipt</a>' : '';
+        return '<div class="item"><div style="flex:1"><div class="row-between"><span class="t">' + esc(e['Vendor'] || '') + '</span><span class="t">' + money(e.amount) + '</span></div>' +
+          '<div class="d">' + [fmtDate(e.date), esc(e['Category'] || ''), esc(e["What it's for"] || ''), esc(e['Billing'] || '')].filter(Boolean).join(' · ') + link + '</div></div></div>';
+      }).join('') + '</div>' : '<div class="list"><div class="empty">No expenses.</div></div>';
+    }
+    el.innerHTML = h;
+  }
+
+  H.handlers.money = {
+    click: function (e) {
+      var t = e.target.closest('[data-mtab]');
+      if (t) { S.tab = t.getAttribute('data-mtab'); return render(); }
+      var l = e.target.closest('[data-log]');
+      if (l) return H.openForm(l.getAttribute('data-log'), {}, function () { H.views.money({ fresh: true }); });
+    },
+    change: function (e) { if (e.target.matches('[data-pf]')) { S.pf = e.target.value; renderList(); } },
+    input: function (e) {
+      if (e.target.matches('[data-pq]')) {
+        S.pq = e.target.value;
+        var pos = e.target.selectionStart;
+        renderList();
+        var el = H.view.querySelector('[data-pq]'); el.focus(); el.setSelectionRange(pos, pos);
+      }
+    }
+  };
+})(window.Hub);
+</script>
+
+<script>
+/* Content, Wins, Scorecard history, and a shared row editor. */
+(function (H) {
+  'use strict';
+  var esc = H.esc, fmtDate = H.fmtDate;
+
+  /* ---------- shared: consent badge for wins ---------- */
+  // Media consent values in the sheet: Full, Face and name hidden, None.
+  H.consentHtml = function (w) {
+    var consent = String(w['Media consent'] == null ? '' : w['Media consent']).trim();
+    var ok = w['OK to post'] === true;
+    var hidden = /hidden/i.test(consent);
+    var full = /^full$/i.test(consent);
+    if (ok && (full || hidden)) {
+      return '<div class="consent ' + (hidden ? 'warn' : 'ok') + '">OK to post' + (hidden ? ' · hide face and name' : ' · full consent') + '</div>';
+    }
+    var why = [];
+    if (!full && !hidden) why.push(consent && !/^none$/i.test(consent) ? 'consent: ' + consent : 'no media consent');
+    if (!ok) why.push('not marked OK to post');
+    return '<div class="consent no">Do not post · ' + esc(why.join(', ')) + '</div>';
+  };
+
+  /* ---------- shared: edit any row on an allowed tab ---------- */
+  var editSpecs = {};
+  H.editRecord = function (tab, rec, expectKeys, onSaved) {
+    var p = editSpecs[tab] ? Promise.resolve(editSpecs[tab]) : H.api('getEditSpec', tab);
+    p.then(function (spec) {
+      editSpecs[tab] = spec;
+      var h = '<form class="form" id="editForm" data-tab="' + esc(tab) + '" data-row="' + rec.row + '"><h2>Edit</h2>';
+      h += spec.fields.map(function (f) {
+        var v = rec[f.name], n = esc(f.name), inp;
+        if (f.type === 'bool') return '<label class="field bool"><input type="checkbox" name="' + n + '"' + (v === true ? ' checked' : '') + '><span>' + n + '</span></label>';
+        if (f.choices && f.choiceSource === 'list') inp = '<select name="' + n + '"><option value=""></option>' + f.choices.map(function (c) { return '<option' + (String(c) === String(v) ? ' selected' : '') + '>' + esc(c) + '</option>'; }).join('') + '</select>';
+        else if (f.type === 'date') inp = '<input type="date" name="' + n + '" value="' + esc(H.ymd(v)) + '">';
+        else if (/notes|teaching point|hook|^win$|evidence/i.test(f.name)) inp = '<textarea name="' + n + '">' + esc(v) + '</textarea>';
+        else inp = '<input name="' + n + '" value="' + esc(v) + '"' + (f.type === 'number' ? ' inputmode="decimal"' : '') + ' autocomplete="off">';
+        return '<label class="field"><span>' + n + '</span>' + inp + '</label>';
+      }).join('');
+      h += '<div class="form-error" hidden></div><div class="form-actions"><button type="button" class="btn ghost" data-cancel>Cancel</button><button type="submit" class="btn">Save</button></div></form>';
+      H.openSheet(h);
+      H.state.editCtx = { rec: rec, spec: spec, expectKeys: expectKeys, onSaved: onSaved };
+    }).catch(function (m) { H.toast(m, true); });
+  };
+
+  document.getElementById('sheet').addEventListener('submit', function (e) {
+    if (e.target.id !== 'editForm') return;
+    e.preventDefault(); e.stopImmediatePropagation();
+    var ctx = H.state.editCtx, f = e.target, changes = {};
+    ctx.spec.fields.forEach(function (fd) {
+      var el = f.elements[fd.name];
+      if (!el) return;
+      var v = fd.type === 'bool' ? el.checked : el.value;
+      var old = ctx.rec[fd.name];
+      var same = fd.type === 'bool' ? (old === true) === v : (fd.type === 'date' ? H.ymd(old) === v : String(old == null ? '' : old) === String(v));
+      if (!same) changes[fd.name] = v;
+    });
+    if (!Object.keys(changes).length) return H.closeSheet();
+    var expect = {};
+    ctx.expectKeys.forEach(function (k) { expect[k] = ctx.rec[k] == null ? '' : ctx.rec[k]; });
+    var btn = f.querySelector('[type=submit]'), err = f.querySelector('.form-error');
+    btn.disabled = true; btn.textContent = 'Saving';
+    H.api('updateRecord', f.getAttribute('data-tab'), ctx.rec.row, expect, changes).then(function (res) {
+      H.closeSheet();
+      H.toast(res.skipped.length ? 'Saved. Skipped formula cells: ' + res.skipped.join(', ') : 'Saved');
+      if (ctx.onSaved) ctx.onSaved();
+    }).catch(function (m) { btn.disabled = false; btn.textContent = 'Save'; err.textContent = m; err.hidden = false; });
+  }, true);
+
+  /* ---------- Content ---------- */
+  var C = { d: null, at: 0, pillar: '', status: '', mode: 'list', month: null };
+  H.onStale(function () { C.at = 0; });
+
+  H.views.content = function (opts) {
+    if (C.d && !opts.fresh && Date.now() - C.at < 60000) return renderContent();
+    H.view.innerHTML = '<h1>Content</h1><div class="skeleton" style="height:320px;margin-top:16px"></div>';
+    H.setBusy(true);
+    H.api('getContent', !!opts.fresh).then(function (d) {
+      C.d = d; C.at = Date.now();
+      if (!C.month) C.month = d.today.slice(0, 7);
+      if (H.state.tab === 'content') renderContent();
+    }).catch(function (m) { H.toast(m, true); }).then(function () { H.setBusy(false); });
+  };
+
+  function sel(attr, cur, all, label) {
+    return '<select ' + attr + '><option value="">' + esc(label) + '</option>' + all.map(function (v) { return '<option' + (v === cur ? ' selected' : '') + '>' + esc(v) + '</option>'; }).join('') + '</select>';
+  }
+
+  function renderContent() {
+    var d = C.d;
+    var h = '<button class="back" data-go="more">More</button><div class="row-between"><h1>Content</h1><button class="btn small" data-add-post>Add post</button></div>';
+    var top = d.stale[0];
+    if (top) {
+      h += '<div class="notice">' + (top.days === null
+        ? esc(top.pillar) + ' has not been posted yet.'
+        : esc(top.pillar) + ' is the longest without a post: ' + top.days + ' days (last ' + fmtDate(top.last) + ').') + '</div>';
+    }
+    h += '<div class="list kv">' + d.stale.map(function (s) {
+      return '<div class="kvrow"><span>' + esc(s.pillar) + '</span><span class="sub">' + (s.last ? fmtDate(s.last) + ' · ' + s.days + 'd ago' : 'never') + '</span></div>';
+    }).join('') + '</div>';
+    h += '<div class="sub" style="margin-top:6px">' + (d.postedRule === 'status' ? 'Counts posts whose Status says posted.' : 'Counts posts dated today or earlier. No Status value says posted yet.') + '</div>';
+    h += '<div class="filters" style="margin-top:16px">' + sel('data-cf="pillar"', C.pillar, d.pillars, 'All pillars') + sel('data-cf="status"', C.status, d.statuses, 'All statuses') + '</div>';
+    h += '<div class="seg"><button data-cmode="list" class="' + (C.mode === 'list' ? 'on' : '') + '">List</button><button data-cmode="cal" class="' + (C.mode === 'cal' ? 'on' : '') + '">Calendar</button></div>';
+    h += '<div id="contentBody"></div>';
+    H.view.innerHTML = h;
+    renderContentBody();
+  }
+
+  function filteredPosts() {
+    return C.d.posts.filter(function (p) {
+      return (!C.pillar || p['Pillar'] === C.pillar) && (!C.status || p['Status'] === C.status);
+    });
+  }
+
+  function postItem(p) {
+    return '<button class="client-row" data-edit-post="' + p.row + '"><div class="row-between"><span class="t">' + esc(p['Topic'] || p['Hook'] || 'Post') + '</span><span class="sub">' + (fmtDate(p.date) || 'no date') + '</span></div>' +
+      '<div class="d">' + [p['Pillar'], p['Format'], p['Status']].filter(Boolean).map(esc).join(' · ') + '</div>' +
+      (p['Hook'] ? '<div class="d">' + esc(p['Hook']) + '</div>' : '') + '</button>';
+  }
+
+  function renderContentBody() {
+    var el = document.getElementById('contentBody');
+    var posts = filteredPosts();
+    if (C.mode === 'list') {
+      posts = posts.slice().sort(function (a, b) { return String(b.date).localeCompare(String(a.date)); });
+      el.innerHTML = posts.length ? '<div class="list" style="margin-top:12px">' + posts.map(postItem).join('') + '</div>' : '<div class="list" style="margin-top:12px"><div class="empty">No posts match.</div></div>';
+      return;
+    }
+    var y = Number(C.month.slice(0, 4)), m = Number(C.month.slice(5, 7));
+    var first = new Date(Date.UTC(y, m - 1, 1)), days = new Date(Date.UTC(y, m, 0)).getUTCDate();
+    var lead = (first.getUTCDay() + 6) % 7;
+    var byDay = {};
+    posts.forEach(function (p) { if (p.date && p.date.slice(0, 7) === C.month) (byDay[p.date] = byDay[p.date] || []).push(p); });
+    var h = '<div class="row-between cal-head"><button class="chip" data-cal="-1">Prev</button><b>' + first.toLocaleString('en-US', { month: 'long', year: 'numeric', timeZone: 'UTC' }) + '</b><button class="chip" data-cal="1">Next</button></div>';
+    h += '<div class="cal">' + ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map(function (x) { return '<div class="cal-dow">' + x + '</div>'; }).join('');
+    for (var i = 0; i < lead; i++) h += '<div class="cal-cell empty"></div>';
+    for (var dd = 1; dd <= days; dd++) {
+      var key = C.month + '-' + ('0' + dd).slice(-2);
+      var ps = byDay[key] || [];
+      h += '<div class="cal-cell' + (key === C.d.today ? ' today' : '') + '"><span class="cal-n">' + dd + '</span>' +
+        ps.map(function (p) { return '<button class="cal-post" data-edit-post="' + p.row + '" title="' + esc(p['Topic'] || '') + '">' + esc(p['Topic'] || p['Format'] || 'Post') + '</button>'; }).join('') + '</div>';
+    }
+    h += '</div>';
+    var undated = posts.filter(function (p) { return !p.date; });
+    if (undated.length) h += '<h2>No date</h2><div class="list">' + undated.map(postItem).join('') + '</div>';
+    el.innerHTML = h;
+  }
+
+  H.handlers.content = {
+    click: function (e) {
+      if (e.target.closest('[data-go]')) return H.go('more');
+      if (e.target.closest('[data-add-post]')) return H.openForm('Content', {}, function () { H.views.content({ fresh: true }); });
+      var md = e.target.closest('[data-cmode]');
+      if (md) { C.mode = md.getAttribute('data-cmode'); return renderContent(); }
+      var cal = e.target.closest('[data-cal]');
+      if (cal) {
+        var y = Number(C.month.slice(0, 4)), m = Number(C.month.slice(5, 7)) - 1 + Number(cal.getAttribute('data-cal'));
+        var d = new Date(Date.UTC(y, m, 1));
+        C.month = d.toISOString().slice(0, 7);
+        return renderContentBody();
+      }
+      var ep = e.target.closest('[data-edit-post]');
+      if (ep) {
+        var row = Number(ep.getAttribute('data-edit-post'));
+        var rec = C.d.posts.filter(function (p) { return p.row === row; })[0];
+        return H.editRecord('Content', rec, ['Topic'], function () { H.views.content({ fresh: true }); });
+      }
+    },
+    change: function (e) {
+      var f = e.target.getAttribute('data-cf');
+      if (f) { C[f] = e.target.value; renderContentBody(); }
+    }
+  };
+
+  /* ---------- Wins ---------- */
+  var W = { d: null, at: 0, athlete: '' };
+  H.onStale(function () { W.at = 0; });
+
+  H.views.wins = function (opts) {
+    if (W.d && !opts.fresh && Date.now() - W.at < 60000) return renderWins();
+    H.view.innerHTML = '<h1>Wins</h1><div class="skeleton" style="height:320px;margin-top:16px"></div>';
+    H.setBusy(true);
+    H.api('getWins', !!opts.fresh).then(function (d) {
+      W.d = d; W.at = Date.now();
+      if (H.state.tab === 'wins') renderWins();
+    }).catch(function (m) { H.toast(m, true); }).then(function () { H.setBusy(false); });
+  };
+
+  function renderWins() {
+    var d = W.d;
+    var h = '<button class="back" data-go="more">More</button><div class="row-between"><h1>Wins</h1><button class="btn small" data-add-win>Log win</button></div>';
+    h += '<div class="filters">' + sel('data-wf', W.athlete, d.athletes, 'All athletes') + '</div>';
+    var list = d.wins.filter(function (w) { return !W.athlete || w['Athlete'] === W.athlete; });
+    h += list.length ? '<div class="list">' + list.map(function (w) {
+      return '<button class="client-row" data-edit-win="' + w.row + '"><div class="row-between"><span class="t">' + esc(w['Athlete'] || '') + '</span><span class="sub">' + fmtDate(w['Date']) + '</span></div>' +
+        '<div class="d">' + esc(w['Win'] || '') + (w['Area'] ? ' · ' + esc(w['Area']) : '') + '</div>' +
+        (w['Evidence'] ? '<div class="d">' + esc(w['Evidence']) + '</div>' : '') + H.consentHtml(w) + '</button>';
+    }).join('') + '</div>' : '<div class="list"><div class="empty">No wins logged yet.</div></div>';
+    H.view.innerHTML = h;
+  }
+
+  H.handlers.wins = {
+    click: function (e) {
+      if (e.target.closest('[data-go]')) return H.go('more');
+      if (e.target.closest('[data-add-win]')) return H.openForm('Wins', W.athlete ? { Athlete: W.athlete } : {}, function () { H.views.wins({ fresh: true }); });
+      var ew = e.target.closest('[data-edit-win]');
+      if (ew) {
+        var row = Number(ew.getAttribute('data-edit-win'));
+        var rec = W.d.wins.filter(function (w) { return w.row === row; })[0];
+        return H.editRecord('Wins', rec, ['Athlete', 'Win'], function () { H.views.wins({ fresh: true }); });
+      }
+    },
+    change: function (e) { if (e.target.matches('[data-wf]')) { W.athlete = e.target.value; renderWins(); } }
+  };
+
+  /* ---------- Scorecard history ---------- */
+  H.views.history = function (opts) {
+    H.view.innerHTML = '<h1>Scorecard history</h1><div class="skeleton" style="height:320px;margin-top:16px"></div>';
+    H.setBusy(true);
+    H.api('getHistory', !!opts.fresh).then(function (d) {
+      if (H.state.tab === 'history') renderHistory(d);
+    }).catch(function (m) { H.toast(m, true); }).then(function () { H.setBusy(false); });
+  };
+
+  function col(headers, re) { return headers.filter(function (h) { return re.test(h); })[0]; }
+
+  function renderHistory(d) {
+    var hs = d.headers, rows = d.rows.slice().sort(function (a, b) { return String(a[hs[0]]).localeCompare(String(b[hs[0]])); });
+    var h = '<button class="back" data-go="more">More</button><h1>Scorecard history</h1>';
+    if (!rows.length) { H.view.innerHTML = h + '<div class="list"><div class="empty">No weekly log rows yet.</div></div>'; return; }
+    var labels = rows.map(function (r) { return fmtDate(r[hs[0]]).replace(/\/\d{4}$/, ''); });
+    var countCols = [/^conversations/i, /^calls booked/i, /^calls held/i, /^closes/i, /^enrolled/i].map(function (re) { return col(hs, re); }).filter(Boolean);
+    var mrrCol = col(hs, /^mrr$/i);
+    h += '<h2>Pipeline and enrolled</h2><div id="histCounts"></div>';
+    if (mrrCol) h += '<h2>MRR</h2><div id="histMrr"></div>';
+    h += '<h2>Weekly log</h2><div class="scroll-x"><table class="log"><thead><tr>' + hs.map(function (x) { return '<th>' + esc(x) + '</th>'; }).join('') + '</tr></thead><tbody>' +
+      rows.slice().reverse().map(function (r) {
+        return '<tr>' + hs.map(function (x, i) {
+          var v = r[x];
+          if (i === 0) v = fmtDate(v);
+          else if (x === mrrCol) v = H.money(v);
+          else v = esc(v);
+          return '<td>' + v + '</td>';
+        }).join('') + '</tr>';
+      }).join('') + '</tbody></table></div>';
+    H.view.innerHTML = h;
+    H.lineChart(document.getElementById('histCounts'), {
+      title: 'Weekly pipeline and enrolled athletes', labels: labels,
+      series: countCols.map(function (c, i) { return { name: c, color: H.SERIES[i], values: rows.map(function (r) { return H.num(r[c]); }) }; }),
+      fmt: function (v) { return String(Math.round(H.num(v) * 10) / 10); }, left: 32
+    });
+    if (mrrCol) H.lineChart(document.getElementById('histMrr'), {
+      title: 'MRR by week', labels: labels, height: 180,
+      series: [{ name: 'MRR', color: H.SERIES[0], values: rows.map(function (r) { return H.num(r[mrrCol]); }) }],
+      fmt: function (v, axis) { var n = H.num(v); return axis && n >= 1000 ? '$' + (n / 1000) + 'k' : H.money(n); }
+    });
+  }
+
+  H.handlers.history = { click: function (e) { if (e.target.closest('[data-go]')) H.go('more'); } };
+})(window.Hub);
+</script>
+
+<script>
+/*
+ * Mac app layer: connects the bridge to Google Sheets, then sets up the app window,
+ * icon, menu bar, keyboard shortcuts and Dock badge when running as an installed app.
+ * Outside the installed app it offers an "Install as Mac app" button.
+ */
+(function () {
+  'use strict';
+  var H = window.Hub;
+  var claude = window.claude;
+
+  function noConnector(msg) {
+    H.view.innerHTML = '<h1>323 Hub</h1><p class="placeholder">' + H.esc(msg) + '</p>';
+  }
+
+  if (!claude || typeof claude.use !== 'function') {
+    noConnector('Open this app from the Claude desktop app. It reads your Command Center through your Google Sheets connector.');
+    return;
+  }
+
+  H.view.innerHTML = '<div class="skeleton" style="height:40px;width:60%"></div><div class="cards">' +
+    '<div class="card skeleton"></div><div class="card skeleton"></div><div class="card skeleton"></div>' +
+    '<div class="card skeleton"></div><div class="card skeleton"></div><div class="card skeleton"></div></div>';
+
+  claude.use('mcp').then(function (mcp) {
+    if (!mcp) {
+      noConnector('Google Sheets is not available in this window. Open the app from the Claude desktop app, with the Google Sheets connector turned on.');
+      return;
+    }
+    window.HubBridge.attach(mcp);
+    H.go('home');
+    // Warm up the other tabs after Home has what it needs.
+    setTimeout(function () { window.HubBridge.preload().catch(function () {}); }, 1500);
+  });
+
+  /* ---------- desktop app ---------- */
+
+  var WINDOW = { titleBarStyle: 'hiddenInset', dragHeight: 64, width: 1280, height: 860, minWidth: 420, minHeight: 600, backgroundColor: '#000000' };
+
+  function drawIcon() {
+    var c = document.createElement('canvas');
+    c.width = c.height = 256;
+    var g = c.getContext('2d');
+    var r = 56;
+    g.fillStyle = '#000000';
+    g.beginPath();
+    g.moveTo(r, 0); g.arcTo(256, 0, 256, 256, r); g.arcTo(256, 256, 0, 256, r); g.arcTo(0, 256, 0, 0, r); g.arcTo(0, 0, 256, 0, r);
+    g.closePath(); g.fill();
+    g.fillStyle = '#0289eb';
+    g.fillRect(40, 186, 176, 10);
+    g.fillStyle = '#ffffff';
+    g.textAlign = 'center';
+    g.textBaseline = 'alphabetic';
+    g.font = '120px Anton, "Bebas Neue", Impact, sans-serif';
+    g.fillText('323', 128, 168);
+    return c.toDataURL('image/png');
+  }
+
+  function menuTemplate() {
+    var go = function (tab) { return function () { H.go(tab); }; };
+    var add = function (tab) { return function () { H.openForm(tab, {}, function () { H.go(H.state.tab, { fresh: true }); }); }; };
+    return [
+      { label: 'Go', submenu: [
+        { label: 'Home', accelerator: 'CmdOrCtrl+1', click: go('home') },
+        { label: 'To-Do', accelerator: 'CmdOrCtrl+2', click: go('todo') },
+        { label: 'Clients', accelerator: 'CmdOrCtrl+3', click: go('clients') },
+        { label: 'Leads', accelerator: 'CmdOrCtrl+4', click: go('leads') },
+        { label: 'Money', accelerator: 'CmdOrCtrl+5', click: go('money') },
+        { type: 'separator' },
+        { label: 'Content', click: go('content') },
+        { label: 'Wins', click: go('wins') },
+        { label: 'Scorecard history', click: go('history') }
+      ] },
+      { label: 'Add', submenu: [
+        { label: 'Add task', accelerator: 'CmdOrCtrl+Shift+T', click: add('Daily To-Do') },
+        { label: 'Add lead', accelerator: 'CmdOrCtrl+Shift+L', click: add('Leads') },
+        { label: 'Add client', click: add('Clients') },
+        { type: 'separator' },
+        { label: 'Log payment', accelerator: 'CmdOrCtrl+Shift+P', click: add('Payments') },
+        { label: 'Log expense', accelerator: 'CmdOrCtrl+Shift+E', click: add('Expenses') },
+        { label: 'Log win', accelerator: 'CmdOrCtrl+Shift+W', click: add('Wins') }
+      ] },
+      { role: 'editMenu' },
+      { label: 'View', submenu: [
+        { label: 'Refresh from sheet', accelerator: 'CmdOrCtrl+R', click: function () { document.getElementById('refreshBtn').click(); } }
+      ] }
+    ];
+  }
+
+  /** Dock badge: overdue items on Home (red items plus overdue tasks). */
+  var lastBadge = null;
+  function badgeCount() {
+    var h = H.state.home;
+    if (!h) return null;
+    var n = h.attention.filter(function (a) { return a.level === 'overdue'; }).length;
+    return n;
+  }
+
+  claude.use('desktop').then(function (desktop) {
+    if (!desktop) return;
+    if (desktop.window) {
+      document.documentElement.classList.add('in-app');
+      desktop.window.setOptions(WINDOW).catch(function () {});
+      var setIcon = function () { desktop.app.dock.setIcon(drawIcon()).catch(function () {}); };
+      if (document.fonts && document.fonts.load) document.fonts.load('120px Anton').then(setIcon, setIcon); else setIcon();
+      desktop.Menu.setApplicationMenu(menuTemplate()).catch(function () {});
+      setInterval(function () {
+        var n = badgeCount();
+        if (n === null || n === lastBadge) return;
+        lastBadge = n;
+        desktop.app.dock.setBadge(n ? String(n) : '').catch(function () {});
+      }, 5000);
+      return;
+    }
+    if (!desktop.install) return;
+    desktop.install.state().then(function (st) {
+      if (st !== 'available') return;
+      var b = document.createElement('button');
+      b.className = 'btn small install-btn';
+      b.textContent = 'Install as Mac app';
+      b.onclick = function () {
+        desktop.install.request().then(function (r) {
+          if (r === 'installed') H.toast('Installing. Open 323 Hub from your Applications or Dock.');
+          else if (r === 'cancelled') H.toast('Install cancelled.');
+          else H.toast('Install is not available here. Open this artifact in the Claude desktop app.', true);
+        }).catch(function () { H.toast('Install needs a click in the Claude desktop app.', true); });
+      };
+      var bar = document.querySelector('.topbar');
+      bar.insertBefore(b, document.getElementById('refreshBtn'));
+    }).catch(function () {});
+  });
+})();
+
+</script>

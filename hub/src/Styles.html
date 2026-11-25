@@ -296,7 +296,7 @@ table.log td:last-child { white-space: normal; min-width: 220px; text-align: lef
 .cal-post { font-size: 11px; line-height: 1.2; text-align: left; background: rgba(2,137,235,.2); color: var(--white); border: 0; border-radius: 4px; padding: 3px 4px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 100%; }
 
 @media (min-width: 760px) {
-  .actions { grid-template-columns: repeat(3, 1fr); }
+  .actions { grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); }
   .filters { grid-template-columns: repeat(3, 1fr); }
   .filters select:first-child:nth-last-child(odd) { grid-column: auto; }
   .fields .frow { grid-template-columns: 200px 1fr 60px; align-items: center; }
