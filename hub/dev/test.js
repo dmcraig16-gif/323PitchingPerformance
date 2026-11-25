@@ -16,7 +16,7 @@ function load() {
   vm.runInContext(fs.readFileSync(path.join(__dirname, 'fixture.js'), 'utf8'), ctx);
   var today = ctx.HubMock.Utilities.formatDate(new Date(), 'America/Boise', 'yyyy-MM-dd');
   var env = ctx.HubMock.install(ctx, ctx.HubFixture.build(today));
-  ['Config.js', 'Data.js', 'Write.js', 'Api.js', 'Todo.js', 'Clients.js', 'Leads.js', 'Money.js', 'Social.js', 'Code.js'].forEach(function (f) {
+  ['Config.js', 'Data.js', 'Write.js', 'Api.js', 'Todo.js', 'Clients.js', 'Leads.js', 'Money.js', 'Social.js', 'Applications.js', 'Code.js'].forEach(function (f) {
     vm.runInContext(fs.readFileSync(path.join(SRC, f), 'utf8'), ctx, { filename: f });
   });
   ctx.HtmlService = {};
@@ -287,7 +287,7 @@ test('leads: stage change sets Last touch, note sets Last touch', function (g, b
   assert.strictEqual(sh.cell(sam.row, 9), 'Call booked');
   assert.strictEqual(g.Utilities.formatDate(sh.cell(sam.row, 12), 'America/Boise', 'yyyy-MM-dd'), today);
   var r = g.addLeadNote(sam.row, ex, 'Booked for Friday');
-  assert.ok(/Booked for Friday$/.test(r.notes));
+  assert.ok(/^\d+\/\d+\/\d{4}: Booked for Friday\nTally #oldA1$/.test(r.notes), 'newest note on top');
   assert.throws(function () { g.updateLead(sam.row, { 'Parent name': 'X', 'Athlete name': 'Y' }, { Stage: 'Won' }); }, /changed/);
 });
 
@@ -353,6 +353,48 @@ test('social: log next week skips formula cells, update same week', function (g,
   assert.strictEqual(u.updated, true);
   assert.strictEqual(sh.cell(15, 5), 15);
   assert.throws(function () { g.addSocialCheckin({ '@dc.throws|Followers': 'lots' }, 's3'); }, /must be a number/);
+});
+
+/* ---------- Applications ---------- */
+test('applications: new vs handled, sizing, flags, next steps', function (g) {
+  var d = plain(g.getApplications());
+  assert.strictEqual(d.total, 3);
+  assert.strictEqual(d.newCount, 2);
+  var by = {}; d.apps.forEach(function (a) { by[a.athlete] = a; });
+  assert.strictEqual(by['Sam Example'].handled, true, 'Tally # in Leads notes');
+  assert.strictEqual(by['Riley Test'].score, 'Strong');
+  assert.strictEqual(by['Riley Test'].fit, 'Complete Pitching Program');
+  var drew = by['Drew Sample'];
+  assert.ok(drew.flags.some(function (f) { return f.level === 'red' && /pain/.test(f.text); }), 'pain is a red flag');
+  assert.ok(drew.flags.some(function (f) { return /invest/.test(f.text); }));
+  assert.strictEqual(drew.steps[0].key, 'call', 'red flag puts the call first');
+  assert.strictEqual(d.apps[0].athlete, 'Drew Sample', 'red flags sort first');
+  assert.ok(/https:\/\/example.com\/discovery/.test(by['Riley Test'].text));
+  assert.ok(!/—/.test(by['Riley Test'].text), 'no em dashes');
+  assert.strictEqual(by['Riley Test'].questions.length, 3);
+  var al = plain(g.getApplicationAlerts());
+  assert.strictEqual(al.newCount, 2);
+});
+
+test('applications: add to Leads once, task to To-Do, Tally sheet untouched', function (g, b, today) {
+  var leads = b.getSheetByName('Leads');
+  var tally = b.getSheetByName('Sheet1');
+  var before = tally.writes.length;
+  var r = g.addApplicationLead('newB2', 'x1');
+  var row = r.row;
+  assert.strictEqual(leads.cell(row, 3), 'Riley Test');
+  assert.strictEqual(leads.cell(row, 6), 'Website', 'Source falls back when Tally application is not a dropdown choice');
+  assert.strictEqual(leads.cell(row, 7), 'morgan@example.com');
+  assert.strictEqual(leads.cell(row, 9), 'New');
+  assert.strictEqual(leads.cell(row, 13), 'Text parent discovery call link');
+  assert.ok(/Tally #newB2/.test(leads.cell(row, 15)));
+  assert.strictEqual(g.Utilities.formatDate(leads.cell(row, 14), 'America/Boise', 'yyyy-MM-dd'), g.addDays_(today, 1));
+  var again = g.addApplicationLead('newB2', 'x2');
+  assert.strictEqual(again.already, true);
+  assert.strictEqual(plain(g.getApplicationAlerts(true)).newCount, 1);
+  var t = g.addApplicationTask('newC3', 'x3');
+  assert.ok(/Casey/.test(b.getSheetByName('Daily To-Do').cell(t.row, 5)));
+  assert.strictEqual(tally.writes.length, before, 'never writes the Tally sheet');
 });
 
 console.log('\n' + passed + ' passed');

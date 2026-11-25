@@ -1,0 +1,174 @@
+<script>
+/* Tally applications: Home alert, Applications screen, and next steps for each applicant. */
+(function (H) {
+  'use strict';
+  var esc = H.esc, fmtDate = H.fmtDate;
+  var S = { d: null, at: 0, open: {}, alerts: null, seen: null };
+  H.onStale(function () { S.at = 0; });
+
+  /* ---------- alerts: checked on load and every 2 minutes ---------- */
+  var listeners = [];
+  H.onApplications = function (fn) { listeners.push(fn); if (S.alerts) fn(S.alerts); };
+
+  function checkAlerts(fresh) {
+    return H.api('getApplicationAlerts', !!fresh).then(function (a) {
+      S.alerts = a;
+      listeners.forEach(function (fn) { try { fn(a); } catch (e) { /* keep going */ } });
+      renderBanner();
+    }).catch(function () { /* the banner just stays as it was */ });
+  }
+  H.checkApplications = checkAlerts;
+  setTimeout(function () { checkAlerts(true); }, 2500);
+  setInterval(function () { if (document.visibilityState === 'visible') checkAlerts(true); }, 120000);
+  document.addEventListener('visibilitychange', function () { if (document.visibilityState === 'visible') checkAlerts(true); });
+
+  function renderBanner() {
+    var el = document.getElementById('appsBanner');
+    if (!el) return;
+    var a = S.alerts;
+    if (!a || !a.newCount) { el.innerHTML = ''; return; }
+    var red = a.items.some(function (i) { return i.red; });
+    el.innerHTML = '<button class="apps-banner' + (red ? ' red' : '') + '" data-open-apps>' +
+      '<span class="ab-title">' + a.newCount + ' new application' + (a.newCount > 1 ? 's' : '') + '</span>' +
+      '<span class="ab-names">' + a.items.slice(0, 3).map(function (i) {
+        return esc(i.athlete) + ' <span class="ab-score">' + esc(i.score) + (i.red ? ', red flag' : '') + '</span>';
+      }).join(' · ') + (a.newCount > 3 ? ' · +' + (a.newCount - 3) + ' more' : '') + '</span>' +
+      '<span class="ab-cta">Review and next steps</span></button>';
+  }
+  H.onHomeRendered = renderBanner;
+
+  // Banner clicks work from any screen.
+  document.addEventListener('click', function (e) {
+    if (e.target.closest && e.target.closest('[data-open-apps]')) H.go('apps');
+  });
+
+  /* ---------- Applications screen ---------- */
+  H.views.apps = function (opts) {
+    if (S.d && !opts.fresh && Date.now() - S.at < 60000) return render();
+    if (!S.d) H.view.innerHTML = '<h1>Applications</h1><div class="skeleton" style="height:320px;margin-top:16px"></div>';
+    H.setBusy(true);
+    H.api('getApplications', !!opts.fresh).then(function (d) {
+      S.d = d; S.at = Date.now();
+      if (!Object.keys(S.open).length) d.apps.forEach(function (a) { if (!a.handled) S.open[a.id] = true; });
+      if (H.state.tab === 'apps') render();
+      checkAlerts(false);
+    }).catch(function (m) {
+      H.toast(m, true);
+      if (!S.d) H.view.innerHTML = '<h1>Applications</h1><p class="placeholder">' + esc(m) + '</p>';
+    }).then(function () { H.setBusy(false); });
+  };
+
+  function scoreBadge(s) {
+    var cls = s === 'Strong' ? 'ok' : s === 'Good' ? 'due' : 'neutral';
+    return '<span class="badge ' + cls + '">' + esc(s) + '</span>';
+  }
+
+  function render() {
+    var d = S.d;
+    var h = '<button class="back" data-go-home>Home</button><div class="row-between"><h1>Applications</h1>' +
+      '<span class="sub">' + d.newCount + ' new · ' + d.total + ' total</span></div>';
+    h += '<div id="notifySlot"></div>';
+    if (!d.apps.length) {
+      h += '<div class="list" style="margin-top:14px"><div class="empty">No applications yet. New Tally applications show up here within two minutes, with next steps.</div></div>';
+      H.view.innerHTML = h; notifySlot(); return;
+    }
+    h += d.apps.map(card).join('');
+    H.view.innerHTML = h;
+    notifySlot();
+  }
+
+  function card(a) {
+    var open = !!S.open[a.id];
+    var meta = [a.grad ? 'Class of ' + a.grad : '', a.level, a.school, a.throws ? 'Throws ' + a.throws : '', a.velo ? a.velo + ' FB' : '', a.location].filter(Boolean).map(esc).join(' · ');
+    var red = a.flags.some(function (f) { return f.level === 'red'; });
+    var h = '<section class="app-card' + (a.handled ? ' handled' : '') + (red ? ' red' : '') + '">';
+    h += '<button class="app-head" data-toggle-app="' + esc(a.id) + '"><div class="row-between"><span class="t">' + esc(a.athlete || 'Athlete') + '</span>' +
+      '<span>' + (a.handled ? '<span class="badge neutral">In Leads</span> ' : '<span class="badge new">New</span> ') + scoreBadge(a.score) + '</span></div>' +
+      '<div class="d">' + meta + '</div><div class="d">Applied ' + (fmtDate(a.submitted) || esc(a.submittedAt)) + '</div></button>';
+    if (!open) return h + '</section>';
+
+    // Flags
+    if (a.flags.length) {
+      h += '<div class="flags">' + a.flags.map(function (f) { return '<div class="flag ' + f.level + '">' + esc(f.text) + '</div>'; }).join('') + '</div>';
+    }
+    h += '<div class="fit"><b>Fit:</b> ' + esc(a.fit) + '. ' + esc(a.why) + '.' + (a.interest ? ' <span class="sub">They picked: ' + esc(a.interest) + '</span>' : '') + '</div>';
+
+    // Parent contact
+    h += '<div class="contact"><span class="sub">Parent</span> <b>' + esc(a.parent || 'not given') + '</b>' +
+      (a.parentPhone ? ' <button class="chip" data-copy="' + esc(a.parentPhone) + '">' + esc(a.parentPhone) + '</button>' : '') +
+      (a.parentEmail ? ' <button class="chip" data-copy="' + esc(a.parentEmail) + '">' + esc(a.parentEmail) + '</button>' : '') + '</div>';
+
+    // Next steps
+    h += '<h3 class="steps-h">Next steps</h3><ol class="steps">' + a.steps.map(function (s) {
+      var action = '';
+      if (s.key === 'lead') action = a.handled
+        ? (a.leadRow ? '<button class="chip" data-open-lead-row="' + a.leadRow + '">Open lead</button>' : '')
+        : '<button class="btn small" data-app-lead="' + esc(a.id) + '">Add to Leads</button>';
+      if (s.key === 'text') action = '<button class="btn small" data-copy-text="' + esc(a.id) + '">Copy text</button>';
+      if (s.key === 'task') action = '<button class="chip" data-app-task="' + esc(a.id) + '">Add to To-Do</button>';
+      return '<li class="' + (s.done ? 'done' : '') + (s.key === 'call' ? ' red' : '') + '"><span>' + esc(s.text) + '</span>' + action + '</li>';
+    }).join('') + '</ol>';
+
+    h += '<label class="field"><span>Text to send (edit before copying if you like)</span><textarea id="txt-' + esc(a.id) + '">' + esc(a.text) + '</textarea></label>';
+    if (d().discoveryLink) h += '<div class="linkrow"><span class="sub">Discovery call link</span><button class="chip" data-copy="' + esc(d().discoveryLink) + '">Copy link</button></div>';
+
+    h += '<h3 class="steps-h">Questions for the call</h3><ol class="qs">' + a.questions.map(function (q) { return '<li>' + esc(q) + '</li>'; }).join('') + '</ol>';
+
+    h += '<details class="answers"><summary>All answers</summary><dl>' + a.answers.map(function (x) {
+      return '<dt>' + esc(x.q) + '</dt><dd>' + esc(x.a) + '</dd>';
+    }).join('') + '</dl></details>';
+    return h + '</section>';
+  }
+  function d() { return S.d; }
+
+  function find(id) { return S.d.apps.filter(function (a) { return a.id === id; })[0]; }
+
+  /* ---------- Mac notifications switch (only in the Mac app) ---------- */
+  function notifySlot() {
+    var slot = document.getElementById('notifySlot');
+    if (!slot || !H.macNotify) return;
+    H.macNotify.state().then(function (st) {
+      if (st === 'granted') { slot.innerHTML = '<div class="sub" style="margin-top:8px">Mac notifications are on for new applications.</div>'; return; }
+      if (st === 'unavailable') { slot.innerHTML = ''; return; }
+      slot.innerHTML = '<div class="linkrow"><span>' + (st === 'denied' ? 'Mac notifications are off.' : 'Get a Mac notification when an application comes in.') + '</span>' +
+        '<button class="chip" data-notify-on>' + (st === 'denied' ? 'Open settings' : 'Turn on') + '</button></div>';
+    }).catch(function () {});
+  }
+
+  H.handlers.apps = {
+    click: function (e) {
+      if (e.target.closest('[data-go-home]')) return H.go('home');
+      var t = e.target.closest('[data-toggle-app]');
+      if (t) { var id = t.getAttribute('data-toggle-app'); S.open[id] = !S.open[id]; return render(); }
+      var cp = e.target.closest('[data-copy]');
+      if (cp) return H.copyText(cp.getAttribute('data-copy'));
+      var ct = e.target.closest('[data-copy-text]');
+      if (ct) { var ta = document.getElementById('txt-' + ct.getAttribute('data-copy-text')); return H.copyText(ta ? ta.value : ''); }
+      var ol = e.target.closest('[data-open-lead-row]');
+      if (ol) return H.go('leads', { row: Number(ol.getAttribute('data-open-lead-row')) });
+      var nb = e.target.closest('[data-notify-on]');
+      if (nb) return H.macNotify.enable().then(notifySlot);
+      var al = e.target.closest('[data-app-lead]');
+      if (al) {
+        var a = find(al.getAttribute('data-app-lead'));
+        al.disabled = true; al.textContent = 'Adding';
+        return H.api('addApplicationLead', a.id, 'lead-' + a.id).then(function (r) {
+          H.toast(r.already ? 'Already in Leads' : 'Added to Leads, row ' + r.row + '. Next action: text the parent by tomorrow.');
+          H.invalidate();
+          H.views.apps({ fresh: true });
+        }).catch(function (m) { al.disabled = false; al.textContent = 'Add to Leads'; H.toast(m, true); });
+      }
+      var tk = e.target.closest('[data-app-task]');
+      if (tk) {
+        var b = find(tk.getAttribute('data-app-task'));
+        tk.disabled = true;
+        return H.api('addApplicationTask', b.id, 'task-' + b.id).then(function () {
+          tk.textContent = 'On today’s To-Do';
+          H.invalidate();
+          H.toast('Added to today’s To-Do');
+        }).catch(function (m) { tk.disabled = false; H.toast(m, true); });
+      }
+    }
+  };
+})(window.Hub);
+</script>

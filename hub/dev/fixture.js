@@ -42,7 +42,7 @@
         values: [
           ['Date added', 'Parent name', 'Athlete name', 'Grad year', 'State', 'Source', 'Contact (IG or email)', 'Program interest', 'Stage', 'Call booked on', 'Call date', 'Last touch', 'Next action', 'Next action due', 'Notes'],
           [d(-14)],
-          [d(-6), 'Pat Example', 'Sam Example', 2028, 'ID', 'Instagram DM', '@sam.example', 'Complete Pitching Program', 'Talking', '', '', d(-5), 'Send film breakdown', d(-2), ''],
+          [d(-6), 'Pat Example', 'Sam Example', 2028, 'ID', 'Instagram DM', '@sam.example', 'Complete Pitching Program', 'Talking', '', '', d(-5), 'Send film breakdown', d(-2), 'Tally #oldA1'],
           [d(-3), 'Lee Sample', 'Jordan Sample', 2027, 'UT', 'Website', 'lee@example.com', 'Unsure', 'Won', '', '', d(-1), 'Send agreement', d(-4), '']
         ],
         validations: {
@@ -164,6 +164,16 @@
           return f;
         })(),
         maxRows: 130
+      },
+
+      {
+        name: 'Sheet1',
+        values: [
+          ['Submission ID', 'Respondent ID', 'Submitted at', 'Athlete Full Name', 'Athlete Graduation Year', 'Athlete Phone Number', 'Athlete Email', 'Where are you located?', 'Parent Name', 'Parent Phone Number', 'Parent Email', 'Current Level', 'School', 'Throws', 'Current Avg FB Velocity', 'What does your athlete currently do now for throwing/ lifting?', 'What program are you interested in?', 'What are your goals for the next 6-12 Months?', 'What is holding you back from being the pitcher you know you can be right now?', 'Days Available to train right now', 'Are you ready to invest in your development in order to make the jumps you want to?', 'Anything else we should know about you?'],
+          ['oldA1', 'r1', '2026-11-20 08:00:00', 'Sam Example', 2028, '5550000001', '', 'Boise, ID', 'Pat Example', '(555) 000-1000', '', 'JV', 'Example HS', 'Right', '74', 'Team practice only', 'Complete Pitching Program', 'Make varsity', 'Command', '3', 'Yes', ''],
+          ['newB2', 'r2', '2026-11-24 09:12:00', 'Riley Test', 2027, '5550000002', '', 'Meridian, ID', 'Morgan Test', '(555) 000-2000', 'morgan@example.com', 'Varsity', 'Sample HS', 'Left', '81', 'Nothing structured, just team throwing', 'Complete Pitching Program', 'Get to 85 and get recruited for college', 'Consistency and command', 'Mon, Wed, Fri, Sat', 'Yes, ready', ''],
+          ['newC3', 'r3', '2026-11-24 18:40:00', 'Drew Sample', 2029, '', '', 'Nampa, ID', 'Casey Sample', '(555) 000-3000', '', 'Freshman', 'Demo HS', 'Right', '70', 'Lessons once a week', 'Mental Game Mentorship', 'Throw strikes when it matters', 'Nerves in games and some elbow pain after outings', '2', 'Maybe after the holidays', '']
+        ]
       },
       {
         name: 'Scorecard',

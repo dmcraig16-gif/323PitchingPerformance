@@ -18,8 +18,8 @@ function guard(js, name) {
   return js;
 }
 
-var SERVER = ['Config.js', 'Data.js', 'Write.js', 'Api.js', 'Todo.js', 'Clients.js', 'Leads.js', 'Money.js', 'Social.js', 'Code.js'];
-var VIEWS = ['App', 'Charts', 'ViewTodo', 'ViewClients', 'ViewLeads', 'ViewMoney', 'ViewMore'];
+var SERVER = ['Config.js', 'Data.js', 'Write.js', 'Api.js', 'Todo.js', 'Clients.js', 'Leads.js', 'Money.js', 'Social.js', 'Applications.js', 'Code.js'];
+var VIEWS = ['App', 'Charts', 'ViewTodo', 'ViewClients', 'ViewLeads', 'ViewMoney', 'ViewMore', 'ViewApps'];
 
 var index = read(path.join(SRC, 'Index.html'));
 var body = index.slice(index.indexOf('<body>') + 6, index.indexOf("<?!= include_('App')")).trim();
@@ -45,7 +45,7 @@ var devScripts = dev ? [
 var html = [
   '<title>323 Hub</title>',
   '<meta name="theme-color" content="#000000">',
-  '<script type="application/json" id="claude-artifacts-manifest">{"permissions": []}</script>',
+  '<script type="application/json" id="claude-artifacts-manifest">{"permissions": ["notifications"]}</script>',
   '<link rel="preconnect" href="https://fonts.googleapis.com">',
   '<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>',
   '<link href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">',

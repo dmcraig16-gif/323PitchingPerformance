@@ -1,6 +1,6 @@
 <title>323 Hub</title>
 <meta name="theme-color" content="#000000">
-<script type="application/json" id="claude-artifacts-manifest">{"permissions": []}</script>
+<script type="application/json" id="claude-artifacts-manifest">{"permissions": ["notifications"]}</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -298,6 +298,40 @@ table.log td:last-child { white-space: normal; min-width: 220px; text-align: lef
 h3.acct { font-family: var(--font-head); font-weight: 400; font-size: 18px; letter-spacing: .03em; color: var(--blue); margin: 18px 0 0; }
 th.grp { color: var(--blue); text-align: left; border-bottom: 0; padding-bottom: 0; }
 
+
+/* Applications */
+.apps-banner { display: grid; gap: 4px; width: 100%; text-align: left; margin-top: 16px; padding: 14px 16px; border-radius: var(--radius);
+  background: rgba(2,137,235,.12); border: 1px solid var(--blue); color: var(--white); }
+.apps-banner.red { border-color: var(--red); background: rgba(255,7,7,.08); }
+.apps-banner .ab-title { font-family: var(--font-head); font-size: 22px; letter-spacing: .03em; text-transform: uppercase; }
+.apps-banner .ab-names { font-size: 15px; }
+.apps-banner .ab-score { color: var(--muted); font-size: 13px; }
+.apps-banner .ab-cta { color: var(--blue); font-weight: 600; font-size: 14px; }
+.badge.new { background: var(--blue); color: #000; }
+.app-card { margin-top: 14px; background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 0 14px 14px; }
+.app-card.red { border-color: var(--red); }
+.app-card.handled { opacity: .85; }
+.app-head { display: block; width: 100%; text-align: left; background: none; border: 0; padding: 14px 0 4px; }
+.app-head .t { font-weight: 700; font-size: 18px; }
+.app-head .d { color: var(--muted); font-size: 14px; }
+.flags { display: grid; gap: 6px; margin: 10px 0; }
+.flag { padding: 10px 12px; border-radius: 8px; font-size: 14px; background: var(--panel-2); }
+.flag.red { background: rgba(255,7,7,.14); color: #ffb3b3; font-weight: 600; }
+.flag.warn { color: #f5c04a; }
+.fit { margin: 8px 0; }
+.contact { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 8px 0; }
+.steps-h { font-family: var(--font-head); font-weight: 400; font-size: 18px; letter-spacing: .03em; margin: 16px 0 6px; }
+ol.steps { margin: 0; padding-left: 22px; display: grid; gap: 8px; }
+ol.steps li { padding-left: 4px; }
+ol.steps li > span { display: block; margin-bottom: 6px; }
+ol.steps li.done > span { color: var(--muted); text-decoration: line-through; }
+ol.steps li.red > span { color: #ff8a8a; font-weight: 600; }
+ol.qs { margin: 0; padding-left: 22px; display: grid; gap: 6px; }
+.answers { margin-top: 12px; color: var(--muted); }
+.answers summary { cursor: pointer; padding: 8px 0; min-height: 40px; }
+.answers dt { color: var(--muted); font-size: 13px; margin-top: 10px; }
+.answers dd { margin: 2px 0 0; color: var(--white); white-space: pre-wrap; }
+
 /* Content calendar */
 .cal-head { margin: 14px 0 8px; }
 .cal { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
@@ -450,6 +484,22 @@ var CONFIG = {
       paid: 'Paid this month', onboarding: ['Agreement signed', 'Intake form done', 'Velo Beam set up', 'First call held']
     },
     payments: { date: 'Date received', athlete: 'Athlete', program: 'Program', amount: 'Amount', nextDue: 'Next payment due', status: 'Status' }
+  },
+
+  // Tally applications. Tally writes this sheet; the Hub only reads it. New applicants are logged in Leads.
+  // Columns are found by a key phrase in the header, so small wording edits in the Tally form don't break it.
+  APPLICATIONS: {
+    SPREADSHEET_ID: '1ejieG5-vel52XU-sj0EB5NOGGKA7wWtuvGNTNLnJNEk',
+    TAB: 'Sheet1',
+    FIELDS: {
+      id: 'submission id', submittedAt: 'submitted at', athlete: 'athlete full name', grad: 'graduation year',
+      athletePhone: 'athlete phone', athleteEmail: 'athlete email', location: 'located', parent: 'parent name',
+      parentPhone: 'parent phone', parentEmail: 'parent email', level: 'current level', school: 'school',
+      throws: 'throws', velo: 'velocity', routine: 'currently do', interest: 'program are you interested',
+      goals: 'goals', holding: 'holding you back', days: 'days available', invest: 'ready to invest', other: 'anything else'
+    },
+    LEAD_SOURCE: 'Tally application',
+    NEXT_ACTION: 'Text parent discovery call link'
   },
 
   ACTIVE_CLIENT_STATUSES: ['Active', 'Onboarding'],
@@ -667,12 +717,19 @@ function rowHasKey_(name, headers, row) {
  * Read a tab. Uses the 60 second cache unless fresh is true.
  * Rows without a value in any KEY_HEADERS column are skipped.
  */
-function readTab_(name, fresh) {
+function readTab_(name, fresh, ssId) {
+  var key = 'tab:' + (ssId ? ssId + ':' : '') + name;
   if (!fresh) {
-    var hit = cacheGet_('tab:' + name);
+    var hit = cacheGet_(key);
     if (hit) return hit;
   }
-  var sh = sheet_(name);
+  var sh;
+  if (ssId) {
+    sh = SpreadsheetApp.openById(ssId).getSheetByName(name);
+    if (!sh) throw new Error('Tab not found: ' + name);
+  } else {
+    sh = sheet_(name);
+  }
   var lastRow = sh.getLastRow();
   var lastCol = sh.getLastColumn();
   var values = lastRow && lastCol ? sh.getRange(1, 1, lastRow, lastCol).getValues() : [[]];
@@ -694,7 +751,7 @@ function readTab_(name, fresh) {
     rows.push(obj);
   }
   var out = { name: name, headers: meta.headers, meta: meta, rows: rows, errors: errors };
-  cachePut_('tab:' + name, out);
+  cachePut_(key, out);
   return out;
 }
 
@@ -1900,6 +1957,246 @@ function addSocialCheckin(values, requestId) {
 
 
 /**
+ * Tally applications: spot new ones, size them up, and give the next steps.
+ * Follows the "323 Application Check" workflow:
+ *  - An application is handled once its Submission ID is in a Leads note as "Tally #<id>",
+ *    or the same athlete name and parent phone are already in Leads.
+ *  - Pain anywhere in the answers is a red flag: talk to the family first, refer out, never diagnose.
+ *  - Outreach goes to the parent, never the athlete alone. Drafts only. Nothing is sent.
+ */
+
+function appCfg_() { return CONFIG.APPLICATIONS; }
+
+/** Map each field in CONFIG to the first header containing its key phrase. */
+function appColumns_(headers) {
+  var map = {};
+  var F = appCfg_().FIELDS;
+  Object.keys(F).forEach(function (k) {
+    var want = norm_(F[k]);
+    var h = headers.filter(function (x) { return norm_(x).indexOf(want) >= 0; })[0];
+    if (h) map[k] = h;
+  });
+  return map;
+}
+
+function digits_(s) { return String(s || '').replace(/\D/g, '').slice(-10); }
+function firstName_(s) { return String(s || '').trim().split(/\s+/)[0] || ''; }
+function clip_(s, n) { s = String(s || '').replace(/\s+/g, ' ').trim(); return s.length > n ? s.slice(0, n - 1).replace(/[\s,.;:]+\S*$/, '') + '...' : s; }
+
+function readApplications_(fresh) {
+  var A = appCfg_();
+  var t = readTab_(A.TAB, fresh, A.SPREADSHEET_ID);
+  var col = appColumns_(t.headers);
+  var leads = readTab_(CONFIG.TABS.LEADS, fresh);
+  var L = CONFIG.H.leads;
+
+  var apps = t.rows.map(function (r) {
+    var a = { row: r._row, answers: [] };
+    Object.keys(col).forEach(function (k) { a[k] = r[col[k]] == null ? '' : r[col[k]]; });
+    a.id = String(a.id || '').trim() || ('row' + r._row);
+    t.headers.forEach(function (h) {
+      if (/^(submission id|respondent id|submitted at)$/i.test(h)) return;
+      var v = r[h];
+      if (v !== '' && v != null) a.answers.push({ q: h, a: String(v) });
+    });
+    return a;
+  }).filter(function (a) { return a.athlete || a.parent; });
+
+  apps.forEach(function (a) {
+    var tag = new RegExp('Tally #' + a.id.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '(?![A-Za-z0-9_-])', 'i');
+    var lead = leads.rows.filter(function (l) {
+      if (tag.test(String(l['Notes'] || ''))) return true;
+      var sameName = norm_(l[L.athlete]) && norm_(l[L.athlete]) === norm_(a.athlete);
+      var phone = digits_(a.parentPhone);
+      var samePhone = phone && (digits_(l['Contact (IG or email)']) === phone || String(l['Notes'] || '').replace(/\D/g, '').indexOf(phone) >= 0);
+      return sameName && samePhone;
+    })[0];
+    a.handled = !!lead;
+    a.leadRow = lead ? lead._row : null;
+    a.leadStage = lead ? lead[L.stage] || '' : '';
+    a.submitted = asYmd_(a.submittedAt) || '';
+  });
+  apps.sort(function (x, y) { return String(y.submittedAt).localeCompare(String(x.submittedAt)); });
+  return { apps: apps, leads: leads, headers: t.headers };
+}
+
+/** Quick read of one application: program fit, score, flags, call questions. */
+function sizeUp_(a) {
+  var all = a.answers.map(function (x) { return x.a; }).join(' \n ').toLowerCase();
+  var interest = String(a.interest || '').toLowerCase();
+  var holding = String(a.holding || '').toLowerCase();
+  var routine = String(a.routine || '').toLowerCase();
+
+  // Program fit
+  var fit = 'Unsure', why = 'They did not pick a program. Ask on the call.';
+  var mentalSignals = /(mental|confiden|nerv|anxi|head|focus|pressure|fear|overthink|composure|mindset)/.test(holding);
+  var noProgram = /(nothing|none|no program|not much|just (team|practice)|n\/a|^\s*no\b)/.test(routine) || !routine;
+  if (/complete|pitching program|pitching/.test(interest)) { fit = 'Complete Pitching Program'; why = 'They asked for it'; }
+  if (/mental/.test(interest)) { fit = 'Mental Game Mentorship'; why = 'They asked for it'; }
+  if (fit === 'Unsure' && noProgram) { fit = 'Complete Pitching Program'; why = 'No real throwing or lifting plan right now'; }
+  else if (fit === 'Unsure' && mentalSignals) { fit = 'Mental Game Mentorship'; why = 'What holds them back sounds mental'; }
+  if (fit === 'Complete Pitching Program' && why === 'They asked for it' && noProgram) why += ', and they have no real throwing or lifting plan now';
+  if (fit === 'Mental Game Mentorship' && why === 'They asked for it' && mentalSignals) why += ', and what holds them back sounds mental';
+  if (fit === 'Mental Game Mentorship' && noProgram && !mentalSignals) why += '. They also have no throwing plan, so ask whether Complete fits better';
+
+  // Flags
+  var flags = [];
+  var pain = all.match(/\b(pain|hurt(s|ing)?|sore( arm| elbow| shoulder)?|injur\w*|tommy john|ucl|tendinitis|tendonitis|strain\w*|sprain\w*|surgery)\b/);
+  if (pain) flags.push({ level: 'red', text: 'Mentions "' + pain[0] + '". Talk to the family before any programming. Refer to a medical provider. Do not diagnose.' });
+  if (!a.parent && !a.parentPhone && !a.parentEmail) flags.push({ level: 'warn', text: 'No parent info. Get a parent on the thread before anything else.' });
+  if (/^(no|not yet|not right now|maybe|unsure|not sure)/i.test(String(a.invest || '').trim())) flags.push({ level: 'warn', text: 'Not ready to invest yet ("' + clip_(a.invest, 40) + '"). Nurture, no hard push.' });
+  var yr = Number(String(a.grad).replace(/\D/g, '').slice(0, 4));
+  var thisYear = Number(todayStr_().slice(0, 4));
+  if (/middle|7th|8th|12u|13u|14u/i.test(String(a.level)) || (yr && yr > thisYear + 4)) flags.push({ level: 'warn', text: 'Middle school age. Make sure the program fits a younger athlete.' });
+  if (/in[\s-]?season|travel|team (practice|schedule)|showcase/.test(all)) flags.push({ level: 'info', text: 'Has a team or travel schedule. Plan around their throwing load.' });
+
+  // Score
+  var pts = 0;
+  if (/high|hs|varsity|jv|freshman|sophomore|junior|senior|college|juco|d1|d2|d3|naia/i.test(String(a.level))) pts++;
+  if (a.parent && (a.parentPhone || a.parentEmail)) pts++;
+  var days = String(a.days || '').toLowerCase();
+  var dayCount = (days.match(/mon|tue|wed|thu|fri|sat|sun/g) || []).length || Number((days.match(/\d+/) || [0])[0]);
+  if (dayCount >= 3 || /every|daily|all/.test(days)) pts++;
+  if (/^(yes|yeah|absolutely|ready|definitely|for sure)/i.test(String(a.invest || '').trim())) pts++;
+  if (/(velo|velocity|mph|command|strike|college|recruit|commit|varsity|mental|confiden|consisten|arm health)/i.test(String(a.goals))) pts++;
+  var score = pts >= 4 ? 'Strong' : pts >= 2 ? 'Good' : 'Long shot';
+  if (pain && score === 'Strong') score = 'Good';
+
+  // Call questions from their own answers
+  var qs = [];
+  if (a.goals) qs.push('You said the goal is "' + clip_(a.goals, 70) + '". What would hitting that look like by next summer?');
+  if (a.holding) qs.push('You mentioned "' + clip_(a.holding, 60) + '". When does that show up most?');
+  if (a.routine) qs.push('Walk me through a normal throwing and lifting week right now.');
+  if (a.velo) qs.push('Where did the ' + clip_(a.velo, 12) + ' number come from, and how often do you get on a gun?');
+  if (qs.length < 3) qs.push('What has your coach told you to work on?');
+  if (qs.length < 3) qs.push('What does a good season look like for you?');
+
+  return { fit: fit, why: why, score: score, flags: flags, questions: qs.slice(0, 3) };
+}
+
+function draftText_(a, link) {
+  var parent = firstName_(a.parent) || 'there';
+  var kid = firstName_(a.athlete) || 'your athlete';
+  var goal = clip_(a.goals, 80).replace(/[.!]+$/, '');
+  if (/^[A-Z][a-z]/.test(goal)) goal = goal.charAt(0).toLowerCase() + goal.slice(1);
+  var detail = goal ? 'I liked seeing the goal to ' + goal.replace(/^(to|i want to|we want to)\s+/i, '') + '.' : 'I appreciate you taking the time to fill it out.';
+  return 'Hi ' + parent + ', this is David with 323 Pitching Performance. Thanks for sending in ' + kid + "'s application. " + detail +
+    " I'd love to hear more about where " + kid + ' is at and what would help most. Here is a link to grab a time for a quick call: ' + (link || '[discovery call link]');
+}
+
+function nextSteps_(a, s) {
+  var steps = [];
+  if (s.flags.some(function (f) { return f.level === 'red'; })) steps.push({ key: 'call', text: 'Call the family first about the pain they mentioned. Refer to a medical provider. No programming until that is settled.' });
+  steps.push({ key: 'lead', text: a.handled ? 'Logged in Leads' + (a.leadStage ? ' (' + a.leadStage + ')' : '') : 'Add to Leads', done: a.handled });
+  steps.push({ key: 'text', text: 'Text ' + (firstName_(a.parent) || 'the parent') + ' the discovery call link. Copy the draft below and send it from your phone. No price in the text.' });
+  steps.push({ key: 'task', text: 'Put a follow-up on your To-Do so it does not slip past 24 hours' });
+  steps.push({ key: 'prep', text: 'Before the call, read the three questions below' });
+  return steps;
+}
+
+/** Applications screen. */
+function getApplications(fresh) {
+  assertOwner_();
+  fresh = fresh === true;
+  var r = readApplications_(fresh);
+  var link = readSettings_(fresh).discoveryLink || '';
+  var apps = r.apps.map(function (a) {
+    var s = sizeUp_(a);
+    return {
+      id: a.id, row: a.row, submitted: a.submitted, submittedAt: String(a.submittedAt || ''),
+      athlete: a.athlete, parent: a.parent, parentPhone: a.parentPhone, parentEmail: a.parentEmail,
+      grad: a.grad, level: a.level, school: a.school, throws: a.throws, velo: a.velo, location: a.location,
+      interest: a.interest, handled: a.handled, leadRow: a.leadRow, leadStage: a.leadStage,
+      answers: a.answers, fit: s.fit, why: s.why, score: s.score, flags: s.flags, questions: s.questions,
+      steps: nextSteps_(a, s), text: draftText_(a, link)
+    };
+  });
+  var rank = { Strong: 0, Good: 1, 'Long shot': 2 };
+  apps.sort(function (x, y) {
+    if (x.handled !== y.handled) return x.handled ? 1 : -1;
+    var xr = x.flags.some(function (f) { return f.level === 'red'; }) ? -1 : rank[x.score];
+    var yr = y.flags.some(function (f) { return f.level === 'red'; }) ? -1 : rank[y.score];
+    if (!x.handled && xr !== yr) return xr - yr;
+    return String(y.submittedAt).localeCompare(String(x.submittedAt));
+  });
+  return { today: todayStr_(), discoveryLink: link, apps: apps, total: apps.length, newCount: apps.filter(function (a) { return !a.handled; }).length };
+}
+
+/** Light check for the notification banner and badge. */
+function getApplicationAlerts(fresh) {
+  assertOwner_();
+  var r = readApplications_(fresh === true);
+  var fresh_ = r.apps.filter(function (a) { return !a.handled; });
+  return {
+    newCount: fresh_.length,
+    total: r.apps.length,
+    items: fresh_.slice(0, 10).map(function (a) {
+      var s = sizeUp_(a);
+      return { id: a.id, athlete: a.athlete || a.parent, submitted: a.submitted, score: s.score, red: s.flags.some(function (f) { return f.level === 'red'; }) };
+    })
+  };
+}
+
+/** Log an application in Leads, the way the Application Check skill does. */
+function addApplicationLead(id, requestId) {
+  assertOwner_();
+  return once_(requestId, function () {
+    var r = readApplications_(true);
+    var a = r.apps.filter(function (x) { return x.id === String(id); })[0];
+    if (!a) throw new Error('That application is no longer in the Tally sheet. Refresh and try again.');
+    if (a.handled) return { ok: true, row: a.leadRow, already: true };
+    var s = sizeUp_(a);
+    var L = r.leads.meta.cols;
+    var pick = function (h, want, fallback) {
+      var c = L[h];
+      if (!c || !c.choices) return want;
+      return c.choices.indexOf(want) >= 0 ? want : fallback;
+    };
+    var stageChoices = (L['Stage'] && L['Stage'].choices) || ['New'];
+    var stage = stageChoices.filter(function (x) { return /^(new|applied)/i.test(x); })[0] || stageChoices[0];
+    var interest = /mental/i.test(a.interest) ? 'Mental Game Mentorship' : /complete|pitching/i.test(a.interest) ? 'Complete Pitching Program' : 'Unsure';
+    var state = String(a.location || '').split(',').pop().trim();
+    var tomorrow = addDays_(todayStr_(), 1);
+    var contact = a.parentEmail || a.parentPhone || '';
+    var noteBits = ['Tally #' + a.id, s.score + ' fit for ' + s.fit + ': ' + s.why];
+    if (a.parentPhone && contact !== a.parentPhone) noteBits.push('Parent phone ' + a.parentPhone);
+    s.flags.filter(function (f) { return f.level === 'red'; }).forEach(function (f) { noteBits.push('RED FLAG: ' + f.text); });
+    var rec = {
+      'Date added': todayStr_(),
+      'Parent name': a.parent || '',
+      'Athlete name': a.athlete || '',
+      'Grad year': a.grad || '',
+      'State': state,
+      'Source': pick('Source', appCfg_().LEAD_SOURCE, 'Website'),
+      'Contact (IG or email)': contact,
+      'Program interest': pick('Program interest', interest, 'Unsure'),
+      'Stage': stage,
+      'Next action': appCfg_().NEXT_ACTION,
+      'Next action due': tomorrow,
+      'Notes': stampNote_('', noteBits.join('. '))
+    };
+    var res = appendRow_(CONFIG.TABS.LEADS, rec);
+    return { ok: true, row: res.row };
+  });
+}
+
+/** Add a To-Do task to text the parent today. */
+function addApplicationTask(id, requestId) {
+  assertOwner_();
+  return once_(requestId, function () {
+    var r = readApplications_(false);
+    var a = r.apps.filter(function (x) { return x.id === String(id); })[0];
+    if (!a) throw new Error('That application is no longer in the Tally sheet. Refresh and try again.');
+    var who = (a.parent ? firstName_(a.parent) + ' (' + (a.athlete || 'athlete') + "'s parent)" : (a.athlete || 'the family'));
+    var rec = { Date: todayStr_(), Block: 'Outreach', Task: 'Text ' + who + ' the discovery call link. New Tally application.', Minutes: 5 };
+    deriveTodoFields_(rec);
+    var res = appendRow_(CONFIG.TABS.TODO, rec);
+    return { ok: true, row: res.row };
+  });
+}
+
+
+/**
  * Web app entry point.
  * Deployed as: Execute as me, Access: only myself.
  */
@@ -2139,6 +2436,7 @@ function assertOwner_() {
   Range.prototype.getValue = function () { return this.sh.cell(this.r, this.c); };
   Range.prototype.getFormula = function () { return this.sh.formulas[this.r + ',' + this.c] || ''; };
   Range.prototype.setValue = function (v) {
+    if (this.sh.readOnly || this.sh.book.id !== root.CONFIG.SPREADSHEET_ID) throw new Error('The ' + this.sh.name + ' tab is read only in the Hub.');
     if (this.getFormula()) throw new Error('That cell holds a formula and was not changed.');
     if (this.r > this.sh.getMaxRows()) this.sh.insertRowsAfter();
     var local = (typeof v === 'string' && v.charAt(0) === "'") ? v.slice(1) : v;
@@ -2151,12 +2449,28 @@ function assertOwner_() {
     return this;
   };
 
-  function Book() { this.sheets = {}; this.tz = TZ; this.loadedAt = {}; }
+  function Book(id) { this.id = id; this.sheets = {}; this.tz = TZ; }
   Book.prototype.getSheetByName = function (n) { return this.sheets[n] || null; };
   Book.prototype.getSpreadsheetTimeZone = function () { return this.tz; };
-  Book.prototype.getUrl = function () { return 'https://docs.google.com/spreadsheets/d/' + root.CONFIG.SPREADSHEET_ID + '/edit'; };
+  Book.prototype.getUrl = function () { return 'https://docs.google.com/spreadsheets/d/' + this.id + '/edit'; };
 
-  var book = new Book();
+  // One book per spreadsheet: the Command Center, plus the Tally applications sheet (read only).
+  var books = {};
+  function bookFor(id) {
+    id = id || root.CONFIG.SPREADSHEET_ID;
+    return books[id] || (books[id] = new Book(id));
+  }
+  var book = { get tz() { return bookFor().tz; } };
+  var loadedAt = {};
+
+  // A tab token is a Command Center tab name, or 'APPS' for the Tally applications tab.
+  function resolve(token) {
+    if (token === 'APPS') {
+      var A = root.CONFIG.APPLICATIONS;
+      return { id: A.SPREADSHEET_ID, name: A.TAB, readOnly: true };
+    }
+    return { id: root.CONFIG.SPREADSHEET_ID, name: token };
+  }
 
   /* ---------- in-memory stand-ins for CacheService, LockService, Session ---------- */
 
@@ -2169,10 +2483,12 @@ function assertOwner_() {
     remove: function (k) { delete cacheMap[k]; },
     removeAll: function (ks) { ks.forEach(function (k) { delete cacheMap[k]; }); }
   };
-  function clearCache() { cacheMap = {}; }
+  function clearCache() {
+    Object.keys(cacheMap).forEach(function (k) { if (k.indexOf(':req:') < 0) delete cacheMap[k]; });
+  }
 
   root.Utilities = Utilities;
-  root.SpreadsheetApp = { openById: function () { return book; }, flush: function () {}, DataValidationCriteria: Criteria };
+  root.SpreadsheetApp = { openById: function (id) { return bookFor(id); }, flush: function () {}, DataValidationCriteria: Criteria };
   root.CacheService = { getScriptCache: function () { return cache; } };
   root.LockService = { getScriptLock: function () { return { tryLock: function () { return true; }, waitLock: function () {}, releaseLock: function () {} }; } };
   // Access is enforced by Google: the connector reads the sheet as the person using the app.
@@ -2226,24 +2542,26 @@ function assertOwner_() {
   }
 
   var inflight = {};
-  function loadTab(name) {
-    if (inflight[name]) return inflight[name];
+  function loadTab(token) {
+    if (inflight[token]) return inflight[token];
+    var ref = resolve(token), name = ref.name, bk = bookFor(ref.id);
     var p = call('get_spreadsheet', {
-      spreadsheetId: root.CONFIG.SPREADSHEET_ID,
+      spreadsheetId: ref.id,
       ranges: ["'" + name.replace(/'/g, "''") + "'"],
       includeGridData: true,
       fields: FIELDS
     }).then(function (data) {
-      if (data && data.properties && data.properties.timeZone) book.tz = data.properties.timeZone;
+      if (data && data.properties && data.properties.timeZone) bk.tz = data.properties.timeZone;
       var sheet = (data && data.sheets || []).filter(function (s) { return s.properties && s.properties.title === name; })[0] || (data && data.sheets || [])[0];
-      if (!sheet) throw new Error('Tab not found in the Command Center: ' + name);
-      var sh = book.sheets[name] || (book.sheets[name] = new Sheet(name, book));
-      sh.load((sheet.data || [])[0] || {}, sheet.properties.gridProperties && sheet.properties.gridProperties.rowCount, book.tz);
-      book.loadedAt[name] = Date.now();
+      if (!sheet) throw new Error('Tab not found: ' + name);
+      var sh = bk.sheets[name] || (bk.sheets[name] = new Sheet(name, bk));
+      sh.readOnly = !!ref.readOnly;
+      sh.load((sheet.data || [])[0] || {}, sheet.properties.gridProperties && sheet.properties.gridProperties.rowCount, bk.tz);
+      loadedAt[token] = Date.now();
       clearCache();
     });
-    inflight[name] = p;
-    var done = function () { delete inflight[name]; };
+    inflight[token] = p;
+    var done = function () { delete inflight[token]; };
     p.then(done, done);
     return p;
   }
@@ -2251,14 +2569,14 @@ function assertOwner_() {
   /** Make sure the named tabs are loaded; fresh re-reads them regardless of age. */
   function ensure(tabs, fresh) {
     return Promise.all(tabs.map(function (t) {
-      var at = book.loadedAt[t];
+      var at = loadedAt[t];
       if (!fresh && at && Date.now() - at < STALE_MS) return null;
       if (!fresh && at && inflight[t]) return inflight[t];
       return loadTab(t);
     }));
   }
 
-  function markStale(tabs) { tabs.forEach(function (t) { book.loadedAt[t] = 0; }); clearCache(); }
+  function markStale(tabs) { tabs.forEach(function (t) { loadedAt[t] = 0; }); clearCache(); }
 
   /* ---------- sending writes ---------- */
 
@@ -2285,8 +2603,9 @@ function assertOwner_() {
 
   function flushWrites() {
     var jobs = [];
-    Object.keys(book.sheets).forEach(function (name) {
-      var sh = book.sheets[name];
+    var bk = bookFor();
+    Object.keys(bk.sheets).forEach(function (name) {
+      var sh = bk.sheets[name];
       if (!sh.writes.length) return;
       var byRow = {};
       sh.writes.forEach(function (w) { (byRow[w.r] = byRow[w.r] || {})[w.c] = w.v; });
@@ -2322,6 +2641,8 @@ function assertOwner_() {
     getWins: [T.WINS],
     getHistory: [T.SC],
     getSocial: [T.SOCIAL],
+    getApplications: ['APPS', T.LEADS, T.SET],
+    getApplicationAlerts: ['APPS', T.LEADS],
     getSheetUrl: []
   };
   function formTabs(tab) { return [tab, T.CLIENTS, T.SET]; }
@@ -2335,7 +2656,9 @@ function assertOwner_() {
     updateLead: function () { return [T.LEADS]; },
     addLeadNote: function () { return [T.LEADS]; },
     updateRecord: function (args) { return formTabs(args[0]); },
-    addSocialCheckin: function () { return [T.SOCIAL]; }
+    addSocialCheckin: function () { return [T.SOCIAL]; },
+    addApplicationLead: function () { return ['APPS', T.LEADS]; },
+    addApplicationTask: function () { return ['APPS', T.LEADS, T.TODO]; }
   };
   var SPEC = { getFormSpec: function (args) { return formTabs(args[0]); }, getEditSpec: function (args) { return formTabs(args[0]); } };
 
@@ -2392,7 +2715,7 @@ function assertOwner_() {
     attach: function (m) { mcp = m; },
     preload: function () { return ensure(ALL_TABS, false); },
     tabs: ALL_TABS,
-    _book: book,
+    _books: books,
     _serialToDate: serialToDate,
     _wireValue: wireValue
   };
@@ -2549,7 +2872,7 @@ function assertOwner_() {
     if (document.visibilityState !== 'visible') return;
     checkDay(false);
     if (!document.getElementById('sheet').hidden || busyTyping()) return;
-    if (['home', 'todo', 'clients', 'leads', 'money', 'content', 'wins', 'social'].indexOf(state.tab) < 0) return;
+    if (['home', 'todo', 'clients', 'leads', 'money', 'content', 'wins', 'social', 'apps'].indexOf(state.tab) < 0) return;
     invalidate();
     var o = {}; Object.keys(state.opts).forEach(function (k) { o[k] = state.opts[k]; });
     o.fresh = true; o.quiet = true;
@@ -2601,6 +2924,7 @@ function assertOwner_() {
     var html = '';
     html += '<div class="row-between"><div><h1>' + esc(dayName(d.today)) + ' <span class="key">' + fmtDate(d.today) + '</span></h1>';
     html += '<div class="sub">Week of ' + fmtDate(d.weekOf) + '</div></div></div>';
+    html += '<div id="appsBanner"></div>';
 
     html += '<div class="cards">' + cards.map(function (k) {
       return '<div class="card' + (k.accent ? ' accent' : '') + '"><div class="label">' + esc(k.label) + '</div><div class="num">' + esc(k.v) + '</div></div>';
@@ -2621,6 +2945,7 @@ function assertOwner_() {
     ].map(function (q) { return '<button class="btn" data-add="' + esc(q[0]) + '">' + esc(q[1]) + '</button>'; }).join('') + '</div>';
 
     $view.innerHTML = html;
+    if (window.Hub && window.Hub.onHomeRendered) window.Hub.onHomeRendered();
   }
 
   function todayTodosHtml(d) {
@@ -2720,6 +3045,7 @@ function assertOwner_() {
       '<button class="btn ghost" data-menu="content">Content</button>' +
       '<button class="btn ghost" data-menu="wins">Wins</button>' +
       '<button class="btn ghost" data-menu="history">Scorecard history</button>' +
+      '<button class="btn ghost" data-menu="apps">Applications</button>' +
       '<button class="btn ghost" data-menu="social">Social</button>' +
       '<a class="btn ghost" id="sheetLink" href="#" target="_blank" rel="noopener">Open the Command Center sheet</a>' +
       '</div>';
@@ -4244,6 +4570,181 @@ function assertOwner_() {
 </script>
 
 <script>
+/* Tally applications: Home alert, Applications screen, and next steps for each applicant. */
+(function (H) {
+  'use strict';
+  var esc = H.esc, fmtDate = H.fmtDate;
+  var S = { d: null, at: 0, open: {}, alerts: null, seen: null };
+  H.onStale(function () { S.at = 0; });
+
+  /* ---------- alerts: checked on load and every 2 minutes ---------- */
+  var listeners = [];
+  H.onApplications = function (fn) { listeners.push(fn); if (S.alerts) fn(S.alerts); };
+
+  function checkAlerts(fresh) {
+    return H.api('getApplicationAlerts', !!fresh).then(function (a) {
+      S.alerts = a;
+      listeners.forEach(function (fn) { try { fn(a); } catch (e) { /* keep going */ } });
+      renderBanner();
+    }).catch(function () { /* the banner just stays as it was */ });
+  }
+  H.checkApplications = checkAlerts;
+  setTimeout(function () { checkAlerts(true); }, 2500);
+  setInterval(function () { if (document.visibilityState === 'visible') checkAlerts(true); }, 120000);
+  document.addEventListener('visibilitychange', function () { if (document.visibilityState === 'visible') checkAlerts(true); });
+
+  function renderBanner() {
+    var el = document.getElementById('appsBanner');
+    if (!el) return;
+    var a = S.alerts;
+    if (!a || !a.newCount) { el.innerHTML = ''; return; }
+    var red = a.items.some(function (i) { return i.red; });
+    el.innerHTML = '<button class="apps-banner' + (red ? ' red' : '') + '" data-open-apps>' +
+      '<span class="ab-title">' + a.newCount + ' new application' + (a.newCount > 1 ? 's' : '') + '</span>' +
+      '<span class="ab-names">' + a.items.slice(0, 3).map(function (i) {
+        return esc(i.athlete) + ' <span class="ab-score">' + esc(i.score) + (i.red ? ', red flag' : '') + '</span>';
+      }).join(' · ') + (a.newCount > 3 ? ' · +' + (a.newCount - 3) + ' more' : '') + '</span>' +
+      '<span class="ab-cta">Review and next steps</span></button>';
+  }
+  H.onHomeRendered = renderBanner;
+
+  // Banner clicks work from any screen.
+  document.addEventListener('click', function (e) {
+    if (e.target.closest && e.target.closest('[data-open-apps]')) H.go('apps');
+  });
+
+  /* ---------- Applications screen ---------- */
+  H.views.apps = function (opts) {
+    if (S.d && !opts.fresh && Date.now() - S.at < 60000) return render();
+    if (!S.d) H.view.innerHTML = '<h1>Applications</h1><div class="skeleton" style="height:320px;margin-top:16px"></div>';
+    H.setBusy(true);
+    H.api('getApplications', !!opts.fresh).then(function (d) {
+      S.d = d; S.at = Date.now();
+      if (!Object.keys(S.open).length) d.apps.forEach(function (a) { if (!a.handled) S.open[a.id] = true; });
+      if (H.state.tab === 'apps') render();
+      checkAlerts(false);
+    }).catch(function (m) {
+      H.toast(m, true);
+      if (!S.d) H.view.innerHTML = '<h1>Applications</h1><p class="placeholder">' + esc(m) + '</p>';
+    }).then(function () { H.setBusy(false); });
+  };
+
+  function scoreBadge(s) {
+    var cls = s === 'Strong' ? 'ok' : s === 'Good' ? 'due' : 'neutral';
+    return '<span class="badge ' + cls + '">' + esc(s) + '</span>';
+  }
+
+  function render() {
+    var d = S.d;
+    var h = '<button class="back" data-go-home>Home</button><div class="row-between"><h1>Applications</h1>' +
+      '<span class="sub">' + d.newCount + ' new · ' + d.total + ' total</span></div>';
+    h += '<div id="notifySlot"></div>';
+    if (!d.apps.length) {
+      h += '<div class="list" style="margin-top:14px"><div class="empty">No applications yet. New Tally applications show up here within two minutes, with next steps.</div></div>';
+      H.view.innerHTML = h; notifySlot(); return;
+    }
+    h += d.apps.map(card).join('');
+    H.view.innerHTML = h;
+    notifySlot();
+  }
+
+  function card(a) {
+    var open = !!S.open[a.id];
+    var meta = [a.grad ? 'Class of ' + a.grad : '', a.level, a.school, a.throws ? 'Throws ' + a.throws : '', a.velo ? a.velo + ' FB' : '', a.location].filter(Boolean).map(esc).join(' · ');
+    var red = a.flags.some(function (f) { return f.level === 'red'; });
+    var h = '<section class="app-card' + (a.handled ? ' handled' : '') + (red ? ' red' : '') + '">';
+    h += '<button class="app-head" data-toggle-app="' + esc(a.id) + '"><div class="row-between"><span class="t">' + esc(a.athlete || 'Athlete') + '</span>' +
+      '<span>' + (a.handled ? '<span class="badge neutral">In Leads</span> ' : '<span class="badge new">New</span> ') + scoreBadge(a.score) + '</span></div>' +
+      '<div class="d">' + meta + '</div><div class="d">Applied ' + (fmtDate(a.submitted) || esc(a.submittedAt)) + '</div></button>';
+    if (!open) return h + '</section>';
+
+    // Flags
+    if (a.flags.length) {
+      h += '<div class="flags">' + a.flags.map(function (f) { return '<div class="flag ' + f.level + '">' + esc(f.text) + '</div>'; }).join('') + '</div>';
+    }
+    h += '<div class="fit"><b>Fit:</b> ' + esc(a.fit) + '. ' + esc(a.why) + '.' + (a.interest ? ' <span class="sub">They picked: ' + esc(a.interest) + '</span>' : '') + '</div>';
+
+    // Parent contact
+    h += '<div class="contact"><span class="sub">Parent</span> <b>' + esc(a.parent || 'not given') + '</b>' +
+      (a.parentPhone ? ' <button class="chip" data-copy="' + esc(a.parentPhone) + '">' + esc(a.parentPhone) + '</button>' : '') +
+      (a.parentEmail ? ' <button class="chip" data-copy="' + esc(a.parentEmail) + '">' + esc(a.parentEmail) + '</button>' : '') + '</div>';
+
+    // Next steps
+    h += '<h3 class="steps-h">Next steps</h3><ol class="steps">' + a.steps.map(function (s) {
+      var action = '';
+      if (s.key === 'lead') action = a.handled
+        ? (a.leadRow ? '<button class="chip" data-open-lead-row="' + a.leadRow + '">Open lead</button>' : '')
+        : '<button class="btn small" data-app-lead="' + esc(a.id) + '">Add to Leads</button>';
+      if (s.key === 'text') action = '<button class="btn small" data-copy-text="' + esc(a.id) + '">Copy text</button>';
+      if (s.key === 'task') action = '<button class="chip" data-app-task="' + esc(a.id) + '">Add to To-Do</button>';
+      return '<li class="' + (s.done ? 'done' : '') + (s.key === 'call' ? ' red' : '') + '"><span>' + esc(s.text) + '</span>' + action + '</li>';
+    }).join('') + '</ol>';
+
+    h += '<label class="field"><span>Text to send (edit before copying if you like)</span><textarea id="txt-' + esc(a.id) + '">' + esc(a.text) + '</textarea></label>';
+    if (d().discoveryLink) h += '<div class="linkrow"><span class="sub">Discovery call link</span><button class="chip" data-copy="' + esc(d().discoveryLink) + '">Copy link</button></div>';
+
+    h += '<h3 class="steps-h">Questions for the call</h3><ol class="qs">' + a.questions.map(function (q) { return '<li>' + esc(q) + '</li>'; }).join('') + '</ol>';
+
+    h += '<details class="answers"><summary>All answers</summary><dl>' + a.answers.map(function (x) {
+      return '<dt>' + esc(x.q) + '</dt><dd>' + esc(x.a) + '</dd>';
+    }).join('') + '</dl></details>';
+    return h + '</section>';
+  }
+  function d() { return S.d; }
+
+  function find(id) { return S.d.apps.filter(function (a) { return a.id === id; })[0]; }
+
+  /* ---------- Mac notifications switch (only in the Mac app) ---------- */
+  function notifySlot() {
+    var slot = document.getElementById('notifySlot');
+    if (!slot || !H.macNotify) return;
+    H.macNotify.state().then(function (st) {
+      if (st === 'granted') { slot.innerHTML = '<div class="sub" style="margin-top:8px">Mac notifications are on for new applications.</div>'; return; }
+      if (st === 'unavailable') { slot.innerHTML = ''; return; }
+      slot.innerHTML = '<div class="linkrow"><span>' + (st === 'denied' ? 'Mac notifications are off.' : 'Get a Mac notification when an application comes in.') + '</span>' +
+        '<button class="chip" data-notify-on>' + (st === 'denied' ? 'Open settings' : 'Turn on') + '</button></div>';
+    }).catch(function () {});
+  }
+
+  H.handlers.apps = {
+    click: function (e) {
+      if (e.target.closest('[data-go-home]')) return H.go('home');
+      var t = e.target.closest('[data-toggle-app]');
+      if (t) { var id = t.getAttribute('data-toggle-app'); S.open[id] = !S.open[id]; return render(); }
+      var cp = e.target.closest('[data-copy]');
+      if (cp) return H.copyText(cp.getAttribute('data-copy'));
+      var ct = e.target.closest('[data-copy-text]');
+      if (ct) { var ta = document.getElementById('txt-' + ct.getAttribute('data-copy-text')); return H.copyText(ta ? ta.value : ''); }
+      var ol = e.target.closest('[data-open-lead-row]');
+      if (ol) return H.go('leads', { row: Number(ol.getAttribute('data-open-lead-row')) });
+      var nb = e.target.closest('[data-notify-on]');
+      if (nb) return H.macNotify.enable().then(notifySlot);
+      var al = e.target.closest('[data-app-lead]');
+      if (al) {
+        var a = find(al.getAttribute('data-app-lead'));
+        al.disabled = true; al.textContent = 'Adding';
+        return H.api('addApplicationLead', a.id, 'lead-' + a.id).then(function (r) {
+          H.toast(r.already ? 'Already in Leads' : 'Added to Leads, row ' + r.row + '. Next action: text the parent by tomorrow.');
+          H.invalidate();
+          H.views.apps({ fresh: true });
+        }).catch(function (m) { al.disabled = false; al.textContent = 'Add to Leads'; H.toast(m, true); });
+      }
+      var tk = e.target.closest('[data-app-task]');
+      if (tk) {
+        var b = find(tk.getAttribute('data-app-task'));
+        tk.disabled = true;
+        return H.api('addApplicationTask', b.id, 'task-' + b.id).then(function () {
+          tk.textContent = 'On today’s To-Do';
+          H.invalidate();
+          H.toast('Added to today’s To-Do');
+        }).catch(function (m) { tk.disabled = false; H.toast(m, true); });
+      }
+    }
+  };
+})(window.Hub);
+</script>
+
+<script>
 /*
  * Mac app layer: connects the bridge to Google Sheets, then sets up the app window,
  * icon, menu bar, keyboard shortcuts and Dock badge when running as an installed app.
@@ -4315,7 +4816,8 @@ function assertOwner_() {
         { label: 'Content', click: go('content') },
         { label: 'Wins', click: go('wins') },
         { label: 'Scorecard history', click: go('history') },
-        { label: 'Social', accelerator: 'CmdOrCtrl+6', click: go('social') }
+        { label: 'Social', accelerator: 'CmdOrCtrl+6', click: go('social') },
+        { label: 'Applications', accelerator: 'CmdOrCtrl+7', click: go('apps') }
       ] },
       { label: 'Add', submenu: [
         { label: 'Add task', accelerator: 'CmdOrCtrl+Shift+T', click: add('Daily To-Do') },
@@ -4333,14 +4835,19 @@ function assertOwner_() {
     ];
   }
 
-  /** Dock badge: overdue items on Home (red items plus overdue tasks). */
+  /** Dock badge: overdue items on Home plus new applications. */
   var lastBadge = null;
+  var appAlerts = null;
   function badgeCount() {
     var h = H.state.home;
-    if (!h) return null;
-    var n = h.attention.filter(function (a) { return a.level === 'overdue'; }).length;
-    return n;
+    if (!h && !appAlerts) return null;
+    var n = h ? h.attention.filter(function (a) { return a.level === 'overdue'; }).length : 0;
+    return n + (appAlerts ? appAlerts.newCount : 0);
   }
+
+  /** Remember which applications already triggered a notification (this Mac only). */
+  function seenIds() { try { return JSON.parse(localStorage.getItem('hub.seenApps') || 'null'); } catch (e) { return null; } }
+  function saveSeen(ids) { try { localStorage.setItem('hub.seenApps', JSON.stringify(ids.slice(-500))); } catch (e) { /* ignore */ } }
 
   claude.use('desktop').then(function (desktop) {
     if (!desktop) return;
@@ -4350,6 +4857,35 @@ function assertOwner_() {
       var setIcon = function () { desktop.app.dock.setIcon(drawIcon()).catch(function () {}); };
       if (document.fonts && document.fonts.load) document.fonts.load('120px Anton').then(setIcon, setIcon); else setIcon();
       desktop.Menu.setApplicationMenu(menuTemplate()).catch(function () {});
+
+      // Mac notifications for new Tally applications (asks once, from the Turn on button).
+      H.macNotify = {
+        state: function () { return desktop.permissions.state('notifications').catch(function () { return 'unavailable'; }); },
+        enable: function () {
+          return H.macNotify.state().then(function (st) {
+            if (st === 'denied') return desktop.permissions.manage();
+            return desktop.permissions.request(['notifications']).then(function (m) {
+              if (m.notifications === 'granted') desktop.notification.show({ body: 'Notifications are on. New applications will show up here.' }).catch(function () {});
+            });
+          }).catch(function () { H.toast('Could not turn on notifications. Use the app menu: Permissions.', true); });
+        }
+      };
+      H.onApplications(function (a) {
+        appAlerts = a;
+        var seen = seenIds();
+        var ids = a.items.map(function (i) { return i.id; });
+        if (seen === null) { saveSeen(ids); return; } // first run: no burst of old alerts
+        var fresh = a.items.filter(function (i) { return seen.indexOf(i.id) < 0; });
+        if (!fresh.length) return;
+        saveSeen(seen.concat(fresh.map(function (i) { return i.id; })));
+        H.macNotify.state().then(function (st) {
+          if (st !== 'granted') return;
+          var body = fresh.length === 1
+            ? 'New application: ' + fresh[0].athlete + ' (' + fresh[0].score + (fresh[0].red ? ', red flag' : '') + '). Open 323 Hub for next steps.'
+            : fresh.length + ' new applications. Open 323 Hub for next steps.';
+          desktop.notification.show({ body: body.slice(0, 300) }).catch(function () {});
+        });
+      });
       setInterval(function () {
         var n = badgeCount();
         if (n === null || n === lastBadge) return;

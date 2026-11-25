@@ -69,7 +69,8 @@
         { label: 'Content', click: go('content') },
         { label: 'Wins', click: go('wins') },
         { label: 'Scorecard history', click: go('history') },
-        { label: 'Social', accelerator: 'CmdOrCtrl+6', click: go('social') }
+        { label: 'Social', accelerator: 'CmdOrCtrl+6', click: go('social') },
+        { label: 'Applications', accelerator: 'CmdOrCtrl+7', click: go('apps') }
       ] },
       { label: 'Add', submenu: [
         { label: 'Add task', accelerator: 'CmdOrCtrl+Shift+T', click: add('Daily To-Do') },
@@ -87,14 +88,19 @@
     ];
   }
 
-  /** Dock badge: overdue items on Home (red items plus overdue tasks). */
+  /** Dock badge: overdue items on Home plus new applications. */
   var lastBadge = null;
+  var appAlerts = null;
   function badgeCount() {
     var h = H.state.home;
-    if (!h) return null;
-    var n = h.attention.filter(function (a) { return a.level === 'overdue'; }).length;
-    return n;
+    if (!h && !appAlerts) return null;
+    var n = h ? h.attention.filter(function (a) { return a.level === 'overdue'; }).length : 0;
+    return n + (appAlerts ? appAlerts.newCount : 0);
   }
+
+  /** Remember which applications already triggered a notification (this Mac only). */
+  function seenIds() { try { return JSON.parse(localStorage.getItem('hub.seenApps') || 'null'); } catch (e) { return null; } }
+  function saveSeen(ids) { try { localStorage.setItem('hub.seenApps', JSON.stringify(ids.slice(-500))); } catch (e) { /* ignore */ } }
 
   claude.use('desktop').then(function (desktop) {
     if (!desktop) return;
@@ -104,6 +110,35 @@
       var setIcon = function () { desktop.app.dock.setIcon(drawIcon()).catch(function () {}); };
       if (document.fonts && document.fonts.load) document.fonts.load('120px Anton').then(setIcon, setIcon); else setIcon();
       desktop.Menu.setApplicationMenu(menuTemplate()).catch(function () {});
+
+      // Mac notifications for new Tally applications (asks once, from the Turn on button).
+      H.macNotify = {
+        state: function () { return desktop.permissions.state('notifications').catch(function () { return 'unavailable'; }); },
+        enable: function () {
+          return H.macNotify.state().then(function (st) {
+            if (st === 'denied') return desktop.permissions.manage();
+            return desktop.permissions.request(['notifications']).then(function (m) {
+              if (m.notifications === 'granted') desktop.notification.show({ body: 'Notifications are on. New applications will show up here.' }).catch(function () {});
+            });
+          }).catch(function () { H.toast('Could not turn on notifications. Use the app menu: Permissions.', true); });
+        }
+      };
+      H.onApplications(function (a) {
+        appAlerts = a;
+        var seen = seenIds();
+        var ids = a.items.map(function (i) { return i.id; });
+        if (seen === null) { saveSeen(ids); return; } // first run: no burst of old alerts
+        var fresh = a.items.filter(function (i) { return seen.indexOf(i.id) < 0; });
+        if (!fresh.length) return;
+        saveSeen(seen.concat(fresh.map(function (i) { return i.id; })));
+        H.macNotify.state().then(function (st) {
+          if (st !== 'granted') return;
+          var body = fresh.length === 1
+            ? 'New application: ' + fresh[0].athlete + ' (' + fresh[0].score + (fresh[0].red ? ', red flag' : '') + '). Open 323 Hub for next steps.'
+            : fresh.length + ' new applications. Open 323 Hub for next steps.';
+          desktop.notification.show({ body: body.slice(0, 300) }).catch(function () {});
+        });
+      });
       setInterval(function () {
         var n = badgeCount();
         if (n === null || n === lastBadge) return;

@@ -206,6 +206,7 @@
   Range.prototype.getValue = function () { return this.sh.cell(this.r, this.c); };
   Range.prototype.getFormula = function () { return this.sh.formulas[this.r + ',' + this.c] || ''; };
   Range.prototype.setValue = function (v) {
+    if (this.sh.readOnly || this.sh.book.id !== root.CONFIG.SPREADSHEET_ID) throw new Error('The ' + this.sh.name + ' tab is read only in the Hub.');
     if (this.getFormula()) throw new Error('That cell holds a formula and was not changed.');
     if (this.r > this.sh.getMaxRows()) this.sh.insertRowsAfter();
     var local = (typeof v === 'string' && v.charAt(0) === "'") ? v.slice(1) : v;
@@ -218,12 +219,28 @@
     return this;
   };
 
-  function Book() { this.sheets = {}; this.tz = TZ; this.loadedAt = {}; }
+  function Book(id) { this.id = id; this.sheets = {}; this.tz = TZ; }
   Book.prototype.getSheetByName = function (n) { return this.sheets[n] || null; };
   Book.prototype.getSpreadsheetTimeZone = function () { return this.tz; };
-  Book.prototype.getUrl = function () { return 'https://docs.google.com/spreadsheets/d/' + root.CONFIG.SPREADSHEET_ID + '/edit'; };
+  Book.prototype.getUrl = function () { return 'https://docs.google.com/spreadsheets/d/' + this.id + '/edit'; };
 
-  var book = new Book();
+  // One book per spreadsheet: the Command Center, plus the Tally applications sheet (read only).
+  var books = {};
+  function bookFor(id) {
+    id = id || root.CONFIG.SPREADSHEET_ID;
+    return books[id] || (books[id] = new Book(id));
+  }
+  var book = { get tz() { return bookFor().tz; } };
+  var loadedAt = {};
+
+  // A tab token is a Command Center tab name, or 'APPS' for the Tally applications tab.
+  function resolve(token) {
+    if (token === 'APPS') {
+      var A = root.CONFIG.APPLICATIONS;
+      return { id: A.SPREADSHEET_ID, name: A.TAB, readOnly: true };
+    }
+    return { id: root.CONFIG.SPREADSHEET_ID, name: token };
+  }
 
   /* ---------- in-memory stand-ins for CacheService, LockService, Session ---------- */
 
@@ -236,10 +253,12 @@
     remove: function (k) { delete cacheMap[k]; },
     removeAll: function (ks) { ks.forEach(function (k) { delete cacheMap[k]; }); }
   };
-  function clearCache() { cacheMap = {}; }
+  function clearCache() {
+    Object.keys(cacheMap).forEach(function (k) { if (k.indexOf(':req:') < 0) delete cacheMap[k]; });
+  }
 
   root.Utilities = Utilities;
-  root.SpreadsheetApp = { openById: function () { return book; }, flush: function () {}, DataValidationCriteria: Criteria };
+  root.SpreadsheetApp = { openById: function (id) { return bookFor(id); }, flush: function () {}, DataValidationCriteria: Criteria };
   root.CacheService = { getScriptCache: function () { return cache; } };
   root.LockService = { getScriptLock: function () { return { tryLock: function () { return true; }, waitLock: function () {}, releaseLock: function () {} }; } };
   // Access is enforced by Google: the connector reads the sheet as the person using the app.
@@ -293,24 +312,26 @@
   }
 
   var inflight = {};
-  function loadTab(name) {
-    if (inflight[name]) return inflight[name];
+  function loadTab(token) {
+    if (inflight[token]) return inflight[token];
+    var ref = resolve(token), name = ref.name, bk = bookFor(ref.id);
     var p = call('get_spreadsheet', {
-      spreadsheetId: root.CONFIG.SPREADSHEET_ID,
+      spreadsheetId: ref.id,
       ranges: ["'" + name.replace(/'/g, "''") + "'"],
       includeGridData: true,
       fields: FIELDS
     }).then(function (data) {
-      if (data && data.properties && data.properties.timeZone) book.tz = data.properties.timeZone;
+      if (data && data.properties && data.properties.timeZone) bk.tz = data.properties.timeZone;
       var sheet = (data && data.sheets || []).filter(function (s) { return s.properties && s.properties.title === name; })[0] || (data && data.sheets || [])[0];
-      if (!sheet) throw new Error('Tab not found in the Command Center: ' + name);
-      var sh = book.sheets[name] || (book.sheets[name] = new Sheet(name, book));
-      sh.load((sheet.data || [])[0] || {}, sheet.properties.gridProperties && sheet.properties.gridProperties.rowCount, book.tz);
-      book.loadedAt[name] = Date.now();
+      if (!sheet) throw new Error('Tab not found: ' + name);
+      var sh = bk.sheets[name] || (bk.sheets[name] = new Sheet(name, bk));
+      sh.readOnly = !!ref.readOnly;
+      sh.load((sheet.data || [])[0] || {}, sheet.properties.gridProperties && sheet.properties.gridProperties.rowCount, bk.tz);
+      loadedAt[token] = Date.now();
       clearCache();
     });
-    inflight[name] = p;
-    var done = function () { delete inflight[name]; };
+    inflight[token] = p;
+    var done = function () { delete inflight[token]; };
     p.then(done, done);
     return p;
   }
@@ -318,14 +339,14 @@
   /** Make sure the named tabs are loaded; fresh re-reads them regardless of age. */
   function ensure(tabs, fresh) {
     return Promise.all(tabs.map(function (t) {
-      var at = book.loadedAt[t];
+      var at = loadedAt[t];
       if (!fresh && at && Date.now() - at < STALE_MS) return null;
       if (!fresh && at && inflight[t]) return inflight[t];
       return loadTab(t);
     }));
   }
 
-  function markStale(tabs) { tabs.forEach(function (t) { book.loadedAt[t] = 0; }); clearCache(); }
+  function markStale(tabs) { tabs.forEach(function (t) { loadedAt[t] = 0; }); clearCache(); }
 
   /* ---------- sending writes ---------- */
 
@@ -352,8 +373,9 @@
 
   function flushWrites() {
     var jobs = [];
-    Object.keys(book.sheets).forEach(function (name) {
-      var sh = book.sheets[name];
+    var bk = bookFor();
+    Object.keys(bk.sheets).forEach(function (name) {
+      var sh = bk.sheets[name];
       if (!sh.writes.length) return;
       var byRow = {};
       sh.writes.forEach(function (w) { (byRow[w.r] = byRow[w.r] || {})[w.c] = w.v; });
@@ -389,6 +411,8 @@
     getWins: [T.WINS],
     getHistory: [T.SC],
     getSocial: [T.SOCIAL],
+    getApplications: ['APPS', T.LEADS, T.SET],
+    getApplicationAlerts: ['APPS', T.LEADS],
     getSheetUrl: []
   };
   function formTabs(tab) { return [tab, T.CLIENTS, T.SET]; }
@@ -402,7 +426,9 @@
     updateLead: function () { return [T.LEADS]; },
     addLeadNote: function () { return [T.LEADS]; },
     updateRecord: function (args) { return formTabs(args[0]); },
-    addSocialCheckin: function () { return [T.SOCIAL]; }
+    addSocialCheckin: function () { return [T.SOCIAL]; },
+    addApplicationLead: function () { return ['APPS', T.LEADS]; },
+    addApplicationTask: function () { return ['APPS', T.LEADS, T.TODO]; }
   };
   var SPEC = { getFormSpec: function (args) { return formTabs(args[0]); }, getEditSpec: function (args) { return formTabs(args[0]); } };
 
@@ -459,7 +485,7 @@
     attach: function (m) { mcp = m; },
     preload: function () { return ensure(ALL_TABS, false); },
     tabs: ALL_TABS,
-    _book: book,
+    _books: books,
     _serialToDate: serialToDate,
     _wireValue: wireValue
   };

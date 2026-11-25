@@ -148,7 +148,7 @@
     if (document.visibilityState !== 'visible') return;
     checkDay(false);
     if (!document.getElementById('sheet').hidden || busyTyping()) return;
-    if (['home', 'todo', 'clients', 'leads', 'money', 'content', 'wins', 'social'].indexOf(state.tab) < 0) return;
+    if (['home', 'todo', 'clients', 'leads', 'money', 'content', 'wins', 'social', 'apps'].indexOf(state.tab) < 0) return;
     invalidate();
     var o = {}; Object.keys(state.opts).forEach(function (k) { o[k] = state.opts[k]; });
     o.fresh = true; o.quiet = true;
@@ -200,6 +200,7 @@
     var html = '';
     html += '<div class="row-between"><div><h1>' + esc(dayName(d.today)) + ' <span class="key">' + fmtDate(d.today) + '</span></h1>';
     html += '<div class="sub">Week of ' + fmtDate(d.weekOf) + '</div></div></div>';
+    html += '<div id="appsBanner"></div>';
 
     html += '<div class="cards">' + cards.map(function (k) {
       return '<div class="card' + (k.accent ? ' accent' : '') + '"><div class="label">' + esc(k.label) + '</div><div class="num">' + esc(k.v) + '</div></div>';
@@ -220,6 +221,7 @@
     ].map(function (q) { return '<button class="btn" data-add="' + esc(q[0]) + '">' + esc(q[1]) + '</button>'; }).join('') + '</div>';
 
     $view.innerHTML = html;
+    if (window.Hub && window.Hub.onHomeRendered) window.Hub.onHomeRendered();
   }
 
   function todayTodosHtml(d) {
@@ -319,6 +321,7 @@
       '<button class="btn ghost" data-menu="content">Content</button>' +
       '<button class="btn ghost" data-menu="wins">Wins</button>' +
       '<button class="btn ghost" data-menu="history">Scorecard history</button>' +
+      '<button class="btn ghost" data-menu="apps">Applications</button>' +
       '<button class="btn ghost" data-menu="social">Social</button>' +
       '<a class="btn ghost" id="sheetLink" href="#" target="_blank" rel="noopener">Open the Command Center sheet</a>' +
       '</div>';

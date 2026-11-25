@@ -206,12 +206,19 @@ function rowHasKey_(name, headers, row) {
  * Read a tab. Uses the 60 second cache unless fresh is true.
  * Rows without a value in any KEY_HEADERS column are skipped.
  */
-function readTab_(name, fresh) {
+function readTab_(name, fresh, ssId) {
+  var key = 'tab:' + (ssId ? ssId + ':' : '') + name;
   if (!fresh) {
-    var hit = cacheGet_('tab:' + name);
+    var hit = cacheGet_(key);
     if (hit) return hit;
   }
-  var sh = sheet_(name);
+  var sh;
+  if (ssId) {
+    sh = SpreadsheetApp.openById(ssId).getSheetByName(name);
+    if (!sh) throw new Error('Tab not found: ' + name);
+  } else {
+    sh = sheet_(name);
+  }
   var lastRow = sh.getLastRow();
   var lastCol = sh.getLastColumn();
   var values = lastRow && lastCol ? sh.getRange(1, 1, lastRow, lastCol).getValues() : [[]];
@@ -233,7 +240,7 @@ function readTab_(name, fresh) {
     rows.push(obj);
   }
   var out = { name: name, headers: meta.headers, meta: meta, rows: rows, errors: errors };
-  cachePut_('tab:' + name, out);
+  cachePut_(key, out);
   return out;
 }
 

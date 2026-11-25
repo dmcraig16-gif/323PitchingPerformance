@@ -80,6 +80,22 @@ var CONFIG = {
     payments: { date: 'Date received', athlete: 'Athlete', program: 'Program', amount: 'Amount', nextDue: 'Next payment due', status: 'Status' }
   },
 
+  // Tally applications. Tally writes this sheet; the Hub only reads it. New applicants are logged in Leads.
+  // Columns are found by a key phrase in the header, so small wording edits in the Tally form don't break it.
+  APPLICATIONS: {
+    SPREADSHEET_ID: '1ejieG5-vel52XU-sj0EB5NOGGKA7wWtuvGNTNLnJNEk',
+    TAB: 'Sheet1',
+    FIELDS: {
+      id: 'submission id', submittedAt: 'submitted at', athlete: 'athlete full name', grad: 'graduation year',
+      athletePhone: 'athlete phone', athleteEmail: 'athlete email', location: 'located', parent: 'parent name',
+      parentPhone: 'parent phone', parentEmail: 'parent email', level: 'current level', school: 'school',
+      throws: 'throws', velo: 'velocity', routine: 'currently do', interest: 'program are you interested',
+      goals: 'goals', holding: 'holding you back', days: 'days available', invest: 'ready to invest', other: 'anything else'
+    },
+    LEAD_SOURCE: 'Tally application',
+    NEXT_ACTION: 'Text parent discovery call link'
+  },
+
   ACTIVE_CLIENT_STATUSES: ['Active', 'Onboarding'],
   CLOSED_LEAD_STAGES: ['Won', 'Lost'],
   // Paid this month values that do not need attention.
