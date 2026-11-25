@@ -1,0 +1,370 @@
+<script>
+(function () {
+  'use strict';
+
+  /* ---------- server calls ---------- */
+  function api(fn) {
+    var args = Array.prototype.slice.call(arguments, 1);
+    return new Promise(function (resolve, reject) {
+      var runner = google.script.run
+        .withSuccessHandler(resolve)
+        .withFailureHandler(function (err) { reject(err && err.message ? err.message : String(err)); });
+      runner[fn].apply(runner, args);
+    });
+  }
+
+  function requestId() {
+    if (window.crypto && crypto.randomUUID) return crypto.randomUUID();
+    return Date.now().toString(36) + Math.random().toString(36).slice(2);
+  }
+
+  /* ---------- formatting ---------- */
+  var DAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+
+  function esc(s) {
+    return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+    });
+  }
+  function ymd(v) {
+    var s = String(v || '');
+    return /^\d{4}-\d{2}-\d{2}/.test(s) ? s.slice(0, 10) : '';
+  }
+  function fmtDate(v) {
+    var s = ymd(v);
+    if (!s) return v ? esc(v) : '';
+    var p = s.split('-');
+    return Number(p[1]) + '/' + Number(p[2]) + '/' + p[0];
+  }
+  function dayName(v) {
+    var p = ymd(v).split('-');
+    return DAYS[new Date(Date.UTC(+p[0], +p[1] - 1, +p[2])).getUTCDay()];
+  }
+  function num(v) {
+    if (typeof v === 'number') return v;
+    var n = Number(String(v == null ? '' : v).replace(/[$,\s]/g, ''));
+    return isNaN(n) ? 0 : n;
+  }
+  function money(v) {
+    var n = num(v);
+    var cents = Math.round(n * 100) % 100 !== 0;
+    return (n < 0 ? '-$' : '$') + Math.abs(n).toLocaleString('en-US', { minimumFractionDigits: cents ? 2 : 0, maximumFractionDigits: 2 });
+  }
+  function mins(n) {
+    n = num(n);
+    if (n < 60) return n + ' min';
+    var h = Math.floor(n / 60), m = n % 60;
+    return h + ' hr' + (m ? ' ' + m + ' min' : '');
+  }
+  function tagHtml(tag) {
+    if (tag === 'DDC') return '<span class="tag ddc">DDC</span>';
+    if (tag === 'Guinea Pig') return '<span class="tag gp">Guinea Pig</span>';
+    return '';
+  }
+
+  /* ---------- UI helpers ---------- */
+  var $view = document.getElementById('view');
+  var toastTimer;
+  function toast(msg, isErr) {
+    var t = document.getElementById('toast');
+    t.textContent = msg;
+    t.className = 'toast' + (isErr ? ' err' : '');
+    t.hidden = false;
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { t.hidden = true; }, isErr ? 5000 : 2200);
+  }
+  function setBusy(on) {
+    document.getElementById('refreshBtn').classList.toggle('spin', !!on);
+  }
+
+  /* ---------- state + routing ---------- */
+  var state = { tab: 'home', home: null, homeAt: 0, specs: {} };
+  var views = {
+    home: loadHome,
+    todo: function () { placeholder('To-Do', 'Today, tomorrow, this week and overdue views with add, edit and move. Coming in Phase B.'); },
+    clients: function () { placeholder('Clients', 'Client list, filters and full profiles. Coming in Phase B.'); },
+    leads: function () { placeholder('Leads', 'Pipeline by stage with convert to client. Coming in Phase C.'); },
+    money: function () { placeholder('Money', 'Cash by month, payments, expenses and tax set-aside. Coming in Phase D.'); },
+    more: renderMore
+  };
+
+  function go(tab, opts) {
+    state.tab = tab;
+    Array.prototype.forEach.call(document.querySelectorAll('#tabbar button'), function (b) {
+      b.classList.toggle('on', b.getAttribute('data-tab') === tab);
+    });
+    window.scrollTo(0, 0);
+    views[tab](opts || {});
+  }
+
+  document.getElementById('tabbar').addEventListener('click', function (e) {
+    var b = e.target.closest('button[data-tab]');
+    if (b) go(b.getAttribute('data-tab'));
+  });
+  document.getElementById('refreshBtn').addEventListener('click', function () {
+    views[state.tab]({ fresh: true });
+  });
+  document.addEventListener('visibilitychange', function () {
+    if (document.visibilityState === 'visible' && state.tab === 'home' && Date.now() - state.homeAt > 60000) loadHome({});
+  });
+
+  function placeholder(title, text) {
+    $view.innerHTML = '<h1>' + esc(title) + '</h1><p class="placeholder">' + esc(text) + '</p>';
+  }
+
+  /* ---------- Home ---------- */
+  function loadHome(opts) {
+    if (state.home && !opts.fresh && Date.now() - state.homeAt < 60000) { renderHome(state.home); return; }
+    if (!state.home) $view.innerHTML = homeSkeleton();
+    setBusy(true);
+    return api('getHome', !!opts.fresh).then(function (data) {
+      state.home = data; state.homeAt = Date.now();
+      if (state.tab === 'home') renderHome(data);
+    }).catch(function (msg) {
+      toast(msg, true);
+      if (!state.home) $view.innerHTML = '<p class="placeholder">Could not load. Tap refresh to try again.</p>';
+    }).then(function () { setBusy(false); });
+  }
+
+  function homeSkeleton() {
+    var c = '';
+    for (var i = 0; i < 6; i++) c += '<div class="card skeleton"></div>';
+    return '<div class="skeleton" style="height:40px;width:60%"></div><div class="cards">' + c + '</div>';
+  }
+
+  function renderHome(d) {
+    var c = d.cards;
+    var cards = [
+      { label: 'MRR (323 only)', v: money(c.mrr), accent: true },
+      { label: 'Gap to ' + money(c.mrrTarget || 5000), v: money(c.gap) },
+      { label: 'Enrolled athletes', v: num(c.enrolled) },
+      { label: 'Paid 323 athletes', v: num(c.paid323) },
+      { label: 'Cash this month', v: money(c.cashMonth) },
+      { label: 'Spots to next price step', v: num(c.spots) }
+    ];
+    var w = d.week;
+
+    var html = '';
+    html += '<div class="row-between"><div><h1>' + esc(dayName(d.today)) + ' <span class="key">' + fmtDate(d.today) + '</span></h1>';
+    html += '<div class="sub">Week of ' + fmtDate(d.weekOf) + '</div></div></div>';
+
+    html += '<div class="cards">' + cards.map(function (k) {
+      return '<div class="card' + (k.accent ? ' accent' : '') + '"><div class="label">' + esc(k.label) + '</div><div class="num">' + esc(k.v) + '</div></div>';
+    }).join('') + '</div>';
+
+    html += '<h2>This week</h2><div class="week">' + [
+      ['Conversations', w.conversations], ['Calls booked', w.callsBooked], ['Calls held', w.callsHeld], ['Closes', w.closes]
+    ].map(function (x) { return '<div><div class="num">' + num(x[1]) + '</div><div class="label">' + esc(x[0]) + '</div></div>'; }).join('') + '</div>';
+
+    html += '<div class="home-cols"><div>';
+    html += todayTodosHtml(d);
+    html += '</div><div>';
+    html += attentionHtml(d);
+    html += '</div></div>';
+
+    html += '<h2>Quick add</h2><div class="quick">' + [
+      ['Leads', 'Add lead'], ['Daily To-Do', 'Add task'], ['Payments', 'Log payment'], ['Expenses', 'Log expense'], ['Wins', 'Log win']
+    ].map(function (q) { return '<button class="btn" data-add="' + esc(q[0]) + '">' + esc(q[1]) + '</button>'; }).join('') + '</div>';
+
+    $view.innerHTML = html;
+  }
+
+  function todayTodosHtml(d) {
+    var done = d.minutesPlanned - d.minutesLeft;
+    var pct = d.minutesPlanned ? Math.round(done / d.minutesPlanned * 100) : 0;
+    var h = '<h2 class="row-between"><span>Today</span><span class="sub" id="minsLeft">' + mins(d.minutesLeft) + ' left</span></h2>';
+    if (!d.todos.length) return h + '<div class="list"><div class="empty">Nothing on the list for today.</div></div>';
+    h += '<div class="sub" id="minsDone">' + mins(done) + ' of ' + mins(d.minutesPlanned) + ' done</div><div class="bar"><i id="minsBar" style="width:' + pct + '%"></i></div>';
+    var groups = {}, order = [];
+    d.todos.forEach(function (t) {
+      if (!groups[t.block]) { groups[t.block] = []; order.push(t.block); }
+      groups[t.block].push(t);
+    });
+    h += '<div class="list" style="margin-top:12px">';
+    order.forEach(function (b) {
+      h += '<div class="group-label">' + esc(b) + '</div>';
+      groups[b].forEach(function (t) {
+        h += '<button class="task' + (t.done ? ' done' : '') + '" data-task-row="' + t.row + '">' +
+          '<span class="check"></span><span class="txt">' + esc(t.task) + '</span>' +
+          (t.minutes ? '<span class="mins">' + t.minutes + 'm</span>' : '') + '</button>';
+      });
+    });
+    return h + '</div>';
+  }
+
+  function attentionHtml(d) {
+    var h = '<h2>Needs attention</h2>';
+    var items = d.attention.slice();
+    (d.sheetErrors || []).forEach(function (e) {
+      items.push({ level: 'info', title: 'Sheet check: ' + e.tab + ' row ' + e.row, detail: e.header + ' shows ' + e.error });
+    });
+    if (!items.length) return h + '<div class="list"><div class="empty">All clear.</div></div>';
+    return h + '<div class="list">' + items.map(function (it) {
+      return '<div class="item ' + esc(it.level) + '"><span class="dot ' + esc(it.level) + '"></span><div>' +
+        '<div class="t">' + esc(it.title) + tagHtml(it.tag) + '</div>' +
+        '<div class="d">' + esc(String(it.detail || '').replace(/\d{4}-\d{2}-\d{2}/g, function (m) { return fmtDate(m); })) + '</div></div></div>';
+    }).join('') + '</div>';
+  }
+
+  $view.addEventListener('click', function (e) {
+    var task = e.target.closest('[data-task-row]');
+    if (task) return toggleTask(task);
+    var add = e.target.closest('[data-add]');
+    if (add) return openForm(add.getAttribute('data-add'));
+    var menu = e.target.closest('[data-menu]');
+    if (menu) return menuAction(menu.getAttribute('data-menu'));
+  });
+
+  function toggleTask(el) {
+    if (el.classList.contains('saving')) return;
+    var row = Number(el.getAttribute('data-task-row'));
+    var t = state.home.todos.filter(function (x) { return x.row === row; })[0];
+    if (!t) return;
+    var next = !t.done;
+    t.done = next;
+    el.classList.toggle('done', next);
+    el.classList.add('saving');
+    updateMinutes();
+    api('setTaskDone', row, t.task, next).then(function () {
+      el.classList.remove('saving');
+    }).catch(function (msg) {
+      t.done = !next;
+      el.classList.toggle('done', !next);
+      el.classList.remove('saving');
+      updateMinutes();
+      toast(msg, true);
+    });
+  }
+
+  function updateMinutes() {
+    var d = state.home, left = 0;
+    d.todos.forEach(function (t) { if (!t.done) left += t.minutes; });
+    d.minutesLeft = left;
+    var done = d.minutesPlanned - left;
+    var a = document.getElementById('minsLeft'), b = document.getElementById('minsDone'), bar = document.getElementById('minsBar');
+    if (a) a.textContent = mins(left) + ' left';
+    if (b) b.textContent = mins(done) + ' of ' + mins(d.minutesPlanned) + ' done';
+    if (bar) bar.style.width = (d.minutesPlanned ? Math.round(done / d.minutesPlanned * 100) : 0) + '%';
+  }
+
+  /* ---------- More ---------- */
+  function renderMore() {
+    $view.innerHTML = '<h1>More</h1><div class="menu" style="margin-top:16px">' +
+      '<button class="btn ghost" data-menu="content">Content <span class="sub">(Phase D)</span></button>' +
+      '<button class="btn ghost" data-menu="wins">Wins <span class="sub">(Phase D)</span></button>' +
+      '<button class="btn ghost" data-menu="history">Scorecard history <span class="sub">(Phase D)</span></button>' +
+      '<button class="btn ghost" data-menu="sheet">Open the Command Center sheet</button>' +
+      '</div>';
+  }
+  function menuAction(what) {
+    if (what === 'sheet') {
+      api('getSheetUrl').then(function (url) { window.open(url, '_blank', 'noopener'); }).catch(function (m) { toast(m, true); });
+    } else {
+      toast('Coming in Phase D.');
+    }
+  }
+
+  /* ---------- Add forms (built from live headers) ---------- */
+  var sheetEl = document.getElementById('sheet');
+  var backdrop = document.getElementById('sheetBackdrop');
+  function openSheet(html) {
+    document.getElementById('sheetBody').innerHTML = html;
+    sheetEl.hidden = false; backdrop.hidden = false;
+  }
+  function closeSheet() { sheetEl.hidden = true; backdrop.hidden = true; }
+  backdrop.addEventListener('click', closeSheet);
+
+  function openForm(tab) {
+    var cached = state.specs[tab];
+    var p = cached ? Promise.resolve(cached) : api('getFormSpec', tab);
+    if (!cached) openSheet('<div class="skeleton" style="height:300px"></div>');
+    p.then(function (spec) {
+      state.specs[tab] = spec;
+      openSheet(formHtml(spec));
+      var first = sheetEl.querySelector('input:not([type=checkbox]),select,textarea');
+      if (first && window.matchMedia('(min-width: 760px)').matches) first.focus();
+    }).catch(function (msg) { closeSheet(); toast(msg, true); });
+  }
+
+  function isLong(name) { return /notes|^task$|^win$|evidence|teaching point/i.test(name); }
+
+  function fieldHtml(f, today) {
+    var id = 'f_' + f.name.replace(/[^a-z0-9]/gi, '_');
+    var label = esc(f.name) + (f.required ? ' *' : '');
+    var nameAttr = ' name="' + esc(f.name) + '" id="' + id + '"';
+    if (f.type === 'bool') {
+      return '<label class="field bool"><input type="checkbox"' + nameAttr + '><span>' + label + '</span></label>';
+    }
+    var input;
+    if (f.choices && f.choiceSource === 'list') {
+      input = '<select' + nameAttr + '><option value=""></option>' + f.choices.map(function (c) {
+        return '<option>' + esc(c) + '</option>';
+      }).join('') + '</select>';
+    } else if (f.type === 'date') {
+      input = '<input type="date"' + nameAttr + (f.defaultToday ? ' value="' + esc(today) + '"' : '') + '>';
+    } else if (f.type === 'number') {
+      input = '<input type="text" inputmode="decimal"' + nameAttr + '>';
+    } else if (isLong(f.name)) {
+      input = '<textarea' + nameAttr + '></textarea>';
+    } else {
+      var list = f.choices || f.suggestions;
+      input = '<input type="text" autocomplete="off"' + nameAttr + (list ? ' list="' + id + '_l"' : '') + '>' +
+        (list ? '<datalist id="' + id + '_l">' + list.map(function (c) { return '<option value="' + esc(c) + '">'; }).join('') + '</datalist>' : '');
+    }
+    return '<label class="field"><span>' + label + '</span>' + input + '</label>';
+  }
+
+  function formHtml(spec) {
+    var prim = spec.fields.filter(function (f) { return f.primary; });
+    var rest = spec.fields.filter(function (f) { return !f.primary; });
+    var h = '<form class="form" data-tab="' + esc(spec.tab) + '" novalidate><h2>' + esc(spec.title) + '</h2>';
+    h += prim.map(function (f) { return fieldHtml(f, spec.today); }).join('');
+    if (rest.length) {
+      h += '<button type="button" class="more-toggle" data-more>More fields (' + rest.length + ')</button>';
+      h += '<div class="more hidden">' + rest.map(function (f) { return fieldHtml(f, spec.today); }).join('') + '</div>';
+    }
+    h += '<div class="form-error" hidden></div>';
+    h += '<div class="form-actions"><button type="button" class="btn ghost" data-cancel>Cancel</button><button type="submit" class="btn">Save</button></div></form>';
+    return h;
+  }
+
+  sheetEl.addEventListener('click', function (e) {
+    if (e.target.closest('[data-cancel]')) return closeSheet();
+    var more = e.target.closest('[data-more]');
+    if (more) { more.nextElementSibling.classList.toggle('hidden'); more.remove(); }
+  });
+
+  sheetEl.addEventListener('submit', function (e) {
+    e.preventDefault();
+    var form = e.target;
+    var tab = form.getAttribute('data-tab');
+    var spec = state.specs[tab];
+    var rec = {};
+    spec.fields.forEach(function (f) {
+      var el = form.elements[f.name];
+      if (!el) return;
+      if (f.type === 'bool') { if (el.checked) rec[f.name] = true; return; }
+      var v = String(el.value || '').trim();
+      if (v) rec[f.name] = v;
+    });
+    var errEl = form.querySelector('.form-error');
+    var missing = spec.fields.filter(function (f) { return f.required && !rec[f.name]; });
+    if (missing.length) { errEl.textContent = 'Fill in ' + missing[0].name + '.'; errEl.hidden = false; return; }
+    var btn = form.querySelector('[type=submit]');
+    if (btn.disabled) return;
+    btn.disabled = true; btn.textContent = 'Saving';
+    var rid = form.getAttribute('data-rid') || requestId();
+    form.setAttribute('data-rid', rid);
+    api('addRecord', tab, rec, rid).then(function (res) {
+      closeSheet();
+      toast('Saved to ' + tab + ', row ' + res.row);
+      if (state.tab === 'home') loadHome({ fresh: true });
+    }).catch(function (msg) {
+      btn.disabled = false; btn.textContent = 'Save';
+      errEl.textContent = msg; errEl.hidden = false;
+    });
+  });
+
+  go('home');
+})();
+</script>
