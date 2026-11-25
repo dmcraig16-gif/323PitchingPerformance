@@ -212,6 +212,155 @@
     change: function (e) { if (e.target.matches('[data-wf]')) { W.athlete = e.target.value; renderWins(); } }
   };
 
+
+  /* ---------- Social ---------- */
+  var SO = { d: null, at: 0 };
+  H.onStale(function () { SO.at = 0; });
+
+  H.views.social = function (opts) {
+    if (SO.d && !opts.fresh && Date.now() - SO.at < 60000) return renderSocial();
+    if (!SO.d) H.view.innerHTML = '<h1>Social</h1><div class="skeleton" style="height:320px;margin-top:16px"></div>';
+    H.setBusy(true);
+    H.api('getSocial', !!opts.fresh).then(function (d) {
+      SO.d = d; SO.at = Date.now();
+      if (H.state.tab === 'social') renderSocial();
+    }).catch(function (m) { H.toast(m, true); }).then(function () { H.setBusy(false); });
+  };
+
+  function socFmt(name, v) {
+    if (v === '' || v == null) return '';
+    if (typeof v !== 'number') return esc(v);
+    if (/%/.test(name)) return (v > 0 ? '+' : '') + (Math.round(v * 1000) / 10) + '%';
+    if (/gained/i.test(name)) return (v > 0 ? '+' : '') + v.toLocaleString('en-US');
+    return v.toLocaleString('en-US');
+  }
+  function isInput(c) { return c.group && !/^both/i.test(c.group) && !/gained|growth/i.test(c.name); }
+
+  function renderSocial() {
+    var d = SO.d;
+    var h = '<button class="back" data-go="more">More</button><div class="row-between"><h1>Social</h1><button class="btn small" data-soc-log>Log this week</button></div>';
+    var last = d.rows[d.rows.length - 1];
+    var weekLogged = last && H.ymd(last[d.weekKey]) === d.thisMonday;
+    h += '<div class="notice' + (weekLogged ? '' : ' red-text') + '">' + (weekLogged
+      ? 'This week (' + fmtDate(d.thisMonday) + ') is logged.'
+      : 'This week (' + fmtDate(d.thisMonday) + ') is not logged yet. Pull the numbers from Instagram Insights and tap Log this week.') + '</div>';
+
+    // Snapshot
+    h += '<h2>Snapshot</h2><div class="scroll-x"><table><thead><tr><th></th>' + d.allAccounts.map(function (a) { return '<th>' + esc(a) + '</th>'; }).join('') + '</tr></thead><tbody>' +
+      d.snapshot.map(function (s) {
+        return '<tr><th>' + esc(s.label) + '</th>' + d.allAccounts.map(function (a) {
+          var v = s.values[a];
+          return '<td>' + (/week of/i.test(s.label) ? fmtDate(v) : socFmt(/gained/i.test(s.label) ? 'Gained' : s.label, v)) + '</td>';
+        }).join('') + '</tr>';
+      }).join('') + '</tbody></table></div>';
+
+    if (d.rows.length) {
+      h += '<h2>Followers</h2><div id="socFollowers"></div><h2>7-day views</h2><div id="socViews"></div>';
+    }
+
+    // Weekly log
+    var cols = d.columns;
+    var groups = [], prev = null;
+    cols.forEach(function (c) {
+      var g = c.group || '';
+      if (prev && prev.name === g) prev.span++; else { prev = { name: g, span: 1 }; groups.push(prev); }
+    });
+    h += '<h2>Weekly log</h2>';
+    h += d.rows.length ? '<div class="scroll-x"><table class="log"><thead><tr>' + groups.map(function (g) { return '<th colspan="' + g.span + '" class="grp">' + esc(g.name) + '</th>'; }).join('') + '</tr><tr>' +
+      cols.map(function (c) { return '<th>' + esc(c.name) + '</th>'; }).join('') + '</tr></thead><tbody>' +
+      d.rows.slice().reverse().map(function (r) {
+        return '<tr>' + cols.map(function (c, i) { return '<td>' + (i === 0 ? fmtDate(r[c.key]) : socFmt(c.name, r[c.key])) + '</td>'; }).join('') + '</tr>';
+      }).join('') + '</tbody></table></div>' : '<div class="list"><div class="empty">No weeks logged yet.</div></div>';
+
+    H.view.innerHTML = h;
+
+    if (d.rows.length) {
+      var labels = d.rows.map(function (r) { return fmtDate(r[d.weekKey]).replace(/\/\d{4}$/, ''); });
+      var series = function (metric) {
+        return d.accounts.map(function (a, i) {
+          return { name: a, color: H.SERIES[i], values: d.rows.map(function (r) { return H.num(r[a + '|' + metric]); }) };
+        });
+      };
+      var fmt = function (v, axis) { var n = H.num(v); return axis && n >= 1000 ? (n / 1000) + 'k' : Math.round(n).toLocaleString('en-US'); };
+      H.lineChart(document.getElementById('socFollowers'), { title: 'Followers by week', labels: labels, series: series('Followers'), fmt: fmt });
+      H.lineChart(document.getElementById('socViews'), { title: '7-day views by week', labels: labels, series: series('7-day views'), fmt: fmt });
+    }
+  }
+
+  function socRowFor(week) { return SO.d.rows.filter(function (r) { return H.ymd(r[SO.d.weekKey]) === week; })[0]; }
+
+  function openSocialForm() {
+    var d = SO.d;
+    var inputs = d.columns.filter(isInput);
+    var byAcct = {};
+    inputs.forEach(function (c) { (byAcct[c.group] = byAcct[c.group] || []).push(c); });
+    var notes = d.columns.filter(function (c) { return /^notes$/i.test(c.name); })[0];
+    var h = '<form class="form" id="socialForm"><h2>Log this week</h2>' +
+      '<label class="field"><span>' + esc(d.weekKey) + '</span><input type="date" name="' + esc(d.weekKey) + '" value="' + esc(d.thisMonday) + '"></label>' +
+      '<div class="sub" id="socWeekNote"></div>';
+    Object.keys(byAcct).forEach(function (a) {
+      h += '<h3 class="acct">' + esc(a) + '</h3><div class="grid2">' + byAcct[a].map(function (c) {
+        return '<label class="field"><span>' + esc(c.name) + '</span><input inputmode="numeric" name="' + esc(c.key) + '" autocomplete="off"></label>';
+      }).join('') + '</div>';
+    });
+    if (notes) h += '<label class="field"><span>Notes</span><textarea name="' + esc(notes.key) + '"></textarea></label>';
+    h += '<div class="form-error" hidden></div><div class="form-actions"><button type="button" class="btn ghost" data-cancel>Cancel</button><button type="submit" class="btn">Save</button></div></form>';
+    H.openSheet(h);
+    fillSocialForm();
+  }
+
+  function fillSocialForm() {
+    var f = document.getElementById('socialForm');
+    if (!f) return;
+    var week = f.elements[SO.d.weekKey].value;
+    var row = socRowFor(week);
+    var note = document.getElementById('socWeekNote');
+    note.textContent = row ? 'This week is already logged. Saving updates that row.' : 'Saving adds a new row after the last logged week. Gained, Growth % and totals fill in by formula.';
+    SO.d.columns.forEach(function (c) {
+      if (c.key === SO.d.weekKey) return;
+      var el = f.elements[c.key];
+      if (el) el.value = row && row[c.key] !== '' && row[c.key] != null ? row[c.key] : '';
+    });
+  }
+
+  document.getElementById('sheet').addEventListener('change', function (e) {
+    if (e.target.form && e.target.form.id === 'socialForm' && e.target.name === SO.d.weekKey) fillSocialForm();
+  });
+
+  document.getElementById('sheet').addEventListener('submit', function (e) {
+    if (e.target.id !== 'socialForm') return;
+    e.preventDefault(); e.stopImmediatePropagation();
+    var f = e.target, vals = {};
+    var row = socRowFor(f.elements[SO.d.weekKey].value);
+    Array.prototype.forEach.call(f.elements, function (el) {
+      if (!el.name) return;
+      var v = String(el.value).trim();
+      if (v === '') return;
+      // Updating a logged week: send only what changed.
+      if (row && el.name !== SO.d.weekKey && String(row[el.name] == null ? '' : row[el.name]) === v.replace(/,/g, '')) return;
+      vals[el.name] = v;
+    });
+    if (row && Object.keys(vals).length === 1) { H.closeSheet(); return H.toast('No changes to save'); }
+    var btn = f.querySelector('[type=submit]'), err = f.querySelector('.form-error');
+    if (btn.disabled) return;
+    btn.disabled = true; btn.textContent = 'Saving';
+    var rid = f.getAttribute('data-rid') || H.requestId();
+    f.setAttribute('data-rid', rid);
+    H.api('addSocialCheckin', vals, rid).then(function (r) {
+      H.closeSheet();
+      H.toast((r.updated ? 'Updated' : 'Logged') + ' week of ' + fmtDate(r.week));
+      H.invalidate();
+      H.views.social({ fresh: true });
+    }).catch(function (m) { btn.disabled = false; btn.textContent = 'Save'; err.textContent = m; err.hidden = false; });
+  }, true);
+
+  H.handlers.social = {
+    click: function (e) {
+      if (e.target.closest('[data-go]')) return H.go('more');
+      if (e.target.closest('[data-soc-log]')) return openSocialForm();
+    }
+  };
+
   /* ---------- Scorecard history ---------- */
   H.views.history = function (opts) {
     H.view.innerHTML = '<h1>Scorecard history</h1><div class="skeleton" style="height:320px;margin-top:16px"></div>';

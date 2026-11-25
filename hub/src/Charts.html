@@ -50,7 +50,8 @@
   function xLabels(f, labels, x, every) {
     return labels.map(function (l, i) {
       if (i % every !== 0 && i !== labels.length - 1) return '';
-      return '<text class="tick" x="' + x(i) + '" y="' + (f.h - 8) + '" text-anchor="middle">' + esc(l) + '</text>';
+      var anchor = i === 0 && every > 1 ? 'start' : (i === labels.length - 1 && labels.length > 1 && x(i) > f.w - f.m.r - 20 ? 'end' : 'middle');
+      return '<text class="tick" x="' + x(i) + '" y="' + (f.h - 8) + '" text-anchor="' + anchor + '">' + esc(l) + '</text>';
     }).join('');
   }
 

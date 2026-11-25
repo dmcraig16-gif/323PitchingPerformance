@@ -134,6 +134,37 @@
           ['Increase per step ($ a month)', 25]
         ]
       },
+
+      {
+        name: 'Social',
+        values: (function () {
+          var v = [
+            ['Social Growth Check-In'], ['Fill one row each Monday.'], [],
+            ['Snapshot', '@3.23performance', '@dc.throws', 'Both accounts'],
+            ['Weeks logged', 2], ['Latest check-in (week of)', monday()],
+            ['Followers', 218, 604, 822], ['Followers gained, last 4 check-ins', -3, 1, -2],
+            ['7-day views, latest', 9, 3050, 3059], [], ['Weekly log'],
+            ['', '@3.23performance', '', '', '', '', '', '@dc.throws', '', '', '', '', '', 'Both accounts'],
+            ['Week of (Monday)', 'Followers', 'Gained', 'Growth %', '7-day views', 'Inbound DMs', 'Outbound DMs', 'Followers', 'Gained', 'Growth %', '7-day views', 'Inbound DMs', 'Outbound DMs', 'Followers gained', 'Inbound DMs', 'Outbound DMs', 'Notes'],
+            [monday(-7), 221, -1, '', 22, 0, 0, 603, 9, 0.017, 2700, 0, 0, 8, 0, 0, ''],
+            [monday(), 218, -3, -0.0136, 9, 0, 0, 604, 1, 0.0017, 3050, 0, 2, -2, 0, 2, ''],
+            ['', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', ''],
+            ['', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '']
+          ];
+          return v;
+        })(),
+        formulas: (function () {
+          var f = {};
+          [15, 16, 17].forEach(function (r) {
+            if (r > 14) { f[r + ',3'] = '=gained'; f[r + ',9'] = '=gained'; }
+            f[r + ',4'] = '=growth'; f[r + ',10'] = '=growth';
+            f[r + ',14'] = '=sum'; f[r + ',15'] = '=sum'; f[r + ',16'] = '=sum';
+            if (r > 15) f[r + ',1'] = '=A' + (r - 1) + '+7';
+          });
+          return f;
+        })(),
+        maxRows: 130
+      },
       {
         name: 'Scorecard',
         values: [

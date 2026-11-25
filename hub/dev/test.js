@@ -16,7 +16,7 @@ function load() {
   vm.runInContext(fs.readFileSync(path.join(__dirname, 'fixture.js'), 'utf8'), ctx);
   var today = ctx.HubMock.Utilities.formatDate(new Date(), 'America/Boise', 'yyyy-MM-dd');
   var env = ctx.HubMock.install(ctx, ctx.HubFixture.build(today));
-  ['Config.js', 'Data.js', 'Write.js', 'Api.js', 'Todo.js', 'Clients.js', 'Leads.js', 'Money.js', 'Code.js'].forEach(function (f) {
+  ['Config.js', 'Data.js', 'Write.js', 'Api.js', 'Todo.js', 'Clients.js', 'Leads.js', 'Money.js', 'Social.js', 'Code.js'].forEach(function (f) {
     vm.runInContext(fs.readFileSync(path.join(SRC, f), 'utf8'), ctx, { filename: f });
   });
   ctx.HtmlService = {};
@@ -324,6 +324,35 @@ test('wins and history read', function (g) {
   var h = plain(g.getHistory());
   assert.strictEqual(h.rows.length, 2);
   assert.strictEqual(h.headers[6], 'MRR');
+});
+
+/* ---------- Social ---------- */
+test('social: snapshot and weekly log read by labels', function (g) {
+  var s = plain(g.getSocial());
+  assert.deepStrictEqual(s.accounts, ['@3.23performance', '@dc.throws']);
+  assert.strictEqual(s.rows.length, 2);
+  assert.strictEqual(s.rows[1]['@dc.throws|Followers'], 604);
+  assert.strictEqual(s.rows[1]['@3.23performance|Followers'], 218);
+  assert.strictEqual(s.snapshot[2].values['Both accounts'], 822);
+  assert.strictEqual(s.weekKey, 'Week of (Monday)');
+});
+
+test('social: log next week skips formula cells, update same week', function (g, b, today) {
+  var sh = b.getSheetByName('Social');
+  var next = g.addDays_(g.mondayOf_(today), 7);
+  var r = g.addSocialCheckin({ 'Week of (Monday)': next, '@3.23performance|Followers': '225', '@dc.throws|Followers': '610', '@dc.throws|7-day views': '3,400', '@dc.throws|Gained': '6', Notes: 'Reel hit' }, 's1');
+  assert.strictEqual(r.row, 16);
+  assert.strictEqual(r.updated, false);
+  assert.strictEqual(sh.cell(16, 2), 225);
+  assert.strictEqual(sh.cell(16, 11), 3400);
+  assert.strictEqual(sh.cell(16, 17), 'Reel hit');
+  assert.ok(r.skipped.indexOf('Week of (Monday)') >= 0, 'Week of is a formula in that row');
+  assert.ok(r.skipped.indexOf('@dc.throws|Gained') >= 0, 'Gained is a formula');
+  var u = g.addSocialCheckin({ 'Week of (Monday)': g.mondayOf_(today), '@3.23performance|7-day views': '15' }, 's2');
+  assert.strictEqual(u.row, 15);
+  assert.strictEqual(u.updated, true);
+  assert.strictEqual(sh.cell(15, 5), 15);
+  assert.throws(function () { g.addSocialCheckin({ '@dc.throws|Followers': 'lots' }, 's3'); }, /must be a number/);
 });
 
 console.log('\n' + passed + ' passed');

@@ -68,7 +68,8 @@
         { type: 'separator' },
         { label: 'Content', click: go('content') },
         { label: 'Wins', click: go('wins') },
-        { label: 'Scorecard history', click: go('history') }
+        { label: 'Scorecard history', click: go('history') },
+        { label: 'Social', accelerator: 'CmdOrCtrl+6', click: go('social') }
       ] },
       { label: 'Add', submenu: [
         { label: 'Add task', accelerator: 'CmdOrCtrl+Shift+T', click: add('Daily To-Do') },

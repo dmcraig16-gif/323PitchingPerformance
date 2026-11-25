@@ -16,7 +16,7 @@
 
   var SERVER = 'Google Sheets';
   var TZ = 'America/Boise';
-  var ALL_TABS = ['Scorecard', 'Daily To-Do', 'Leads', 'Clients', 'Payments', 'Settings', 'Content', 'Wins', 'Expenses', 'Money'];
+  var ALL_TABS = ['Scorecard', 'Daily To-Do', 'Leads', 'Clients', 'Payments', 'Settings', 'Content', 'Wins', 'Expenses', 'Money', 'Social'];
   var FIELDS = [
     'properties.timeZone',
     'sheets.properties.title',
@@ -377,7 +377,7 @@
 
   /* ---------- which tabs each server function needs ---------- */
 
-  var T = { SC: 'Scorecard', TODO: 'Daily To-Do', LEADS: 'Leads', CLIENTS: 'Clients', PAY: 'Payments', SET: 'Settings', CONTENT: 'Content', WINS: 'Wins', EXP: 'Expenses', MONEY: 'Money' };
+  var T = { SC: 'Scorecard', TODO: 'Daily To-Do', LEADS: 'Leads', CLIENTS: 'Clients', PAY: 'Payments', SET: 'Settings', CONTENT: 'Content', WINS: 'Wins', EXP: 'Expenses', MONEY: 'Money', SOCIAL: 'Social' };
   var READS = {
     getHome: [T.SC, T.TODO, T.LEADS, T.CLIENTS, T.PAY],
     getTodos: [T.TODO],
@@ -388,6 +388,7 @@
     getContent: [T.CONTENT],
     getWins: [T.WINS],
     getHistory: [T.SC],
+    getSocial: [T.SOCIAL],
     getSheetUrl: []
   };
   function formTabs(tab) { return [tab, T.CLIENTS, T.SET]; }
@@ -400,7 +401,8 @@
     addClientNote: function () { return [T.CLIENTS]; },
     updateLead: function () { return [T.LEADS]; },
     addLeadNote: function () { return [T.LEADS]; },
-    updateRecord: function (args) { return formTabs(args[0]); }
+    updateRecord: function (args) { return formTabs(args[0]); },
+    addSocialCheckin: function () { return [T.SOCIAL]; }
   };
   var SPEC = { getFormSpec: function (args) { return formTabs(args[0]); }, getEditSpec: function (args) { return formTabs(args[0]); } };
 

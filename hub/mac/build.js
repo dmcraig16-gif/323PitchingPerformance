@@ -18,7 +18,7 @@ function guard(js, name) {
   return js;
 }
 
-var SERVER = ['Config.js', 'Data.js', 'Write.js', 'Api.js', 'Todo.js', 'Clients.js', 'Leads.js', 'Money.js', 'Code.js'];
+var SERVER = ['Config.js', 'Data.js', 'Write.js', 'Api.js', 'Todo.js', 'Clients.js', 'Leads.js', 'Money.js', 'Social.js', 'Code.js'];
 var VIEWS = ['App', 'Charts', 'ViewTodo', 'ViewClients', 'ViewLeads', 'ViewMoney', 'ViewMore'];
 
 var index = read(path.join(SRC, 'Index.html'));

@@ -148,7 +148,7 @@
     if (document.visibilityState !== 'visible') return;
     checkDay(false);
     if (!document.getElementById('sheet').hidden || busyTyping()) return;
-    if (['home', 'todo', 'clients', 'leads', 'money', 'content', 'wins'].indexOf(state.tab) < 0) return;
+    if (['home', 'todo', 'clients', 'leads', 'money', 'content', 'wins', 'social'].indexOf(state.tab) < 0) return;
     invalidate();
     var o = {}; Object.keys(state.opts).forEach(function (k) { o[k] = state.opts[k]; });
     o.fresh = true; o.quiet = true;
@@ -319,6 +319,7 @@
       '<button class="btn ghost" data-menu="content">Content</button>' +
       '<button class="btn ghost" data-menu="wins">Wins</button>' +
       '<button class="btn ghost" data-menu="history">Scorecard history</button>' +
+      '<button class="btn ghost" data-menu="social">Social</button>' +
       '<a class="btn ghost" id="sheetLink" href="#" target="_blank" rel="noopener">Open the Command Center sheet</a>' +
       '</div>';
     api('getSheetUrl').then(function (url) {
