@@ -1,0 +1,212 @@
+<script>
+/* Leads pipeline: kanban on desktop, grouped list on phone, lead profile, convert to client. */
+(function (H) {
+  'use strict';
+  var esc = H.esc, fmtDate = H.fmtDate;
+  var S = { d: null, at: 0, q: '', open: { Lost: false } };
+  H.onStale(function () { S.at = 0; });
+
+  H.views.leads = function (opts) {
+    if (S.d && !opts.fresh && Date.now() - S.at < 60000) return opts.row ? renderProfile(opts.row) : renderBoard();
+    if (!S.d) H.view.innerHTML = '<h1>Leads</h1><div class="skeleton" style="height:320px;margin-top:16px"></div>';
+    H.setBusy(true);
+    return H.api('getLeads', !!opts.fresh).then(function (d) {
+      S.d = d; S.at = Date.now();
+      if (H.state.tab !== 'leads') return;
+      if (H.state.opts.row) renderProfile(H.state.opts.row); else renderBoard();
+    }).catch(function (m) { H.toast(m, true); }).then(function () { H.setBusy(false); });
+  };
+  H.leadsStale = function () { S.at = 0; };
+
+  function name(l) { return l['Athlete name'] || l['Parent name'] || l['Contact (IG or email)'] || 'Lead'; }
+  function expect(l) { return { 'Parent name': l['Parent name'] == null ? '' : l['Parent name'], 'Athlete name': l['Athlete name'] == null ? '' : l['Athlete name'] }; }
+  function find(row) { return S.d.leads.filter(function (l) { return l.row === row; })[0]; }
+
+  function card(l) {
+    var due = H.ymd(l['Next action due']);
+    var sub = [l['Athlete name'] && l['Parent name'] ? 'Parent: ' + l['Parent name'] : '', l['Grad year'] ? 'Class of ' + l['Grad year'] : '', l['Source']].filter(Boolean).map(esc).join(' · ');
+    return '<div class="lead-card' + (l._overdue ? ' overdue' : '') + '" draggable="true" data-lead="' + l.row + '">' +
+      '<button class="lead-open" data-open-lead="' + l.row + '"><span class="t">' + esc(name(l)) + '</span>' +
+      (sub ? '<span class="d">' + sub + '</span>' : '') +
+      (l['Next action'] || due ? '<span class="d na">' + esc(l['Next action'] || 'Next action') + (due ? ' · ' + fmtDate(due) : '') + '</span>' : '') +
+      '</button><select class="stage-pick" data-stage-for="' + l.row + '" aria-label="Stage">' +
+      S.d.stages.map(function (s) { return '<option' + (s === l['Stage'] ? ' selected' : '') + '>' + esc(s) + '</option>'; }).join('') +
+      '</select></div>';
+  }
+
+  function renderBoard() {
+    var d = S.d, q = S.q.toLowerCase();
+    var leads = d.leads.filter(function (l) {
+      return !q || [l['Parent name'], l['Athlete name'], l['Contact (IG or email)'], l['Notes']].join(' ').toLowerCase().indexOf(q) >= 0;
+    });
+    var by = {};
+    d.stages.forEach(function (s) { by[s] = []; });
+    var other = [];
+    leads.forEach(function (l) { (by[l['Stage']] || other).push(l); });
+    if (other.length) by['No stage'] = other;
+    var stages = d.stages.concat(other.length ? ['No stage'] : []);
+    var od = d.leads.filter(function (l) { return l._overdue; }).length;
+
+    var h = '<div class="row-between"><h1>Leads</h1><button class="btn small" data-add-lead>Add lead</button></div>';
+    if (d.discoveryLink) h += '<div class="linkrow"><span class="sub">Discovery call link</span><button class="chip" data-copy="' + esc(d.discoveryLink) + '">Copy</button></div>';
+    if (od) h += '<div class="notice red-text">' + od + ' follow-up' + (od > 1 ? 's' : '') + ' overdue</div>';
+    h += '<input class="search" type="search" placeholder="Search leads" data-lq value="' + esc(S.q) + '">';
+    h += '<div class="board">' + stages.map(function (s) {
+      var list = by[s];
+      var collapsed = S.open[s] === false;
+      return '<section class="col' + (collapsed ? ' collapsed' : '') + '" data-col="' + esc(s) + '">' +
+        '<button class="col-head" data-toggle-col="' + esc(s) + '"><span>' + esc(s) + '</span><span class="count">' + list.length + '</span></button>' +
+        '<div class="col-body">' + (list.length ? list.map(card).join('') : '<div class="empty small">None</div>') + '</div></section>';
+    }).join('') + '</div>';
+    H.view.innerHTML = h;
+  }
+
+  function moveStage(row, stage, onDone) {
+    var l = find(row);
+    if (!l || l['Stage'] === stage) return;
+    var prev = l['Stage'], prevTouch = l['Last touch'];
+    l['Stage'] = stage; l['Last touch'] = S.d.today;
+    H.api('updateLead', row, expect(l), { Stage: stage }).then(function () {
+      H.invalidate();
+      H.toast('Moved to ' + stage);
+      if (stage === 'Won') offerConvert(l);
+      if (onDone) onDone();
+    }).catch(function (m) {
+      l['Stage'] = prev; l['Last touch'] = prevTouch; H.toast(m, true);
+      if (H.state.opts.row) renderProfile(row); else renderBoard();
+    });
+    if (H.state.opts.row) renderProfile(row); else renderBoard();
+  }
+
+  /* ---------- profile ---------- */
+  function input(f, v) {
+    var n = esc(f.name);
+    if (f.computed) return '<div class="ro">' + (f.type === 'date' ? fmtDate(v) : esc(v)) + ' <span class="sub">(formula)</span></div>';
+    if (f.type === 'bool') return '<input type="checkbox" data-lf="' + n + '"' + (v === true ? ' checked' : '') + '>';
+    if (f.choices) return '<select data-lf="' + n + '"><option value=""></option>' + f.choices.map(function (c) { return '<option' + (String(c) === String(v) ? ' selected' : '') + '>' + esc(c) + '</option>'; }).join('') + '</select>';
+    if (f.type === 'date') return '<input type="date" data-lf="' + n + '" value="' + esc(H.ymd(v)) + '">';
+    if (f.type === 'number') return '<input inputmode="decimal" data-lf="' + n + '" value="' + esc(v) + '">';
+    return '<input data-lf="' + n + '" value="' + esc(v) + '" autocomplete="off">';
+  }
+  function fieldOf(name) { return S.d.fields.filter(function (f) { return f.name === name; })[0]; }
+
+  function renderProfile(row) {
+    var l = find(row);
+    if (!l) { H.toast('Lead not found. Refresh.', true); return renderBoard(); }
+    var h = '<button class="back" data-back>Leads</button><h1>' + esc(name(l)) + '</h1>';
+    h += '<div class="sub">Last touch ' + (fmtDate(l['Last touch']) || '-') + (l['Contact (IG or email)'] ? ' · ' + esc(l['Contact (IG or email)']) : '') + '</div>';
+
+    h += '<div class="panel' + (l._overdue ? ' overdue' : '') + '"><div class="label">Next action</div>' +
+      '<label class="field"><span>Next action</span>' + input(fieldOf('Next action') || { name: 'Next action' }, l['Next action']) + '</label>' +
+      '<label class="field"><span>Due</span>' + input(fieldOf('Next action due') || { name: 'Next action due', type: 'date' }, l['Next action due']) + '</label>' +
+      (l._overdue ? '<div class="red-text">Overdue</div>' : '') + '</div>';
+
+    h += '<h2>Stage</h2><div class="chips wrap">' + S.d.stages.map(function (s) {
+      return '<button class="chip' + (s === l['Stage'] ? ' on' : '') + '" data-set-stage="' + esc(s) + '">' + esc(s) + '</button>';
+    }).join('') + '</div>';
+    h += '<button class="btn' + (l['Stage'] === 'Won' ? '' : ' ghost') + ' full" data-convert style="margin-top:12px">Convert to client</button>';
+
+    h += '<h2>Notes</h2><div class="notes" id="leadNotes">' + (l['Notes'] ? esc(l['Notes']) : '<span class="sub">No notes yet.</span>') + '</div>' +
+      '<label class="field"><span>Add a note</span><textarea id="leadNewNote" placeholder="What happened"></textarea></label>' +
+      '<button class="btn full" data-lead-note>Add note</button>';
+
+    var skip = ['Next action', 'Next action due', 'Stage', 'Notes'];
+    h += '<h2>All fields</h2><div class="list fields">' + S.d.fields.filter(function (f) { return skip.indexOf(f.name) < 0; }).map(function (f) {
+      return '<label class="frow"><span class="fl">' + esc(f.name) + '</span><span class="fv">' + input(f, l[f.name]) + '</span><span class="saved" data-lsaved="' + esc(f.name) + '"></span></label>';
+    }).join('') + '</div>';
+    H.view.innerHTML = h;
+  }
+
+  function saveField(el) {
+    var row = H.state.opts.row, l = find(row);
+    var n = el.getAttribute('data-lf');
+    var v = el.type === 'checkbox' ? el.checked : el.value;
+    var mark = H.view.querySelector('[data-lsaved="' + CSS.escape(n) + '"]');
+    if (mark) mark.textContent = 'Saving';
+    var ex = expect(l);
+    var c = {}; c[n] = v;
+    H.api('updateLead', row, ex, c).then(function (res) {
+      if (res.skipped.length) H.toast(res.skipped.join(', ') + ' not saved (formula).', true);
+      l[n] = v; if (mark) mark.textContent = 'Saved';
+      if (n === 'Next action due') {
+        l._overdue = !!v && v < S.d.today && ['Won', 'Lost'].indexOf(l['Stage']) < 0;
+      }
+      H.invalidate();
+    }).catch(function (m) { if (mark) mark.textContent = ''; H.toast(m, true); });
+  }
+
+  function addNote(btn) {
+    var row = H.state.opts.row, l = find(row);
+    var ta = document.getElementById('leadNewNote');
+    if (!ta.value.trim()) return H.toast('Type a note first.', true);
+    btn.disabled = true;
+    H.api('addLeadNote', row, expect(l), ta.value.trim()).then(function (r) {
+      l['Notes'] = r.notes; l['Last touch'] = r.lastTouch; ta.value = '';
+      renderProfile(row);
+      H.toast('Note added. Last touch set to today.');
+    }).catch(function (m) { H.toast(m, true); }).then(function () { btn.disabled = false; });
+  }
+
+  /** Prefill a new Clients row from the lead. The form is the confirm step: nothing is written until Save. */
+  function offerConvert(l) {
+    var contact = String(l['Contact (IG or email)'] || '');
+    var isEmail = /@.+\./.test(contact) && contact.charAt(0) !== '@';
+    var program = S.d.programs.indexOf(l['Program interest']) >= 0 ? l['Program interest'] : '';
+    var note = 'Converted from lead' + (contact ? '. Contact: ' + contact : '') + (l['Source'] ? '. Source: ' + l['Source'] : '');
+    H.openForm('Clients', {
+      'Athlete name': l['Athlete name'] || '', 'Parent name': l['Parent name'] || '',
+      'Parent email': isEmail ? contact : '', 'Program': program, 'Notes': note
+    }, function (res) {
+      H.toast('Client added to row ' + res.row + '. Check the new client in Clients.');
+    });
+    setTimeout(function () {
+      var h2 = document.querySelector('#sheet form h2');
+      if (h2) h2.insertAdjacentHTML('afterend', '<p class="sub">Check these details, then Save to add ' + esc(name(l)) + ' to Clients. Nothing is written until you tap Save.</p>');
+    }, 50);
+  }
+
+  /* drag and drop between columns (desktop) */
+  var dragRow = null;
+  H.view.addEventListener('dragstart', function (e) {
+    var c = e.target.closest && e.target.closest('[data-lead]');
+    if (c && H.state.tab === 'leads') { dragRow = Number(c.getAttribute('data-lead')); e.dataTransfer.effectAllowed = 'move'; }
+  });
+  H.view.addEventListener('dragover', function (e) { if (dragRow && e.target.closest('[data-col]')) e.preventDefault(); });
+  H.view.addEventListener('drop', function (e) {
+    var col = e.target.closest('[data-col]');
+    if (dragRow && col) { e.preventDefault(); var s = col.getAttribute('data-col'); if (s !== 'No stage') moveStage(dragRow, s); }
+    dragRow = null;
+  });
+
+  H.handlers.leads = {
+    click: function (e) {
+      var o = e.target.closest('[data-open-lead]');
+      if (o) return H.go('leads', { row: Number(o.getAttribute('data-open-lead')) });
+      if (e.target.closest('[data-back]')) return H.go('leads');
+      if (e.target.closest('[data-add-lead]')) return H.openForm('Leads', {}, function () { H.views.leads({ fresh: true }); });
+      var cp = e.target.closest('[data-copy]');
+      if (cp) return H.copyText(cp.getAttribute('data-copy'));
+      var t = e.target.closest('[data-toggle-col]');
+      if (t) { var s = t.getAttribute('data-toggle-col'); S.open[s] = S.open[s] === false; return renderBoard(); }
+      var st = e.target.closest('[data-set-stage]');
+      if (st) return moveStage(H.state.opts.row, st.getAttribute('data-set-stage'));
+      var n = e.target.closest('[data-lead-note]');
+      if (n) return addNote(n);
+      if (e.target.closest('[data-convert]')) return offerConvert(find(H.state.opts.row));
+    },
+    change: function (e) {
+      var sp = e.target.getAttribute('data-stage-for');
+      if (sp) return moveStage(Number(sp), e.target.value);
+      if (e.target.matches('[data-lf]')) return saveField(e.target);
+    },
+    input: function (e) {
+      if (e.target.matches('[data-lq]')) {
+        S.q = e.target.value;
+        var pos = e.target.selectionStart;
+        renderBoard();
+        var el = H.view.querySelector('[data-lq]'); el.focus(); el.setSelectionRange(pos, pos);
+      }
+    }
+  };
+})(window.Hub);
+</script>

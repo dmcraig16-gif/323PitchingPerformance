@@ -1,0 +1,209 @@
+<script>
+/* To-Do screen: Today, Tomorrow, This week, Overdue. */
+(function (H) {
+  'use strict';
+  var esc = H.esc, fmtDate = H.fmtDate, mins = H.mins;
+  var S = { data: null, at: 0, mode: 'today' };
+  H.onStale(function () { S.at = 0; });
+
+  function addDays(ymd, n) {
+    var p = ymd.split('-');
+    return new Date(Date.UTC(+p[0], +p[1] - 1, +p[2] + n)).toISOString().slice(0, 10);
+  }
+  function shortDay(ymd) { return H.dayName(ymd).slice(0, 3) + ' ' + fmtDate(ymd).replace(/\/\d{4}$/, ''); }
+
+  H.views.todo = function (opts) {
+    if (opts.mode) S.mode = opts.mode;
+    if (S.data && !opts.fresh && Date.now() - S.at < 60000) return render();
+    if (!S.data) H.view.innerHTML = '<h1>To-Do</h1><div class="skeleton" style="height:320px;margin-top:16px"></div>';
+    H.setBusy(true);
+    H.api('getTodos', !!opts.fresh).then(function (d) {
+      S.data = d; S.at = Date.now();
+      if (H.state.tab === 'todo') render();
+    }).catch(function (m) { H.toast(m, true); }).then(function () { H.setBusy(false); });
+  };
+
+  function overdue(d) {
+    return d.tasks.filter(function (t) { return t.date < d.today && !t.done; });
+  }
+
+  function selected() {
+    var d = S.data, t = d.today;
+    if (S.mode === 'today') return d.tasks.filter(function (x) { return x.date === t; });
+    if (S.mode === 'tomorrow') return d.tasks.filter(function (x) { return x.date === addDays(t, 1); });
+    if (S.mode === 'week') { var end = addDays(d.weekStart, 6); return d.tasks.filter(function (x) { return x.date >= d.weekStart && x.date <= end; }); }
+    return overdue(d);
+  }
+
+  function modeDate() {
+    var t = S.data.today;
+    if (S.mode === 'tomorrow') return addDays(t, 1);
+    return t;
+  }
+
+  function render() {
+    var d = S.data;
+    var list = selected();
+    var od = overdue(d).length;
+    var tabs = [['today', 'Today'], ['tomorrow', 'Tomorrow'], ['week', 'This week'], ['overdue', 'Overdue']];
+    var h = '<div class="row-between"><h1>To-Do</h1><button class="btn small" data-todo-add>Add task</button></div>';
+    h += '<div class="seg">' + tabs.map(function (x) {
+      var badge = x[0] === 'overdue' && od ? ' <span class="count red-bg">' + od + '</span>' : '';
+      return '<button data-mode="' + x[0] + '" class="' + (S.mode === x[0] ? 'on' : '') + '">' + x[1] + badge + '</button>';
+    }).join('') + '</div>';
+
+    var planned = 0, done = 0;
+    list.forEach(function (t) { planned += t.minutes; if (t.done) done += t.minutes; });
+    if (S.mode !== 'overdue') {
+      var pct = planned ? Math.round(done / planned * 100) : 0;
+      h += '<div class="row-between sub" style="margin-top:14px"><span>' + mins(done) + ' done of ' + mins(planned) + ' planned</span><span>' + mins(planned - done) + ' left</span></div>';
+      h += '<div class="bar"><i style="width:' + pct + '%"></i></div>';
+    }
+
+    if (S.mode === 'overdue' && list.length) {
+      h += '<button class="btn full" data-move-overdue style="margin-top:14px">Move all ' + list.length + ' to today</button>';
+    }
+
+    if (!list.length) {
+      h += '<div class="list" style="margin-top:14px"><div class="empty">' +
+        (S.mode === 'overdue' ? 'Nothing overdue.' : 'No tasks here yet.') + '</div></div>';
+      H.view.innerHTML = h;
+      return;
+    }
+
+    if (S.mode === 'week' || S.mode === 'overdue') {
+      var days = {}, order = [];
+      list.forEach(function (t) { if (!days[t.date]) { days[t.date] = []; order.push(t.date); } days[t.date].push(t); });
+      order.sort();
+      order.forEach(function (day) {
+        var p = 0, dn = 0;
+        days[day].forEach(function (t) { p += t.minutes; if (t.done) dn += t.minutes; });
+        h += '<h2 class="row-between"><span>' + esc(shortDay(day)) + (day === d.today ? ' <span class="key">Today</span>' : '') + '</span><span class="sub">' + mins(dn) + ' / ' + mins(p) + '</span></h2>';
+        h += blocksHtml(days[day], true);
+      });
+    } else {
+      h += '<div style="margin-top:14px">' + blocksHtml(list, false) + '</div>';
+    }
+    H.view.innerHTML = h;
+  }
+
+  function blocksHtml(tasks, compact) {
+    var groups = {}, order = [];
+    tasks.forEach(function (t) { if (!groups[t.block]) { groups[t.block] = []; order.push(t.block); } groups[t.block].push(t); });
+    var h = '<div class="list">';
+    order.forEach(function (b) {
+      var p = 0, dn = 0;
+      groups[b].forEach(function (t) { p += t.minutes; if (t.done) dn += t.minutes; });
+      h += '<div class="group-label row-between"><span>' + esc(b) + '</span><span class="sub">' + (compact ? '' : mins(dn) + ' / ' + mins(p)) + '</span></div>';
+      groups[b].forEach(function (t) {
+        h += '<div class="task-row' + (t.done ? ' done' : '') + '">' +
+          '<button class="task-check" data-check="' + t.row + '" aria-label="Done"><span class="check"></span></button>' +
+          '<button class="task-body" data-edit="' + t.row + '"><span class="txt">' + esc(t.task) + '</span>' +
+          (t.minutes ? '<span class="mins">' + t.minutes + 'm</span>' : '') + '</button></div>';
+      });
+    });
+    return h + '</div>';
+  }
+
+  function find(row) { return S.data.tasks.filter(function (t) { return t.row === row; })[0]; }
+
+  function toggle(row, btn) {
+    var t = find(row);
+    if (!t || btn.disabled) return;
+    var next = !t.done;
+    t.done = next; btn.disabled = true;
+    render();
+    H.api('setTaskDone', row, t.task, next).then(function () {
+      H.invalidate();
+    }).catch(function (m) {
+      t.done = !next; render(); H.toast(m, true);
+    });
+  }
+
+  function moveOverdue(btn) {
+    var items = overdue(S.data).map(function (t) { return { row: t.row, task: t.task }; });
+    if (!items.length) return;
+    btn.disabled = true; btn.textContent = 'Moving';
+    H.api('moveTasks', items, S.data.today).then(function (r) {
+      H.toast('Moved ' + r.moved + ' to today' + (r.failed ? '. ' + r.failed + ' changed in the sheet, refresh and retry.' : ''));
+      H.invalidate();
+      S.mode = 'today';
+      H.views.todo({ fresh: true });
+    }).catch(function (m) { btn.disabled = false; H.toast(m, true); });
+  }
+
+  function openEdit(row) {
+    var t = find(row);
+    if (!t) return;
+    var blocks = S.data.blocks.slice();
+    if (blocks.indexOf(t.block) < 0) blocks.push(t.block);
+    var today = S.data.today;
+    var nextMon = addDays(S.data.weekStart, 7);
+    H.openSheet(
+      '<form class="form" id="taskForm" data-row="' + t.row + '"><h2>Edit task</h2>' +
+      '<label class="field"><span>Task</span><textarea name="Task">' + esc(t.task) + '</textarea></label>' +
+      '<label class="field"><span>Block</span><input name="Block" list="blockList" value="' + esc(t.block) + '" autocomplete="off">' +
+      '<datalist id="blockList">' + blocks.map(function (b) { return '<option value="' + esc(b) + '">'; }).join('') + '</datalist></label>' +
+      '<label class="field"><span>Minutes</span><input name="Minutes" inputmode="numeric" value="' + esc(t.minutes || '') + '"></label>' +
+      '<label class="field"><span>Date</span><input type="date" name="Date" value="' + esc(t.date) + '"></label>' +
+      '<div class="chips"><span class="sub">Move to</span>' +
+      '<button type="button" class="chip" data-move="' + today + '">Today</button>' +
+      '<button type="button" class="chip" data-move="' + addDays(today, 1) + '">Tomorrow</button>' +
+      '<button type="button" class="chip" data-move="' + nextMon + '">Next Monday</button></div>' +
+      '<div class="form-error" hidden></div>' +
+      '<div class="form-actions"><button type="button" class="btn ghost" data-cancel>Cancel</button><button type="submit" class="btn">Save</button></div></form>'
+    );
+  }
+
+  document.getElementById('sheet').addEventListener('click', function (e) {
+    var mv = e.target.closest('[data-move]');
+    if (mv) {
+      var f = document.getElementById('taskForm');
+      if (f) f.elements['Date'].value = mv.getAttribute('data-move');
+    }
+  });
+
+  document.getElementById('sheet').addEventListener('submit', function (e) {
+    if (e.target.id !== 'taskForm') return;
+    e.preventDefault();
+    e.stopImmediatePropagation();
+    var f = e.target, row = Number(f.getAttribute('data-row')), t = find(row);
+    var changes = {};
+    var v = { Task: f.elements['Task'].value.trim(), Block: f.elements['Block'].value.trim(), Minutes: f.elements['Minutes'].value.trim(), Date: f.elements['Date'].value };
+    if (v.Task !== t.task) changes.Task = v.Task;
+    if (v.Block !== t.block) changes.Block = v.Block;
+    if (String(v.Minutes) !== String(t.minutes || '')) changes.Minutes = v.Minutes;
+    if (v.Date !== t.date) changes.Date = v.Date;
+    if (!Object.keys(changes).length) return H.closeSheet();
+    var err = f.querySelector('.form-error');
+    if (!v.Task) { err.textContent = 'Task cannot be blank.'; err.hidden = false; return; }
+    var btn = f.querySelector('[type=submit]');
+    btn.disabled = true; btn.textContent = 'Saving';
+    H.api('updateTask', row, t.task, changes).then(function () {
+      H.closeSheet();
+      H.toast(changes.Date ? 'Moved to ' + fmtDate(changes.Date) : 'Saved');
+      H.invalidate();
+      H.views.todo({ fresh: true });
+    }).catch(function (m) {
+      btn.disabled = false; btn.textContent = 'Save';
+      err.textContent = m; err.hidden = false;
+    });
+  }, true);
+
+  H.handlers.todo = {
+    click: function (e) {
+      var m = e.target.closest('[data-mode]');
+      if (m) { S.mode = m.getAttribute('data-mode'); H.state.opts.mode = S.mode; return render(); }
+      var c = e.target.closest('[data-check]');
+      if (c) return toggle(Number(c.getAttribute('data-check')), c);
+      var ed = e.target.closest('[data-edit]');
+      if (ed) return openEdit(Number(ed.getAttribute('data-edit')));
+      var mo = e.target.closest('[data-move-overdue]');
+      if (mo) return moveOverdue(mo);
+      if (e.target.closest('[data-todo-add]')) {
+        H.openForm('Daily To-Do', { Date: modeDate() }, function () { H.views.todo({ fresh: true }); });
+      }
+    }
+  };
+})(window.Hub);
+</script>

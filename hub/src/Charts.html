@@ -1,0 +1,133 @@
+<script>
+/*
+ * Small SVG charts: stacked bars and lines, one y-axis, hover tooltip, legend, table view.
+ * Colors are validated for the dark surface (blue 323, amber DDC; five-series set for history).
+ */
+(function (H) {
+  'use strict';
+  var esc = H.esc;
+  H.SERIES = ['#0289eb', '#e76624', '#00a888', '#d28e05', '#e24d8b'];
+
+  function niceMax(v) {
+    if (v <= 0) return 1;
+    var p = Math.pow(10, Math.floor(Math.log10(v)));
+    var n = v / p;
+    var step = n <= 1 ? 1 : n <= 2 ? 2 : n <= 5 ? 5 : 10;
+    return step * p;
+  }
+
+  function frame(el, opts) {
+    var w = Math.max(280, el.clientWidth || 320), h = opts.height || 220;
+    var m = { t: 12, r: 12, b: 28, l: opts.left || 44 };
+    return { w: w, h: h, m: m, iw: w - m.l - m.r, ih: h - m.t - m.b };
+  }
+
+  function legend(series) {
+    if (series.length < 2) return '';
+    return '<div class="legend">' + series.map(function (s) {
+      return '<span><i style="background:' + s.color + '"></i>' + esc(s.name) + '</span>';
+    }).join('') + '</div>';
+  }
+
+  function table(labels, series, fmt) {
+    return '<details class="tableview"><summary>Show as table</summary><div class="scroll-x"><table><thead><tr><th></th>' +
+      series.map(function (s) { return '<th>' + esc(s.name) + '</th>'; }).join('') + '</tr></thead><tbody>' +
+      labels.map(function (l, i) {
+        return '<tr><th>' + esc(l) + '</th>' + series.map(function (s) { return '<td>' + esc(fmt(s.values[i])) + '</td>'; }).join('') + '</tr>';
+      }).join('') + '</tbody></table></div></details>';
+  }
+
+  function axis(f, max, fmt) {
+    var out = '';
+    for (var i = 0; i <= 4; i++) {
+      var v = max * i / 4, y = f.m.t + f.ih - f.ih * i / 4;
+      out += '<line class="grid" x1="' + f.m.l + '" x2="' + (f.w - f.m.r) + '" y1="' + y + '" y2="' + y + '"/>' +
+        '<text class="tick" x="' + (f.m.l - 6) + '" y="' + (y + 4) + '" text-anchor="end">' + esc(fmt(v, true)) + '</text>';
+    }
+    return out;
+  }
+
+  function xLabels(f, labels, x, every) {
+    return labels.map(function (l, i) {
+      if (i % every !== 0 && i !== labels.length - 1) return '';
+      return '<text class="tick" x="' + x(i) + '" y="' + (f.h - 8) + '" text-anchor="middle">' + esc(l) + '</text>';
+    }).join('');
+  }
+
+  function hover(wrap, f, labels, series, fmt, x, crosshair) {
+    var svg = wrap.querySelector('svg'), tip = wrap.querySelector('.tip'), cross = wrap.querySelector('.cross');
+    function show(evt) {
+      var r = svg.getBoundingClientRect();
+      var px = (evt.clientX - r.left) * (f.w / r.width);
+      var best = 0, bd = Infinity;
+      labels.forEach(function (_, i) { var d = Math.abs(x(i) - px); if (d < bd) { bd = d; best = i; } });
+      tip.innerHTML = '<b>' + esc(labels[best]) + '</b>' + series.map(function (s) {
+        return '<div><i style="background:' + s.color + '"></i>' + esc(s.name) + ' <span>' + esc(fmt(s.values[best])) + '</span></div>';
+      }).join('');
+      tip.hidden = false;
+      var left = x(best) / f.w * r.width;
+      tip.style.left = Math.min(Math.max(0, left - tip.offsetWidth / 2), r.width - tip.offsetWidth) + 'px';
+      if (crosshair && cross) { cross.setAttribute('x1', x(best)); cross.setAttribute('x2', x(best)); cross.style.display = ''; }
+    }
+    svg.addEventListener('pointermove', show);
+    svg.addEventListener('pointerdown', show);
+    svg.addEventListener('pointerleave', function () { tip.hidden = true; if (cross) cross.style.display = 'none'; });
+  }
+
+  /** Stacked bars. data: { labels, series: [{ name, color, values }], fmt } */
+  H.stackedBars = function (el, data) {
+    var f = frame(el, data);
+    var n = data.labels.length;
+    var totals = data.labels.map(function (_, i) { return data.series.reduce(function (s, x) { return s + (x.values[i] || 0); }, 0); });
+    var max = niceMax(Math.max.apply(null, totals.concat([0])));
+    var band = f.iw / n, bw = Math.max(6, Math.min(36, band * 0.6));
+    var x = function (i) { return f.m.l + band * i + band / 2; };
+    var y = function (v) { return f.ih * v / max; };
+    var bars = '';
+    data.labels.forEach(function (_, i) {
+      var base = f.m.t + f.ih;
+      var segs = data.series.filter(function (s) { return (s.values[i] || 0) > 0; });
+      segs.forEach(function (s, k) {
+        var hgt = y(s.values[i]);
+        var top = k === segs.length - 1;
+        var gap = k > 0 ? 2 : 0;
+        var yy = base - hgt;
+        var r = top ? Math.min(4, bw / 2, hgt - gap) : 0;
+        var hh = Math.max(0, hgt - gap);
+        bars += r > 0
+          ? '<path fill="' + s.color + '" d="M' + (x(i) - bw / 2) + ',' + (yy + hh) + 'V' + (yy + r) + 'Q' + (x(i) - bw / 2) + ',' + yy + ' ' + (x(i) - bw / 2 + r) + ',' + yy +
+            'H' + (x(i) + bw / 2 - r) + 'Q' + (x(i) + bw / 2) + ',' + yy + ' ' + (x(i) + bw / 2) + ',' + (yy + r) + 'V' + (yy + hh) + 'Z"/>'
+          : '<rect fill="' + s.color + '" x="' + (x(i) - bw / 2) + '" y="' + yy + '" width="' + bw + '" height="' + hh + '"/>';
+        base = yy;
+      });
+    });
+    el.innerHTML = legend(data.series) + '<div class="chart"><svg viewBox="0 0 ' + f.w + ' ' + f.h + '" role="img" aria-label="' + esc(data.title || 'Chart') + '">' +
+      axis(f, max, data.fmt) + bars + '<line class="axis" x1="' + f.m.l + '" x2="' + (f.w - f.m.r) + '" y1="' + (f.m.t + f.ih) + '" y2="' + (f.m.t + f.ih) + '"/>' +
+      xLabels(f, data.labels, x, n > 8 && f.w < 500 ? 2 : 1) + '</svg><div class="tip" hidden></div></div>' +
+      table(data.labels, data.series, data.fmt);
+    hover(el.querySelector('.chart'), f, data.labels, data.series, data.fmt, x, false);
+  };
+
+  /** Line chart. data: { labels, series: [{ name, color, values }], fmt } */
+  H.lineChart = function (el, data) {
+    var f = frame(el, data);
+    var n = data.labels.length;
+    var all = [];
+    data.series.forEach(function (s) { s.values.forEach(function (v) { all.push(v || 0); }); });
+    var max = niceMax(Math.max.apply(null, all.concat([0])));
+    var x = function (i) { return n === 1 ? f.m.l + f.iw / 2 : f.m.l + f.iw * i / (n - 1); };
+    var y = function (v) { return f.m.t + f.ih - f.ih * (v || 0) / max; };
+    var lines = data.series.map(function (s) {
+      var d = s.values.map(function (v, i) { return (i ? 'L' : 'M') + x(i) + ',' + y(v); }).join('');
+      var dots = s.values.map(function (v, i) { return '<circle cx="' + x(i) + '" cy="' + y(v) + '" r="4" fill="' + s.color + '" stroke="#0d0f12" stroke-width="2"/>'; }).join('');
+      return '<path d="' + d + '" fill="none" stroke="' + s.color + '" stroke-width="2" stroke-linejoin="round"/>' + (n <= 26 ? dots : '');
+    }).join('');
+    var every = Math.ceil(n / Math.max(1, Math.floor(f.iw / 64)));
+    el.innerHTML = legend(data.series) + '<div class="chart"><svg viewBox="0 0 ' + f.w + ' ' + f.h + '" role="img" aria-label="' + esc(data.title || 'Chart') + '">' +
+      axis(f, max, data.fmt) + '<line class="cross" y1="' + f.m.t + '" y2="' + (f.m.t + f.ih) + '" style="display:none"/>' + lines +
+      xLabels(f, data.labels, x, every) + '</svg><div class="tip" hidden></div></div>' +
+      table(data.labels, data.series, data.fmt);
+    hover(el.querySelector('.chart'), f, data.labels, data.series, data.fmt, x, true);
+  };
+})(window.Hub);
+</script>

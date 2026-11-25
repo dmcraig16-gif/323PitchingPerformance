@@ -136,6 +136,36 @@ function firstFreeRow_(sh, meta) {
   return 2;
 }
 
+/**
+ * Add a timestamped note to the top of a notes cell. Reads the cell inside the lock,
+ * so a note typed in the sheet a second ago is kept.
+ */
+function prependNote_(name, row, header, text, expect) {
+  if (!String(text || '').trim()) throw new Error('Type a note first.');
+  return withLock_(function () {
+    var lm = liveMeta_(name);
+    var sh = lm.sh, meta = lm.meta;
+    var col = meta.cols[header];
+    if (!col) throw new Error('No ' + header + ' column on ' + name + '.');
+    row = Number(row);
+    if (!(row >= 2) || row > sh.getLastRow()) throw new Error('That row no longer exists. Refresh and try again.');
+    var current = sh.getRange(row, 1, 1, meta.width).getValues()[0];
+    Object.keys(expect || {}).forEach(function (h) {
+      var c = meta.cols[h];
+      if (c && String(current[c.index]).trim() !== String(expect[h]).trim()) {
+        throw new Error('That row changed in the sheet. Refresh and try again.');
+      }
+    });
+    var changes = {};
+    changes[header] = stampNote_(current[col.index], text);
+    var res = writeCells_(sh, meta, row, changes);
+    if (res.written.indexOf(header) < 0) throw new Error('Notes could not be saved (that cell holds a formula).');
+    SpreadsheetApp.flush();
+    bustCache_();
+    return changes[header];
+  });
+}
+
 /** Prepend a timestamped line to a notes value: "M/D/YYYY: text", newest first. */
 function stampNote_(existing, text) {
   var d = Utilities.formatDate(new Date(), CONFIG.TZ, 'M/d/yyyy');

@@ -1,0 +1,260 @@
+<script>
+/* Content, Wins, Scorecard history, and a shared row editor. */
+(function (H) {
+  'use strict';
+  var esc = H.esc, fmtDate = H.fmtDate;
+
+  /* ---------- shared: consent badge for wins ---------- */
+  // Media consent values in the sheet: Full, Face and name hidden, None.
+  H.consentHtml = function (w) {
+    var consent = String(w['Media consent'] == null ? '' : w['Media consent']).trim();
+    var ok = w['OK to post'] === true;
+    var hidden = /hidden/i.test(consent);
+    var full = /^full$/i.test(consent);
+    if (ok && (full || hidden)) {
+      return '<div class="consent ' + (hidden ? 'warn' : 'ok') + '">OK to post' + (hidden ? ' · hide face and name' : ' · full consent') + '</div>';
+    }
+    var why = [];
+    if (!full && !hidden) why.push(consent && !/^none$/i.test(consent) ? 'consent: ' + consent : 'no media consent');
+    if (!ok) why.push('not marked OK to post');
+    return '<div class="consent no">Do not post · ' + esc(why.join(', ')) + '</div>';
+  };
+
+  /* ---------- shared: edit any row on an allowed tab ---------- */
+  var editSpecs = {};
+  H.editRecord = function (tab, rec, expectKeys, onSaved) {
+    var p = editSpecs[tab] ? Promise.resolve(editSpecs[tab]) : H.api('getEditSpec', tab);
+    p.then(function (spec) {
+      editSpecs[tab] = spec;
+      var h = '<form class="form" id="editForm" data-tab="' + esc(tab) + '" data-row="' + rec.row + '"><h2>Edit</h2>';
+      h += spec.fields.map(function (f) {
+        var v = rec[f.name], n = esc(f.name), inp;
+        if (f.type === 'bool') return '<label class="field bool"><input type="checkbox" name="' + n + '"' + (v === true ? ' checked' : '') + '><span>' + n + '</span></label>';
+        if (f.choices && f.choiceSource === 'list') inp = '<select name="' + n + '"><option value=""></option>' + f.choices.map(function (c) { return '<option' + (String(c) === String(v) ? ' selected' : '') + '>' + esc(c) + '</option>'; }).join('') + '</select>';
+        else if (f.type === 'date') inp = '<input type="date" name="' + n + '" value="' + esc(H.ymd(v)) + '">';
+        else if (/notes|teaching point|hook|^win$|evidence/i.test(f.name)) inp = '<textarea name="' + n + '">' + esc(v) + '</textarea>';
+        else inp = '<input name="' + n + '" value="' + esc(v) + '"' + (f.type === 'number' ? ' inputmode="decimal"' : '') + ' autocomplete="off">';
+        return '<label class="field"><span>' + n + '</span>' + inp + '</label>';
+      }).join('');
+      h += '<div class="form-error" hidden></div><div class="form-actions"><button type="button" class="btn ghost" data-cancel>Cancel</button><button type="submit" class="btn">Save</button></div></form>';
+      H.openSheet(h);
+      H.state.editCtx = { rec: rec, spec: spec, expectKeys: expectKeys, onSaved: onSaved };
+    }).catch(function (m) { H.toast(m, true); });
+  };
+
+  document.getElementById('sheet').addEventListener('submit', function (e) {
+    if (e.target.id !== 'editForm') return;
+    e.preventDefault(); e.stopImmediatePropagation();
+    var ctx = H.state.editCtx, f = e.target, changes = {};
+    ctx.spec.fields.forEach(function (fd) {
+      var el = f.elements[fd.name];
+      if (!el) return;
+      var v = fd.type === 'bool' ? el.checked : el.value;
+      var old = ctx.rec[fd.name];
+      var same = fd.type === 'bool' ? (old === true) === v : (fd.type === 'date' ? H.ymd(old) === v : String(old == null ? '' : old) === String(v));
+      if (!same) changes[fd.name] = v;
+    });
+    if (!Object.keys(changes).length) return H.closeSheet();
+    var expect = {};
+    ctx.expectKeys.forEach(function (k) { expect[k] = ctx.rec[k] == null ? '' : ctx.rec[k]; });
+    var btn = f.querySelector('[type=submit]'), err = f.querySelector('.form-error');
+    btn.disabled = true; btn.textContent = 'Saving';
+    H.api('updateRecord', f.getAttribute('data-tab'), ctx.rec.row, expect, changes).then(function (res) {
+      H.closeSheet();
+      H.toast(res.skipped.length ? 'Saved. Skipped formula cells: ' + res.skipped.join(', ') : 'Saved');
+      if (ctx.onSaved) ctx.onSaved();
+    }).catch(function (m) { btn.disabled = false; btn.textContent = 'Save'; err.textContent = m; err.hidden = false; });
+  }, true);
+
+  /* ---------- Content ---------- */
+  var C = { d: null, at: 0, pillar: '', status: '', mode: 'list', month: null };
+  H.onStale(function () { C.at = 0; });
+
+  H.views.content = function (opts) {
+    if (C.d && !opts.fresh && Date.now() - C.at < 60000) return renderContent();
+    H.view.innerHTML = '<h1>Content</h1><div class="skeleton" style="height:320px;margin-top:16px"></div>';
+    H.setBusy(true);
+    H.api('getContent', !!opts.fresh).then(function (d) {
+      C.d = d; C.at = Date.now();
+      if (!C.month) C.month = d.today.slice(0, 7);
+      if (H.state.tab === 'content') renderContent();
+    }).catch(function (m) { H.toast(m, true); }).then(function () { H.setBusy(false); });
+  };
+
+  function sel(attr, cur, all, label) {
+    return '<select ' + attr + '><option value="">' + esc(label) + '</option>' + all.map(function (v) { return '<option' + (v === cur ? ' selected' : '') + '>' + esc(v) + '</option>'; }).join('') + '</select>';
+  }
+
+  function renderContent() {
+    var d = C.d;
+    var h = '<button class="back" data-go="more">More</button><div class="row-between"><h1>Content</h1><button class="btn small" data-add-post>Add post</button></div>';
+    var top = d.stale[0];
+    if (top) {
+      h += '<div class="notice">' + (top.days === null
+        ? esc(top.pillar) + ' has not been posted yet.'
+        : esc(top.pillar) + ' is the longest without a post: ' + top.days + ' days (last ' + fmtDate(top.last) + ').') + '</div>';
+    }
+    h += '<div class="list kv">' + d.stale.map(function (s) {
+      return '<div class="kvrow"><span>' + esc(s.pillar) + '</span><span class="sub">' + (s.last ? fmtDate(s.last) + ' · ' + s.days + 'd ago' : 'never') + '</span></div>';
+    }).join('') + '</div>';
+    h += '<div class="sub" style="margin-top:6px">' + (d.postedRule === 'status' ? 'Counts posts whose Status says posted.' : 'Counts posts dated today or earlier. No Status value says posted yet.') + '</div>';
+    h += '<div class="filters" style="margin-top:16px">' + sel('data-cf="pillar"', C.pillar, d.pillars, 'All pillars') + sel('data-cf="status"', C.status, d.statuses, 'All statuses') + '</div>';
+    h += '<div class="seg"><button data-cmode="list" class="' + (C.mode === 'list' ? 'on' : '') + '">List</button><button data-cmode="cal" class="' + (C.mode === 'cal' ? 'on' : '') + '">Calendar</button></div>';
+    h += '<div id="contentBody"></div>';
+    H.view.innerHTML = h;
+    renderContentBody();
+  }
+
+  function filteredPosts() {
+    return C.d.posts.filter(function (p) {
+      return (!C.pillar || p['Pillar'] === C.pillar) && (!C.status || p['Status'] === C.status);
+    });
+  }
+
+  function postItem(p) {
+    return '<button class="client-row" data-edit-post="' + p.row + '"><div class="row-between"><span class="t">' + esc(p['Topic'] || p['Hook'] || 'Post') + '</span><span class="sub">' + (fmtDate(p.date) || 'no date') + '</span></div>' +
+      '<div class="d">' + [p['Pillar'], p['Format'], p['Status']].filter(Boolean).map(esc).join(' · ') + '</div>' +
+      (p['Hook'] ? '<div class="d">' + esc(p['Hook']) + '</div>' : '') + '</button>';
+  }
+
+  function renderContentBody() {
+    var el = document.getElementById('contentBody');
+    var posts = filteredPosts();
+    if (C.mode === 'list') {
+      posts = posts.slice().sort(function (a, b) { return String(b.date).localeCompare(String(a.date)); });
+      el.innerHTML = posts.length ? '<div class="list" style="margin-top:12px">' + posts.map(postItem).join('') + '</div>' : '<div class="list" style="margin-top:12px"><div class="empty">No posts match.</div></div>';
+      return;
+    }
+    var y = Number(C.month.slice(0, 4)), m = Number(C.month.slice(5, 7));
+    var first = new Date(Date.UTC(y, m - 1, 1)), days = new Date(Date.UTC(y, m, 0)).getUTCDate();
+    var lead = (first.getUTCDay() + 6) % 7;
+    var byDay = {};
+    posts.forEach(function (p) { if (p.date && p.date.slice(0, 7) === C.month) (byDay[p.date] = byDay[p.date] || []).push(p); });
+    var h = '<div class="row-between cal-head"><button class="chip" data-cal="-1">Prev</button><b>' + first.toLocaleString('en-US', { month: 'long', year: 'numeric', timeZone: 'UTC' }) + '</b><button class="chip" data-cal="1">Next</button></div>';
+    h += '<div class="cal">' + ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map(function (x) { return '<div class="cal-dow">' + x + '</div>'; }).join('');
+    for (var i = 0; i < lead; i++) h += '<div class="cal-cell empty"></div>';
+    for (var dd = 1; dd <= days; dd++) {
+      var key = C.month + '-' + ('0' + dd).slice(-2);
+      var ps = byDay[key] || [];
+      h += '<div class="cal-cell' + (key === C.d.today ? ' today' : '') + '"><span class="cal-n">' + dd + '</span>' +
+        ps.map(function (p) { return '<button class="cal-post" data-edit-post="' + p.row + '" title="' + esc(p['Topic'] || '') + '">' + esc(p['Topic'] || p['Format'] || 'Post') + '</button>'; }).join('') + '</div>';
+    }
+    h += '</div>';
+    var undated = posts.filter(function (p) { return !p.date; });
+    if (undated.length) h += '<h2>No date</h2><div class="list">' + undated.map(postItem).join('') + '</div>';
+    el.innerHTML = h;
+  }
+
+  H.handlers.content = {
+    click: function (e) {
+      if (e.target.closest('[data-go]')) return H.go('more');
+      if (e.target.closest('[data-add-post]')) return H.openForm('Content', {}, function () { H.views.content({ fresh: true }); });
+      var md = e.target.closest('[data-cmode]');
+      if (md) { C.mode = md.getAttribute('data-cmode'); return renderContent(); }
+      var cal = e.target.closest('[data-cal]');
+      if (cal) {
+        var y = Number(C.month.slice(0, 4)), m = Number(C.month.slice(5, 7)) - 1 + Number(cal.getAttribute('data-cal'));
+        var d = new Date(Date.UTC(y, m, 1));
+        C.month = d.toISOString().slice(0, 7);
+        return renderContentBody();
+      }
+      var ep = e.target.closest('[data-edit-post]');
+      if (ep) {
+        var row = Number(ep.getAttribute('data-edit-post'));
+        var rec = C.d.posts.filter(function (p) { return p.row === row; })[0];
+        return H.editRecord('Content', rec, ['Topic'], function () { H.views.content({ fresh: true }); });
+      }
+    },
+    change: function (e) {
+      var f = e.target.getAttribute('data-cf');
+      if (f) { C[f] = e.target.value; renderContentBody(); }
+    }
+  };
+
+  /* ---------- Wins ---------- */
+  var W = { d: null, at: 0, athlete: '' };
+  H.onStale(function () { W.at = 0; });
+
+  H.views.wins = function (opts) {
+    if (W.d && !opts.fresh && Date.now() - W.at < 60000) return renderWins();
+    H.view.innerHTML = '<h1>Wins</h1><div class="skeleton" style="height:320px;margin-top:16px"></div>';
+    H.setBusy(true);
+    H.api('getWins', !!opts.fresh).then(function (d) {
+      W.d = d; W.at = Date.now();
+      if (H.state.tab === 'wins') renderWins();
+    }).catch(function (m) { H.toast(m, true); }).then(function () { H.setBusy(false); });
+  };
+
+  function renderWins() {
+    var d = W.d;
+    var h = '<button class="back" data-go="more">More</button><div class="row-between"><h1>Wins</h1><button class="btn small" data-add-win>Log win</button></div>';
+    h += '<div class="filters">' + sel('data-wf', W.athlete, d.athletes, 'All athletes') + '</div>';
+    var list = d.wins.filter(function (w) { return !W.athlete || w['Athlete'] === W.athlete; });
+    h += list.length ? '<div class="list">' + list.map(function (w) {
+      return '<button class="client-row" data-edit-win="' + w.row + '"><div class="row-between"><span class="t">' + esc(w['Athlete'] || '') + '</span><span class="sub">' + fmtDate(w['Date']) + '</span></div>' +
+        '<div class="d">' + esc(w['Win'] || '') + (w['Area'] ? ' · ' + esc(w['Area']) : '') + '</div>' +
+        (w['Evidence'] ? '<div class="d">' + esc(w['Evidence']) + '</div>' : '') + H.consentHtml(w) + '</button>';
+    }).join('') + '</div>' : '<div class="list"><div class="empty">No wins logged yet.</div></div>';
+    H.view.innerHTML = h;
+  }
+
+  H.handlers.wins = {
+    click: function (e) {
+      if (e.target.closest('[data-go]')) return H.go('more');
+      if (e.target.closest('[data-add-win]')) return H.openForm('Wins', W.athlete ? { Athlete: W.athlete } : {}, function () { H.views.wins({ fresh: true }); });
+      var ew = e.target.closest('[data-edit-win]');
+      if (ew) {
+        var row = Number(ew.getAttribute('data-edit-win'));
+        var rec = W.d.wins.filter(function (w) { return w.row === row; })[0];
+        return H.editRecord('Wins', rec, ['Athlete', 'Win'], function () { H.views.wins({ fresh: true }); });
+      }
+    },
+    change: function (e) { if (e.target.matches('[data-wf]')) { W.athlete = e.target.value; renderWins(); } }
+  };
+
+  /* ---------- Scorecard history ---------- */
+  H.views.history = function (opts) {
+    H.view.innerHTML = '<h1>Scorecard history</h1><div class="skeleton" style="height:320px;margin-top:16px"></div>';
+    H.setBusy(true);
+    H.api('getHistory', !!opts.fresh).then(function (d) {
+      if (H.state.tab === 'history') renderHistory(d);
+    }).catch(function (m) { H.toast(m, true); }).then(function () { H.setBusy(false); });
+  };
+
+  function col(headers, re) { return headers.filter(function (h) { return re.test(h); })[0]; }
+
+  function renderHistory(d) {
+    var hs = d.headers, rows = d.rows.slice().sort(function (a, b) { return String(a[hs[0]]).localeCompare(String(b[hs[0]])); });
+    var h = '<button class="back" data-go="more">More</button><h1>Scorecard history</h1>';
+    if (!rows.length) { H.view.innerHTML = h + '<div class="list"><div class="empty">No weekly log rows yet.</div></div>'; return; }
+    var labels = rows.map(function (r) { return fmtDate(r[hs[0]]).replace(/\/\d{4}$/, ''); });
+    var countCols = [/^conversations/i, /^calls booked/i, /^calls held/i, /^closes/i, /^enrolled/i].map(function (re) { return col(hs, re); }).filter(Boolean);
+    var mrrCol = col(hs, /^mrr$/i);
+    h += '<h2>Pipeline and enrolled</h2><div id="histCounts"></div>';
+    if (mrrCol) h += '<h2>MRR</h2><div id="histMrr"></div>';
+    h += '<h2>Weekly log</h2><div class="scroll-x"><table class="log"><thead><tr>' + hs.map(function (x) { return '<th>' + esc(x) + '</th>'; }).join('') + '</tr></thead><tbody>' +
+      rows.slice().reverse().map(function (r) {
+        return '<tr>' + hs.map(function (x, i) {
+          var v = r[x];
+          if (i === 0) v = fmtDate(v);
+          else if (x === mrrCol) v = H.money(v);
+          else v = esc(v);
+          return '<td>' + v + '</td>';
+        }).join('') + '</tr>';
+      }).join('') + '</tbody></table></div>';
+    H.view.innerHTML = h;
+    H.lineChart(document.getElementById('histCounts'), {
+      title: 'Weekly pipeline and enrolled athletes', labels: labels,
+      series: countCols.map(function (c, i) { return { name: c, color: H.SERIES[i], values: rows.map(function (r) { return H.num(r[c]); }) }; }),
+      fmt: function (v) { return String(Math.round(H.num(v) * 10) / 10); }, left: 32
+    });
+    if (mrrCol) H.lineChart(document.getElementById('histMrr'), {
+      title: 'MRR by week', labels: labels, height: 180,
+      series: [{ name: 'MRR', color: H.SERIES[0], values: rows.map(function (r) { return H.num(r[mrrCol]); }) }],
+      fmt: function (v, axis) { var n = H.num(v); return axis && n >= 1000 ? '$' + (n / 1000) + 'k' : H.money(n); }
+    });
+  }
+
+  H.handlers.history = { click: function (e) { if (e.target.closest('[data-go]')) H.go('more'); } };
+})(window.Hub);
+</script>

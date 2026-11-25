@@ -1,0 +1,251 @@
+<script>
+/* Clients list and client profile. */
+(function (H) {
+  'use strict';
+  var esc = H.esc, fmtDate = H.fmtDate, money = H.money;
+  var S = { list: null, at: 0, q: '', program: '', status: 'current', pay: '', profile: null };
+  H.onStale(function () { S.at = 0; });
+
+  H.views.clients = function (opts) {
+    if (opts.row) return loadProfile(opts.row, opts.fresh);
+    S.profile = null;
+    if (S.list && !opts.fresh && Date.now() - S.at < 60000) return renderList();
+    if (!S.list) H.view.innerHTML = '<h1>Clients</h1><div class="skeleton" style="height:320px;margin-top:16px"></div>';
+    H.setBusy(true);
+    H.api('getClients', !!opts.fresh).then(function (d) {
+      S.list = d; S.at = Date.now();
+      if (H.state.tab === 'clients' && !H.state.opts.row) renderList();
+    }).catch(function (m) { H.toast(m, true); }).then(function () { H.setBusy(false); });
+  };
+
+  function badge(pay) {
+    if (!pay) return '';
+    var cls = pay === 'Paid' ? 'ok' : pay === 'Due' ? 'due' : pay === 'Overdue' ? 'over' : 'neutral';
+    return '<span class="badge ' + cls + '">' + esc(pay) + '</span>';
+  }
+  H.payBadge = badge;
+
+  function opt(v, label, cur) { return '<option value="' + esc(v) + '"' + (v === cur ? ' selected' : '') + '>' + esc(label) + '</option>'; }
+
+  function renderList() {
+    var d = S.list;
+    var h = '<div class="row-between"><h1>Clients</h1><button class="btn small" data-add-client>Add client</button></div>';
+    h += '<input class="search" type="search" placeholder="Search athlete, parent, email" data-q value="' + esc(S.q) + '">';
+    h += '<div class="filters">' +
+      '<select data-f="program">' + opt('', 'All programs', S.program) + d.programs.map(function (p) { return opt(p, p, S.program); }).join('') + '</select>' +
+      '<select data-f="status">' + opt('current', 'Active + Onboarding', S.status) + opt('', 'All statuses', S.status) + d.statuses.map(function (s) { return opt(s, s, S.status); }).join('') + '</select>' +
+      '<select data-f="pay">' + opt('', 'Any payment', S.pay) + ['Paid', 'Due', 'Overdue', 'No charge', 'Prepaid'].map(function (s) { return opt(s, s, S.pay); }).join('') + '</select>' +
+      '</div><div id="clientRows"></div>';
+    H.view.innerHTML = h;
+    renderRows();
+  }
+
+  function renderRows() {
+    var q = S.q.toLowerCase();
+    var rows = S.list.clients.filter(function (c) {
+      if (q && [c.athlete, c.parent, c.email].join(' ').toLowerCase().indexOf(q) < 0) return false;
+      if (S.program && c.program !== S.program) return false;
+      if (S.status === 'current' && ['Active', 'Onboarding'].indexOf(c.status) < 0) return false;
+      if (S.status && S.status !== 'current' && c.status !== S.status) return false;
+      if (S.pay && c.pay !== S.pay) return false;
+      return true;
+    });
+    var el = document.getElementById('clientRows');
+    if (!rows.length) { el.innerHTML = '<div class="list"><div class="empty">No clients match.</div></div>'; return; }
+    el.innerHTML = '<div class="list">' + rows.map(function (c) {
+      var rate = c.rate === '' || c.rate == null ? '' : (typeof c.rate === 'number' ? money(c.rate) + '/mo' : esc(c.rate));
+      return '<button class="client-row" data-client="' + c.row + '">' +
+        '<div class="row-between"><span class="t">' + esc(c.athlete) + H.tagHtml(c.tag) + '</span>' + badge(c.pay) + '</div>' +
+        '<div class="d">' + [esc(c.program), esc(c.plan), rate, esc(c.status)].filter(Boolean).join(' · ') + '</div>' +
+        (c.endsSoon ? '<div class="d warn">Term ends in ' + c.daysLeft + ' days. Talk renewal.</div>' : '') +
+        '</button>';
+    }).join('') + '</div>';
+  }
+
+  /* ---------- profile ---------- */
+
+  function loadProfile(row, fresh) {
+    if (!S.profile || S.profile.row !== row) H.view.innerHTML = '<div class="skeleton" style="height:420px"></div>';
+    H.setBusy(true);
+    return H.api('getClient', row, !!fresh).then(function (p) {
+      S.profile = p;
+      if (H.state.tab === 'clients' && H.state.opts.row === row) renderProfile();
+    }).catch(function (m) { H.toast(m, true); }).then(function () { H.setBusy(false); });
+  }
+
+  function fieldInput(f) {
+    var name = esc(f.name), v = f.value;
+    if (f.computed) {
+      var shown = f.type === 'date' ? fmtDate(v) : (typeof v === 'number' && /rate|amount/i.test(f.name) ? money(v) : esc(v));
+      return '<div class="ro">' + (shown || '<span class="sub">blank</span>') + ' <span class="sub">(formula)</span></div>';
+    }
+    if (f.type === 'bool') return '<input type="checkbox" data-field="' + name + '"' + (v === true ? ' checked' : '') + '>';
+    if (f.choices) {
+      return '<select data-field="' + name + '"><option value=""></option>' + f.choices.map(function (c) {
+        return '<option' + (String(c) === String(v) ? ' selected' : '') + '>' + esc(c) + '</option>';
+      }).join('') + '</select>';
+    }
+    if (f.type === 'date') return '<input type="date" data-field="' + name + '" value="' + esc(H.ymd(v)) + '">';
+    if (f.type === 'number') return '<input inputmode="decimal" data-field="' + name + '" value="' + esc(v) + '">';
+    return '<input data-field="' + name + '" value="' + esc(v) + '" autocomplete="off">';
+  }
+
+  function renderProfile() {
+    var p = S.profile, t = p.term;
+    var h = '<button class="back" data-back>Clients</button>';
+    h += '<h1>' + esc(p.athlete) + '</h1><div class="sub">' + H.tagHtml(p.tag).replace('margin-left:6px', '') + ' ' + badge(p.pay) + '</div>';
+
+    // Quick actions
+    h += '<div class="actions">';
+    h += p.links.email ? '<a class="btn ghost" href="mailto:' + esc(p.links.email) + '" target="_top">Email parent</a>' : '<button class="btn ghost" disabled>No parent email</button>';
+    if (H.isUrl(p.links.payment)) h += '<button class="btn ghost" data-copy="' + esc(p.links.payment) + '">Copy payment link</button>';
+    else h += '<button class="btn ghost" disabled>' + (p.links.payment ? 'Pays by ' + esc(p.links.payment) : 'No payment link') + '</button>';
+    h += H.isUrl(p.links.agreement) ? '<button class="btn ghost" data-open="' + esc(p.links.agreement) + '">Open agreement</button>' : '<button class="btn ghost" disabled>No agreement link</button>';
+    h += '</div>';
+
+    // Term
+    h += '<h2>Term</h2><div class="list kv">' +
+      kv('Start date', fmtDate(t.start)) + kv('Term ends', fmtDate(t.ends)) + kv('Term', t.months ? esc(t.months) + ' months' : '') +
+      kv('Months in', t.monthsIn == null ? '' : t.monthsIn) +
+      kv('Days left', t.daysLeft == null ? '' : (t.daysLeft < 0 ? 'Ended ' + (-t.daysLeft) + ' days ago' : t.daysLeft)) +
+      '</div>';
+    if (t.endsSoon) h += '<div class="notice">Term ends in ' + t.daysLeft + ' days. Talk renewal.</div>';
+
+    // Onboarding
+    h += '<h2>Onboarding</h2><div class="list">' + p.onboarding.map(function (o) {
+      return '<button class="task-row onb' + (o.done ? ' done' : '') + '" data-onb="' + esc(o.name) + '"' + (o.computed ? ' disabled' : '') + '>' +
+        '<span class="check"></span><span class="txt">' + esc(o.name) + '</span></button>';
+    }).join('') + '</div>';
+
+    // Payments
+    h += '<h2>Payments</h2><div class="list kv">' +
+      kv('This month', esc(p.paidThisMonth) + ' ' + badge(p.pay === p.paidThisMonth ? '' : p.pay)) +
+      kv('Next payment due', fmtDate(p.nextDue) || '<span class="sub">none set</span>') +
+      kv('Total paid to date', money(p.totalPaid)) + '</div>';
+    h += p.payments.length ? '<div class="list" style="margin-top:10px">' + p.payments.map(function (x) {
+      return '<div class="item"><div style="flex:1"><div class="row-between"><span class="t">' + money(x.amount) + '</span><span class="sub">' + fmtDate(x.date) + '</span></div>' +
+        '<div class="d">' + [esc(x.method), esc(x.status), x.notes ? esc(x.notes) : ''].filter(Boolean).join(' · ') + '</div></div></div>';
+    }).join('') + '</div>' : '<div class="list" style="margin-top:10px"><div class="empty">No payments logged.</div></div>';
+    h += '<button class="btn ghost full" data-log-payment style="margin-top:10px">Log payment</button>';
+
+    // Wins
+    h += '<h2>Wins</h2>';
+    h += p.wins.length ? '<div class="list">' + p.wins.map(function (w) {
+      return '<div class="item"><div style="flex:1"><div class="row-between"><span class="t">' + esc(w['Win']) + '</span><span class="sub">' + fmtDate(w['Date']) + '</span></div>' +
+        '<div class="d">' + esc(w['Area'] || '') + (w['Evidence'] ? ' · ' + esc(w['Evidence']) : '') + '</div>' +
+        H.consentHtml(w) + '</div></div>';
+    }).join('') + '</div>' : '<div class="list"><div class="empty">No wins logged yet.</div></div>';
+    h += '<button class="btn ghost full" data-log-win style="margin-top:10px">Log win</button>';
+
+    // Notes
+    h += '<h2>Notes</h2><div class="notes" id="notesBox">' + (p.notes ? esc(p.notes) : '<span class="sub">No notes yet.</span>') + '</div>' +
+      '<label class="field"><span>Add a note</span><textarea id="newNote" placeholder="What happened"></textarea></label>' +
+      '<div class="form-actions"><button class="btn ghost" data-edit-notes>Edit all</button><button class="btn" data-add-note>Add note</button></div>';
+
+    // Details
+    h += '<h2>All fields</h2><div class="list fields">' + p.fields.filter(function (f) {
+      return f.name !== 'Notes' && p.onboarding.every(function (o) { return o.name !== f.name; });
+    }).map(function (f) {
+      return '<label class="frow"><span class="fl">' + esc(f.name) + '</span><span class="fv">' + fieldInput(f) + '</span><span class="saved" data-saved="' + esc(f.name) + '"></span></label>';
+    }).join('') + '</div>';
+
+    H.view.innerHTML = h;
+  }
+
+  function kv(k, v) { return '<div class="kvrow"><span class="sub">' + esc(k) + '</span><span>' + (v === '' || v == null ? '<span class="sub">-</span>' : v) + '</span></div>'; }
+
+  function save(changes, afterOk) {
+    var p = S.profile;
+    return H.api('updateClient', p.row, p.athlete, changes).then(function (res) {
+      if (res.skipped && res.skipped.length) H.toast(res.skipped.join(', ') + ' not saved (formula).', true);
+      if (changes['Athlete name'] !== undefined && res.written.indexOf('Athlete name') >= 0) p.athlete = changes['Athlete name'];
+      H.invalidate();
+      if (afterOk) afterOk(res);
+      // Formula columns (Term ends, Paid this month) may have changed. Reload quietly.
+      return H.api('getClient', p.row, true).then(function (fresh) {
+        S.profile = fresh;
+        var a = document.activeElement;
+        var typing = a && H.view.contains(a) && /INPUT|TEXTAREA|SELECT/.test(a.tagName);
+        if (!typing && H.state.tab === 'clients' && H.state.opts.row === fresh.row) renderProfile();
+      });
+    }).catch(function (m) { H.toast(m, true); throw m; });
+  }
+
+  function saveField(el) {
+    var name = el.getAttribute('data-field');
+    var v = el.type === 'checkbox' ? el.checked : el.value;
+    if (name === 'Athlete name' && !String(v).trim()) { H.toast('Athlete name cannot be blank.', true); el.value = S.profile.athlete; return; }
+    var mark = H.view.querySelector('[data-saved="' + CSS.escape(name) + '"]');
+    if (mark) mark.textContent = 'Saving';
+    var c = {}; c[name] = v;
+    save(c, function () { if (mark) mark.textContent = 'Saved'; }).catch(function () { if (mark) mark.textContent = ''; });
+  }
+
+  function toggleOnb(btn) {
+    var name = btn.getAttribute('data-onb');
+    var o = S.profile.onboarding.filter(function (x) { return x.name === name; })[0];
+    if (!o || btn.disabled) return;
+    o.done = !o.done;
+    btn.classList.toggle('done', o.done);
+    btn.disabled = true;
+    var c = {}; c[name] = o.done;
+    save(c).catch(function () { o.done = !o.done; btn.classList.toggle('done', o.done); }).then(function () { btn.disabled = false; });
+  }
+
+  function addNote(btn) {
+    var ta = document.getElementById('newNote');
+    var text = ta.value.trim();
+    if (!text) return H.toast('Type a note first.', true);
+    btn.disabled = true;
+    H.api('addClientNote', S.profile.row, S.profile.athlete, text).then(function (notes) {
+      S.profile.notes = notes; ta.value = '';
+      document.getElementById('notesBox').textContent = notes;
+      H.toast('Note added');
+    }).catch(function (m) { H.toast(m, true); }).then(function () { btn.disabled = false; });
+  }
+
+  function editNotes() {
+    H.openSheet('<form class="form" id="notesForm"><h2>Edit notes</h2><label class="field"><span>Notes</span>' +
+      '<textarea name="notes" style="min-height:300px">' + esc(S.profile.notes) + '</textarea></label>' +
+      '<div class="form-error" hidden></div><div class="form-actions"><button type="button" class="btn ghost" data-cancel>Cancel</button><button type="submit" class="btn">Save</button></div></form>');
+  }
+
+  document.getElementById('sheet').addEventListener('submit', function (e) {
+    if (e.target.id !== 'notesForm') return;
+    e.preventDefault(); e.stopImmediatePropagation();
+    var btn = e.target.querySelector('[type=submit]');
+    btn.disabled = true;
+    save({ Notes: e.target.elements['notes'].value }).then(function () { H.closeSheet(); H.toast('Notes saved'); })
+      .catch(function () { btn.disabled = false; });
+  }, true);
+
+  H.handlers.clients = {
+    click: function (e) {
+      var c = e.target.closest('[data-client]');
+      if (c) return H.go('clients', { row: Number(c.getAttribute('data-client')) });
+      if (e.target.closest('[data-back]')) return H.go('clients');
+      if (e.target.closest('[data-add-client]')) return H.openForm('Clients', {}, function () { H.views.clients({ fresh: true }); });
+      var cp = e.target.closest('[data-copy]');
+      if (cp) return H.copyText(cp.getAttribute('data-copy'));
+      var op = e.target.closest('[data-open]');
+      if (op) return window.open(op.getAttribute('data-open'), '_blank', 'noopener');
+      var onb = e.target.closest('[data-onb]');
+      if (onb) return toggleOnb(onb);
+      var an = e.target.closest('[data-add-note]');
+      if (an) return addNote(an);
+      if (e.target.closest('[data-edit-notes]')) return editNotes();
+      var reload = function () { H.views.clients({ row: S.profile.row, fresh: true }); };
+      if (e.target.closest('[data-log-payment]')) return H.openForm('Payments', { Athlete: S.profile.athlete }, reload);
+      if (e.target.closest('[data-log-win]')) return H.openForm('Wins', { Athlete: S.profile.athlete }, reload);
+    },
+    change: function (e) {
+      if (e.target.matches('[data-field]')) return saveField(e.target);
+      var f = e.target.getAttribute('data-f');
+      if (f) { S[f] = e.target.value; renderRows(); }
+    },
+    input: function (e) {
+      if (e.target.matches('[data-q]')) { S.q = e.target.value; renderRows(); }
+    }
+  };
+})(window.Hub);
+</script>

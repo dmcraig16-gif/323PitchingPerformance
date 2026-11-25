@@ -78,20 +78,20 @@
   }
 
   /* ---------- state + routing ---------- */
-  var state = { tab: 'home', home: null, homeAt: 0, specs: {} };
+  var state = { tab: 'home', opts: {}, home: null, homeAt: 0, specs: {} };
+  // Screens in other files register here: views.x(opts) renders, handlers.x = { click, change, input }.
+  var handlers = {};
   var views = {
     home: loadHome,
-    todo: function () { placeholder('To-Do', 'Today, tomorrow, this week and overdue views with add, edit and move. Coming in Phase B.'); },
-    clients: function () { placeholder('Clients', 'Client list, filters and full profiles. Coming in Phase B.'); },
-    leads: function () { placeholder('Leads', 'Pipeline by stage with convert to client. Coming in Phase C.'); },
-    money: function () { placeholder('Money', 'Cash by month, payments, expenses and tax set-aside. Coming in Phase D.'); },
     more: renderMore
   };
 
   function go(tab, opts) {
     state.tab = tab;
+    state.opts = opts || {};
     Array.prototype.forEach.call(document.querySelectorAll('#tabbar button'), function (b) {
-      b.classList.toggle('on', b.getAttribute('data-tab') === tab);
+      var main = ['home', 'todo', 'clients', 'leads', 'money'].indexOf(tab) >= 0 ? tab : 'more';
+      b.classList.toggle('on', b.getAttribute('data-tab') === main);
     });
     window.scrollTo(0, 0);
     views[tab](opts || {});
@@ -102,10 +102,48 @@
     if (b) go(b.getAttribute('data-tab'));
   });
   document.getElementById('refreshBtn').addEventListener('click', function () {
-    views[state.tab]({ fresh: true });
+    var o = {}; Object.keys(state.opts).forEach(function (k) { o[k] = state.opts[k]; });
+    o.fresh = true;
+    views[state.tab](o);
   });
+  /* ---------- keeping views in sync ---------- */
+  // Each screen registers a function that marks its data stale. Any write calls invalidate().
+  var staleFns = [];
+  function onStale(fn) { staleFns.push(fn); }
+  function invalidate() { state.home = null; staleFns.forEach(function (f) { f(); }); }
+
+  // Today in Boise, computed in the browser, so the app rolls over at midnight even if left open.
+  function boiseToday() {
+    try {
+      var p = {};
+      new Intl.DateTimeFormat('en-US', { timeZone: 'America/Boise', year: 'numeric', month: '2-digit', day: '2-digit' })
+        .formatToParts(new Date()).forEach(function (x) { p[x.type] = x.value; });
+      return p.year + '-' + p.month + '-' + p.day;
+    } catch (e) { return ''; }
+  }
+  var lastDay = boiseToday();
+  function checkDay(force) {
+    var d = boiseToday();
+    var sheetOpen = !document.getElementById('sheet').hidden;
+    if (d && d !== lastDay) {
+      lastDay = d;
+      invalidate();
+      if (!sheetOpen) { toast('New day. Lists updated.'); refreshCurrent(); }
+      return;
+    }
+    if (force && !sheetOpen && ['home', 'todo'].indexOf(state.tab) >= 0) refreshCurrent();
+  }
+  function refreshCurrent() {
+    var o = {}; Object.keys(state.opts).forEach(function (k) { o[k] = state.opts[k]; });
+    o.fresh = true;
+    views[state.tab](o);
+  }
+  setInterval(function () { if (document.visibilityState === 'visible') checkDay(false); }, 60000);
   document.addEventListener('visibilitychange', function () {
-    if (document.visibilityState === 'visible' && state.tab === 'home' && Date.now() - state.homeAt > 60000) loadHome({});
+    if (document.visibilityState !== 'visible') return;
+    // Coming back to the app: new day, or stale data on Home and To-Do, gets refreshed.
+    var stale = Date.now() - state.homeAt > 60000;
+    checkDay(stale);
   });
 
   function placeholder(title, text) {
@@ -200,20 +238,31 @@
     });
     if (!items.length) return h + '<div class="list"><div class="empty">All clear.</div></div>';
     return h + '<div class="list">' + items.map(function (it) {
-      return '<div class="item ' + esc(it.level) + '"><span class="dot ' + esc(it.level) + '"></span><div>' +
+      var open = it.tab === 'Clients' ? ' data-open-client="' + it.row + '" role="button" tabindex="0"' : '';
+      return '<div class="item ' + esc(it.level) + (open ? ' link' : '') + '"' + open + '><span class="dot ' + esc(it.level) + '"></span><div>' +
         '<div class="t">' + esc(it.title) + tagHtml(it.tag) + '</div>' +
         '<div class="d">' + esc(String(it.detail || '').replace(/\d{4}-\d{2}-\d{2}/g, function (m) { return fmtDate(m); })) + '</div></div></div>';
     }).join('') + '</div>';
   }
 
-  $view.addEventListener('click', function (e) {
+  ['click', 'change', 'input'].forEach(function (type) {
+    $view.addEventListener(type, function (e) {
+      var h = handlers[state.tab];
+      if (h && h[type]) h[type](e);
+    });
+  });
+
+  handlers.home = { click: function (e) {
+    var open = e.target.closest('[data-open-client]');
+    if (open) return go('clients', { row: Number(open.getAttribute('data-open-client')) });
     var task = e.target.closest('[data-task-row]');
     if (task) return toggleTask(task);
     var add = e.target.closest('[data-add]');
     if (add) return openForm(add.getAttribute('data-add'));
     var menu = e.target.closest('[data-menu]');
     if (menu) return menuAction(menu.getAttribute('data-menu'));
-  });
+  } };
+  handlers.more = handlers.home;
 
   function toggleTask(el) {
     if (el.classList.contains('saving')) return;
@@ -227,6 +276,7 @@
     updateMinutes();
     api('setTaskDone', row, t.task, next).then(function () {
       el.classList.remove('saving');
+      var keep = state.home; invalidate(); state.home = keep;
     }).catch(function (msg) {
       t.done = !next;
       el.classList.toggle('done', !next);
@@ -250,9 +300,9 @@
   /* ---------- More ---------- */
   function renderMore() {
     $view.innerHTML = '<h1>More</h1><div class="menu" style="margin-top:16px">' +
-      '<button class="btn ghost" data-menu="content">Content <span class="sub">(Phase D)</span></button>' +
-      '<button class="btn ghost" data-menu="wins">Wins <span class="sub">(Phase D)</span></button>' +
-      '<button class="btn ghost" data-menu="history">Scorecard history <span class="sub">(Phase D)</span></button>' +
+      '<button class="btn ghost" data-menu="content">Content</button>' +
+      '<button class="btn ghost" data-menu="wins">Wins</button>' +
+      '<button class="btn ghost" data-menu="history">Scorecard history</button>' +
       '<button class="btn ghost" data-menu="sheet">Open the Command Center sheet</button>' +
       '</div>';
   }
@@ -260,7 +310,7 @@
     if (what === 'sheet') {
       api('getSheetUrl').then(function (url) { window.open(url, '_blank', 'noopener'); }).catch(function (m) { toast(m, true); });
     } else {
-      toast('Coming in Phase D.');
+      go(what);
     }
   }
 
@@ -274,13 +324,21 @@
   function closeSheet() { sheetEl.hidden = true; backdrop.hidden = true; }
   backdrop.addEventListener('click', closeSheet);
 
-  function openForm(tab) {
+  function openForm(tab, presets, onSaved) {
+    state.formPresets = presets || {};
+    state.formSaved = onSaved || null;
     var cached = state.specs[tab];
     var p = cached ? Promise.resolve(cached) : api('getFormSpec', tab);
     if (!cached) openSheet('<div class="skeleton" style="height:300px"></div>');
     p.then(function (spec) {
       state.specs[tab] = spec;
       openSheet(formHtml(spec));
+      var f = sheetEl.querySelector('form');
+      Object.keys(state.formPresets).forEach(function (k) {
+        var el = f.elements[k];
+        if (!el) return;
+        if (el.type === 'checkbox') el.checked = !!state.formPresets[k]; else el.value = state.formPresets[k];
+      });
       var first = sheetEl.querySelector('input:not([type=checkbox]),select,textarea');
       if (first && window.matchMedia('(min-width: 760px)').matches) first.focus();
     }).catch(function (msg) { closeSheet(); toast(msg, true); });
@@ -334,6 +392,21 @@
     if (more) { more.nextElementSibling.classList.toggle('hidden'); more.remove(); }
   });
 
+  // Add client: fill Monthly rate from the Settings price table once Program and Plan are picked.
+  sheetEl.addEventListener('change', function (e) {
+    var form = e.target.form;
+    if (!form) return;
+    var spec = state.specs[form.getAttribute('data-tab')];
+    if (!spec || !spec.prices) return;
+    var prog = form.elements['Program'], plan = form.elements['Plan'], rate = form.elements['Monthly rate'];
+    if (!prog || !plan || !rate || (e.target !== prog && e.target !== plan)) return;
+    var p = spec.prices[prog.value];
+    if (p && p[plan.value] != null && (!rate.value || rate.getAttribute('data-auto'))) {
+      rate.value = p[plan.value];
+      rate.setAttribute('data-auto', '1');
+    }
+  });
+
   sheetEl.addEventListener('submit', function (e) {
     e.preventDefault();
     var form = e.target;
@@ -358,13 +431,39 @@
     api('addRecord', tab, rec, rid).then(function (res) {
       closeSheet();
       toast('Saved to ' + tab + ', row ' + res.row);
-      if (state.tab === 'home') loadHome({ fresh: true });
+      invalidate();
+      if (state.formSaved) state.formSaved(res);
+      else if (state.tab === 'home') loadHome({ fresh: true });
     }).catch(function (msg) {
       btn.disabled = false; btn.textContent = 'Save';
       errEl.textContent = msg; errEl.hidden = false;
     });
   });
 
-  go('home');
+  /* ---------- clipboard and links (work inside the Apps Script frame) ---------- */
+  function copyText(text) {
+    function fallback() {
+      var ta = document.createElement('textarea');
+      ta.value = text; ta.setAttribute('readonly', '');
+      ta.style.position = 'fixed'; ta.style.opacity = '0';
+      document.body.appendChild(ta); ta.select();
+      var ok = false;
+      try { ok = document.execCommand('copy'); } catch (e) { ok = false; }
+      document.body.removeChild(ta);
+      return ok;
+    }
+    var done = function () { toast('Copied'); };
+    var fail = function () { if (fallback()) done(); else openSheet('<h2>Copy this</h2><textarea class="copybox" readonly>' + esc(text) + '</textarea>'); };
+    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(done, fail);
+    else fail();
+  }
+  function isUrl(s) { return /^https?:\/\//i.test(String(s || '')); }
+
+  window.Hub = {
+    api: api, esc: esc, ymd: ymd, fmtDate: fmtDate, dayName: dayName, num: num, money: money, mins: mins,
+    tagHtml: tagHtml, toast: toast, setBusy: setBusy, go: go, views: views, handlers: handlers, state: state,
+    openForm: openForm, openSheet: openSheet, closeSheet: closeSheet, copyText: copyText, isUrl: isUrl,
+    requestId: requestId, view: $view, invalidate: invalidate, onStale: onStale, boiseToday: boiseToday
+  };
 })();
 </script>

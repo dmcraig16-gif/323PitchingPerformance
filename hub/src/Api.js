@@ -132,17 +132,24 @@ function getFormSpec(tab) {
   if (!cfg) throw new Error('No add form for that tab.');
   var t = readTab_(tab);
   var meta = t.meta;
+  var settings = tab === CONFIG.TABS.CLIENTS ? readSettings_() : null;
   var fields = meta.headers.filter(function (h) {
     return !meta.cols[h].computed && cfg.hidden.indexOf(h) < 0;
   }).map(function (h) {
     var col = meta.cols[h];
+    var choices = col.choices, source = col.choiceSource;
+    if (settings && h === CONFIG.H.clients.program) {
+      if (!choices) choices = settings.programs.map(function (p) { return String(p.Program); });
+      source = 'list';
+    }
+    if (settings && !choices && h === CONFIG.H.clients.plan) { choices = planNames_(settings); source = 'list'; }
     var suggestions = null;
-    if (!col.choices && col.type === 'text') suggestions = distinctValues_(t.rows, h, 15);
+    if (!choices && col.type === 'text') suggestions = distinctValues_(t.rows, h, 15);
     return {
       name: h,
       type: col.type,
-      choices: col.choices,
-      choiceSource: col.choiceSource,
+      choices: choices,
+      choiceSource: source,
       suggestions: suggestions,
       primary: cfg.primary.indexOf(h) >= 0,
       required: (CONFIG.KEY_HEADERS[tab] || []).indexOf(h) === 0,
@@ -156,7 +163,9 @@ function getFormSpec(tab) {
     if (ib < 0) return -1;
     return ia - ib;
   });
-  return { tab: tab, title: cfg.title, today: todayStr_(), fields: fields };
+  var out = { tab: tab, title: cfg.title, today: todayStr_(), fields: fields };
+  if (settings) out.prices = priceTable_(settings);
+  return out;
 }
 
 /**
@@ -199,7 +208,8 @@ function addRecord(tab, record, requestId) {
     (CONFIG.TODAY_DEFAULTS[tab] || []).forEach(function (h) { if (!rec[h]) rec[h] = today; });
     var noteH = CONFIG.NOTE_HEADERS[tab];
     if (noteH && rec[noteH]) rec[noteH] = stampNote_('', rec[noteH]);
-    if (tab === CONFIG.TABS.LEADS && !rec[CONFIG.H.leads.stage]) rec[CONFIG.H.leads.stage] = 'New';
+    var defs = CONFIG.NEW_ROW_DEFAULTS[tab] || {};
+    Object.keys(defs).forEach(function (h) { if (!rec[h]) rec[h] = defs[h]; });
     if (tab === CONFIG.TABS.TODO) deriveTodoFields_(rec);
 
     var res = appendRow_(tab, rec);
@@ -218,13 +228,14 @@ function deriveTodoFields_(rec) {
   if (rec[H.week]) return;
   var monday = mondayOf_(ymd);
   var rows = readTab_(CONFIG.TABS.TODO).rows;
+  // Reuse the label of a task in the same week; otherwise count on from the most recent labeled task.
   var ref = null;
   for (var i = 0; i < rows.length; i++) {
     var rd = asYmd_(rows[i][H.date]);
     var wk = String(rows[i][H.week] || '');
     if (!rd || !/^W\d+$/.test(wk)) continue;
     if (mondayOf_(rd) === monday) { rec[H.week] = wk; return; }
-    if (!ref) ref = { monday: mondayOf_(rd), n: Number(wk.slice(1)) };
+    if (!ref || rd > ref.date) ref = { date: rd, monday: mondayOf_(rd), n: Number(wk.slice(1)) };
   }
   if (ref) {
     var weeks = Math.round((Date.parse(monday) - Date.parse(ref.monday)) / (7 * 864e5));
@@ -245,4 +256,15 @@ function mondayOf_(ymd) {
 function getSheetUrl() {
   assertOwner_();
   return ss_().getUrl();
+}
+
+/** { program: { plan: monthly rate } } from Settings, used to prefill Monthly rate. */
+function priceTable_(settings) {
+  var plans = planNames_(settings);
+  var out = {};
+  settings.programs.forEach(function (p) {
+    out[p.Program] = {};
+    plans.forEach(function (pl) { if (typeof p[pl] === 'number') out[p.Program][pl] = p[pl]; });
+  });
+  return out;
 }

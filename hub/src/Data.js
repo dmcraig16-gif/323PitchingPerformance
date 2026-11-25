@@ -335,9 +335,9 @@ function readSettings_(fresh) {
   var grid = sheet_(CONFIG.TABS.SETTINGS).getDataRange().getValues();
   var head = findCell_(grid, 'Program', { exact: true });
   var programs = [];
+  var headers = [];
   var tableEnd = head ? head.r : -1;
   if (head) {
-    var headers = [];
     for (var c = head.c; c < grid[head.r].length && String(grid[head.r][c]).trim() !== ''; c++) headers.push(String(grid[head.r][c]).trim());
     var paysIdx = headers.map(norm_).indexOf('paysthrough');
     for (var r = head.r + 1; r < grid.length; r++) {
@@ -366,6 +366,7 @@ function readSettings_(fresh) {
   });
   var out = {
     programs: programs,
+    programHeaders: headers,
     firstStep: pick('First price step'),
     secondStep: pick('Second price step'),
     increasePerStep: pick('Increase per step'),

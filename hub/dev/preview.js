@@ -11,7 +11,7 @@ var out = process.argv[2] || path.join(__dirname, 'preview.html');
 
 function read(p) { return fs.readFileSync(p, 'utf8'); }
 
-var server = ['Config.js', 'Data.js', 'Write.js', 'Api.js', 'Code.js'].map(function (f) { return read(path.join(SRC, f)); }).join('\n');
+var server = ['Config.js', 'Data.js', 'Write.js', 'Api.js', 'Todo.js', 'Clients.js', 'Leads.js', 'Money.js', 'Code.js'].map(function (f) { return read(path.join(SRC, f)); }).join('\n');
 var shim = [
   read(path.join(__dirname, 'mock.js')),
   read(path.join(__dirname, 'fixture.js')),

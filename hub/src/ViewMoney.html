@@ -1,0 +1,129 @@
+<script>
+/* Money: cash by month chart, 323 vs DDC, net and tax set-aside, payments, expenses. */
+(function (H) {
+  'use strict';
+  var esc = H.esc, fmtDate = H.fmtDate, money = H.money;
+  var S = { d: null, at: 0, tab: 'payments', pf: '', pq: '' };
+  H.onStale(function () { S.at = 0; });
+  var MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+  H.views.money = function (opts) {
+    if (S.d && !opts.fresh && Date.now() - S.at < 60000) return render();
+    if (!S.d) H.view.innerHTML = '<h1>Money</h1><div class="skeleton" style="height:320px;margin-top:16px"></div>';
+    H.setBusy(true);
+    H.api('getMoney', !!opts.fresh).then(function (d) {
+      S.d = d; S.at = Date.now();
+      if (H.state.tab === 'money') render();
+    }).catch(function (m) { H.toast(m, true); }).then(function () { H.setBusy(false); });
+  };
+
+  function short(v, axis) {
+    var n = H.num(v);
+    if (axis && n >= 1000) return '$' + (n / 1000).toFixed(n % 1000 ? 1 : 0) + 'k';
+    return money(n);
+  }
+
+  function monthLabel(v) {
+    var s = String(v);
+    if (/^\d{4}-\d{2}/.test(s)) return MONTHS[Number(s.slice(5, 7)) - 1];
+    return s;
+  }
+
+  function render() {
+    var d = S.d, m = d.month;
+    var h = '<h1>Money</h1>';
+
+    h += '<div class="cards">' +
+      card('Cash in this month', money(m.cashIn), true) +
+      card('Spent this month', money(m.spent)) +
+      card('Net this month', money(m.net)) +
+      card('Tax set-aside (' + Math.round(m.taxRate * 100) + '%)', money(m.tax)) +
+      card('Left after tax', money(m.left)) +
+      card('Cash in, year to date', money(d.ytd.cashIn)) +
+      '</div>';
+
+    h += '<h2>323 vs DDC</h2><div class="list kv">' +
+      '<div class="kvrow three"><span class="sub"></span><span class="sub">This month</span><span class="sub">Year to date</span></div>' +
+      d.split.month.map(function (c, i) {
+        var tag = /ddc/i.test(c.name) ? H.tagHtml('DDC') : '';
+        return '<div class="kvrow three"><span>' + esc(c.name) + tag + '</span><span>' + money(c.value) + '</span><span>' + money(d.split.ytd[i].value) + '</span></div>';
+      }).join('') + '</div>';
+    h += '<div class="sub" style="margin-top:6px">DDC money is Venmo and not counted in 323 MRR.</div>';
+
+    h += '<h2>Cash collected by month</h2><div id="cashChart"></div>';
+
+    h += '<div class="seg" style="margin-top:28px">' +
+      '<button data-mtab="payments" class="' + (S.tab === 'payments' ? 'on' : '') + '">Payments</button>' +
+      '<button data-mtab="expenses" class="' + (S.tab === 'expenses' ? 'on' : '') + '">Expenses</button></div>';
+    h += '<div id="mlist"></div>';
+    H.view.innerHTML = h;
+
+    var rows = d.cash.rows.filter(function (r) { return /^\d{4}-\d{2}/.test(String(r[d.cash.headers[0]])); });
+    var segCols = d.cash.cols.filter(function (c) { return !/^total$/i.test(c); });
+    var colors = { 0: '#0289eb', 1: '#d28e05' };
+    H.stackedBars(document.getElementById('cashChart'), {
+      title: 'Cash collected by month',
+      labels: rows.map(function (r) { return monthLabel(r[d.cash.headers[0]]); }),
+      series: segCols.map(function (c, i) {
+        return { name: c, color: colors[i] || H.SERIES[i], values: rows.map(function (r) { return H.num(r[c]); }) };
+      }),
+      fmt: short
+    });
+    renderList();
+  }
+
+  function card(label, v, accent) {
+    return '<div class="card' + (accent ? ' accent' : '') + '"><div class="label">' + esc(label) + '</div><div class="num">' + esc(v) + '</div></div>';
+  }
+
+  function renderList() {
+    var d = S.d, el = document.getElementById('mlist');
+    var h = '';
+    if (S.tab === 'payments') {
+      h += '<div class="row-between" style="margin:14px 0 10px"><select data-pf>' +
+        ['', '323', 'DDC', 'Guinea Pig'].map(function (v) { return '<option value="' + v + '"' + (S.pf === v ? ' selected' : '') + '>' + (v || 'All payments') + '</option>'; }).join('') +
+        '</select><button class="btn small" data-log="Payments">Log payment</button></div>';
+      h += '<input class="search" type="search" placeholder="Search athlete" data-pq value="' + esc(S.pq) + '">';
+      var q = S.pq.toLowerCase();
+      var list = d.payments.filter(function (p) {
+        return (!S.pf || p.tag === S.pf) && (!q || String(p.athlete).toLowerCase().indexOf(q) >= 0);
+      });
+      var total = list.reduce(function (s, p) { return s + p.amount; }, 0);
+      h += '<div class="sub">' + list.length + ' payments · ' + money(total) + '</div>';
+      h += list.length ? '<div class="list" style="margin-top:8px">' + list.map(function (p) {
+        var st = /overdue/i.test(p.status) ? '<span class="badge over">' + esc(p.status) + '</span>' : (p.status ? '<span class="sub">' + esc(p.status) + '</span>' : '');
+        return '<div class="item"><div style="flex:1"><div class="row-between"><span class="t">' + esc(p.athlete) + H.tagHtml(p.tag) + '</span><span class="t">' + money(p.amount) + '</span></div>' +
+          '<div class="row-between d"><span>' + fmtDate(p.date) + (p.method ? ' · ' + esc(p.method) : '') + (p.nextDue ? ' · next due ' + fmtDate(p.nextDue) : '') + '</span>' + st + '</div>' +
+          (p.notes ? '<div class="d">' + esc(p.notes) + '</div>' : '') + '</div></div>';
+      }).join('') + '</div>' : '<div class="list" style="margin-top:8px"><div class="empty">No payments.</div></div>';
+    } else {
+      h += '<div class="row-between" style="margin:14px 0 10px"><span class="sub">This month ' + money(d.month.spent) + ' · Year to date ' + money(d.ytd.spent) + '</span>' +
+        '<button class="btn small" data-log="Expenses">Log expense</button></div>';
+      h += d.expenses.length ? '<div class="list">' + d.expenses.map(function (e) {
+        var link = H.isUrl(e['Receipt link']) ? ' · <a href="' + esc(e['Receipt link']) + '" target="_blank" rel="noopener">Receipt</a>' : '';
+        return '<div class="item"><div style="flex:1"><div class="row-between"><span class="t">' + esc(e['Vendor'] || '') + '</span><span class="t">' + money(e.amount) + '</span></div>' +
+          '<div class="d">' + [fmtDate(e.date), esc(e['Category'] || ''), esc(e["What it's for"] || ''), esc(e['Billing'] || '')].filter(Boolean).join(' · ') + link + '</div></div></div>';
+      }).join('') + '</div>' : '<div class="list"><div class="empty">No expenses.</div></div>';
+    }
+    el.innerHTML = h;
+  }
+
+  H.handlers.money = {
+    click: function (e) {
+      var t = e.target.closest('[data-mtab]');
+      if (t) { S.tab = t.getAttribute('data-mtab'); return render(); }
+      var l = e.target.closest('[data-log]');
+      if (l) return H.openForm(l.getAttribute('data-log'), {}, function () { H.views.money({ fresh: true }); });
+    },
+    change: function (e) { if (e.target.matches('[data-pf]')) { S.pf = e.target.value; renderList(); } },
+    input: function (e) {
+      if (e.target.matches('[data-pq]')) {
+        S.pq = e.target.value;
+        var pos = e.target.selectionStart;
+        renderList();
+        var el = H.view.querySelector('[data-pq]'); el.focus(); el.setSelectionRange(pos, pos);
+      }
+    }
+  };
+})(window.Hub);
+</script>

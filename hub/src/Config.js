@@ -42,7 +42,18 @@ var CONFIG = {
     'Leads': { title: 'Add lead', primary: ['Parent name', 'Athlete name', 'Grad year', 'Contact (IG or email)', 'Source', 'Program interest', 'Stage', 'Next action', 'Next action due', 'Notes'], hidden: ['Last touch'] },
     'Payments': { title: 'Log payment', primary: ['Date received', 'Athlete', 'Amount', 'Paid through', 'Next payment due', 'Notes'], hidden: [] },
     'Expenses': { title: 'Log expense', primary: ['Date', 'Vendor', 'Category', "What it's for", 'Amount', 'Billing', 'Paid with', 'Receipt link'], hidden: [] },
-    'Wins': { title: 'Log win', primary: ['Date', 'Athlete', 'Area', 'Win', 'Evidence', 'Media consent', 'OK to post'], hidden: [] }
+    'Wins': { title: 'Log win', primary: ['Date', 'Athlete', 'Area', 'Win', 'Evidence', 'Media consent', 'OK to post'], hidden: [] },
+    'Content': { title: 'Add post', primary: ['Post date', 'Pillar', 'Format', 'Topic', 'Teaching point', 'Hook', 'CTA', 'Status', 'Link'], hidden: [] },
+    'Clients': { title: 'Add client', primary: ['Athlete name', 'Parent name', 'Parent email', 'Program', 'Plan', 'Monthly rate', 'Start date', 'Term (months)', 'Status', 'Notes'], hidden: [] }
+  },
+
+  // Tabs whose existing rows the generic editor may change (Clients and Leads have their own functions).
+  EDIT_TABS: ['Content', 'Wins', 'Payments', 'Expenses', 'Daily To-Do'],
+
+  // Values filled in on a new row when left blank.
+  NEW_ROW_DEFAULTS: {
+    'Leads': { 'Stage': 'New' },
+    'Clients': { 'Status': 'Onboarding' }
   },
 
   // Headers that default to today when left blank on a new row.
@@ -51,7 +62,8 @@ var CONFIG = {
     'Leads': ['Date added', 'Last touch'],
     'Payments': ['Date received'],
     'Expenses': ['Date'],
-    'Wins': ['Date']
+    'Wins': ['Date'],
+    'Clients': ['Start date']
   },
 
   // Notes columns that take timestamped entries (M/D/YYYY: text, newest first).

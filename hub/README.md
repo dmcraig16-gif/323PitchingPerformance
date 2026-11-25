@@ -15,17 +15,41 @@ hub/
     Config.js           spreadsheet ID, tab names, header names used in logic, form settings
     Data.js             reads tabs into objects keyed by header, cache, Scorecard and Settings readers
     Write.js            safe writes: lock, formula check, append, timestamped notes
-    Api.js              functions the page calls (getHome, setTaskDone, getFormSpec, addRecord)
+    Api.js              Home, add forms (getHome, setTaskDone, getFormSpec, addRecord)
+    Todo.js             To-Do (getTodos, updateTask, moveTasks)
+    Clients.js          Clients and profile (getClients, getClient, updateClient, addClientNote)
+    Leads.js            Pipeline (getLeads, updateLead, addLeadNote)
+    Money.js            Money, Content, Wins, Scorecard history, generic row editor
     Code.js             doGet, include_, owner check
-    Index.html          page shell, bottom tabs
+    Index.html          page shell, bottom tabs, includes every screen
     Styles.html         CSS (brand colors, dark mode)
-    App.html            front-end JS (screens, forms)
+    App.html            core: routing, formatting, add forms, Home, More menu, day rollover
+    Charts.html         small SVG bar and line charts with hover and a table view
+    ViewTodo.html       To-Do screen
+    ViewClients.html    Clients list and profile
+    ViewLeads.html      Leads pipeline and lead profile
+    ViewMoney.html      Money screen
+    ViewMore.html       Content, Wins, Scorecard history, shared row editor
   dev/                  local only, never pushed
     mock.js             stand-ins for SpreadsheetApp, CacheService, LockService, Utilities, Session
     fixture.js          fake Command Center with made-up names
-    test.js             data-layer tests
+    test.js             server tests (31 checks)
     preview.js          builds a single HTML file that runs the app in a normal browser
 ```
+
+## Screens
+
+- **Home:** Scorecard numbers, this week, today's tasks with checkboxes, needs attention, quick add.
+- **To-Do:** Today, Tomorrow, This week, Overdue. Tap the box to check off, tap the text to edit or move.
+  "Move all to today" clears Overdue. The app rolls over to the new day on its own after midnight
+  (Boise time) and refreshes when you come back to it.
+- **Clients:** search and filters, DDC and Guinea Pig tags, Paid / Due / Overdue badges. Profile has quick
+  actions, term progress, onboarding checklist, payments, wins, timestamped notes, and every field editable.
+- **Leads:** columns by stage on desktop (drag or use the stage menu), stacked by stage on a phone.
+  Stage changes and notes set Last touch to today. Moving to Won opens a prefilled Add client form;
+  nothing is written until you tap Save.
+- **Money:** cards for this month, 323 vs DDC, cash by month chart, payments and expenses with Log buttons.
+- **More:** Content (list, calendar, stale pillar), Wins (consent shown on every win), Scorecard history.
 
 ## Data rules the code follows
 

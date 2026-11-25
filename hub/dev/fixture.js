@@ -60,6 +60,7 @@
           blankClient.slice(), blankClient.slice(), blankClient.slice()
         ],
         formulas: {
+          '2,6': '=ARRAYFORMULA(IF(D2:D="","",IFERROR(VLOOKUP(...))))',
           '2,9': '=ARRAYFORMULA(IF((G2:G="")+(H2:H=""),"",EDATE(G2:G,H2:H)))',
           '2,18': '=ARRAYFORMULA(IF(A2:A="","",...))'
         },
@@ -93,7 +94,7 @@
           ['Date', 'Athlete', 'Area', 'Win', 'Evidence', 'Media consent', 'OK to post', 'Notes'],
           ['', '', '', '', '', '', F, ''], ['', '', '', '', '', '', F, ''], ['', '', '', '', '', '', F, '']
         ],
-        validations: { 7: box }, maxRows: 300
+        validations: { 6: list(['Full', 'Face and name hidden', 'None']), 7: box }, maxRows: 300
       },
       {
         name: 'Expenses',
@@ -137,18 +138,18 @@
         values: [
           ['323 Scorecard'], ['Live numbers pull from Leads and Clients.'], [],
           ['This week', '', '', 'Pipeline by stage', 'Leads', '', '', '', '', '', 'Cash collected', '323', 'DDC (Venmo)', 'Total'],
-          ['Week starting (Monday)', monday(), '', 'New', 0, '', '', '', '', '', new Date(2026, 0, 1), 0, 0, 0],
-          ['Conversations started', 3, '', 'Talking', 1, '', '', '', '', '', new Date(2026, 1, 1), 0, 0, 0],
-          ['Calls booked', 1, '', 'Call booked', 0, '', '', '', '', '', new Date(2026, 2, 1), 0, 0, 0],
-          ['Calls held', 1, '', 'Call held', 0, '', '', '', '', '', new Date(2026, 3, 1), 0, 0, 0],
-          ['Closes', 1, '', 'Recap sent', 0, '', '', '', '', '', new Date(2026, 4, 1), 0, 0, 0],
-          ['', '', '', 'Won', 1, '', '', '', '', '', new Date(2026, 5, 1), 0, 0, 0],
-          ['Business', '', '', 'Lost', 0, '', '', '', '', '', new Date(2026, 6, 1), 0, 0, 0],
-          ['Enrolled athletes (323 only)', 2, '', 'Nurture', 0, '', '', '', '', '', new Date(2026, 7, 1), 0, 0, 0],
-          ['Monthly recurring revenue (323 only)', 400, '', 'Overdue follow-ups', 2, '', '', '', '', '', new Date(2026, 8, 1), 0, 0, 0],
-          ['MRR target', 5000, '', 'DDC group, monthly (Venmo, not in MRR)', 150, '', '', '', '', '', new Date(2026, 9, 1), 400, 0, 400],
-          ['Gap to target', 4600, '', 'Paid 323 athletes', 1, '', '', '', '', '', new Date(2026, 10, 1), 0, 550, 550],
-          ['Spots to next price step', 4, '', 'Cash collected this month', 550, '', '', '', '', '', new Date(2026, 11, 1), 0, 0, 0],
+          ['Week starting (Monday)', monday(), '', 'New', 0, '', '', '', '', '', M.localMidnight(2026, 0 + 1, 1), 0, 0, 0],
+          ['Conversations started', 3, '', 'Talking', 1, '', '', '', '', '', M.localMidnight(2026, 1 + 1, 1), 0, 0, 0],
+          ['Calls booked', 1, '', 'Call booked', 0, '', '', '', '', '', M.localMidnight(2026, 2 + 1, 1), 0, 0, 0],
+          ['Calls held', 1, '', 'Call held', 0, '', '', '', '', '', M.localMidnight(2026, 3 + 1, 1), 0, 0, 0],
+          ['Closes', 1, '', 'Recap sent', 0, '', '', '', '', '', M.localMidnight(2026, 4 + 1, 1), 0, 0, 0],
+          ['', '', '', 'Won', 1, '', '', '', '', '', M.localMidnight(2026, 5 + 1, 1), 0, 0, 0],
+          ['Business', '', '', 'Lost', 0, '', '', '', '', '', M.localMidnight(2026, 6 + 1, 1), 0, 0, 0],
+          ['Enrolled athletes (323 only)', 2, '', 'Nurture', 0, '', '', '', '', '', M.localMidnight(2026, 7 + 1, 1), 0, 0, 0],
+          ['Monthly recurring revenue (323 only)', 400, '', 'Overdue follow-ups', 2, '', '', '', '', '', M.localMidnight(2026, 8 + 1, 1), 0, 0, 0],
+          ['MRR target', 5000, '', 'DDC group, monthly (Venmo, not in MRR)', 150, '', '', '', '', '', M.localMidnight(2026, 9 + 1, 1), 400, 0, 400],
+          ['Gap to target', 4600, '', 'Paid 323 athletes', 1, '', '', '', '', '', M.localMidnight(2026, 10 + 1, 1), 0, 550, 550],
+          ['Spots to next price step', 4, '', 'Cash collected this month', 550, '', '', '', '', '', M.localMidnight(2026, 11 + 1, 1), 0, 0, 0],
           ['Recurring costs per month', 20, '', 'Cash collected year to date', 950, '', '', '', '', '', 'Year to date', 400, 550, 950],
           ['Net per month', 380],
           ['Weekly log (snapshot written each Monday)'],
